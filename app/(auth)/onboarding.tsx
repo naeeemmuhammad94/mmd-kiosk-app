@@ -15,7 +15,8 @@ import {
     NativeSyntheticEvent,
     NativeScrollEvent,
     TouchableOpacity,
-    Alert,
+    Animated,
+    ActivityIndicator,
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useRouter } from 'expo-router';
@@ -24,10 +25,10 @@ import { useOnboardingStore } from '@/store/useOnboardingStore';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 // Import SVG illustrations with updated file names
-import WelcomeIllustration from '../../assets/Frame-welcome.svg';
-import AttendanceIllustration from '../../assets/Frame-attendee.svg';
-import PictureModeIllustration from '../../assets/Frame-picture-mode.svg';
-import NotificationIllustration from '../../assets/Frame-notification.svg';
+import WelcomeIllustration from '../../assets/welcome.svg';
+import AttendanceIllustration from '../../assets/attendee.svg';
+import PictureModeIllustration from '../../assets/picture-mode.svg';
+import NotificationIllustration from '../../assets/notification.svg';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -68,7 +69,7 @@ const ONBOARDING_SLIDES: OnboardingSlideData[] = [
     },
 ];
 
-// Pagination Dots Component
+// Pagination Dots Component - Bold (larger) dot for active slide
 const PaginationDots = ({
     totalDots,
     activeIndex,
@@ -78,19 +79,23 @@ const PaginationDots = ({
 }) => {
     return (
         <View style={styles.dotsContainer}>
-            {Array.from({ length: totalDots }).map((_, index) => (
-                <View
-                    key={index}
-                    style={[
-                        styles.dot,
-                        {
-                            backgroundColor: index === activeIndex ? '#4A7DFF' : '#D1D5DB',
-                            width: 8,
-                            height: 8,
-                        },
-                    ]}
-                />
-            ))}
+            {Array.from({ length: totalDots }).map((_, index) => {
+                const isActive = index === activeIndex;
+                return (
+                    <View
+                        key={index}
+                        style={[
+                            styles.dot,
+                            {
+                                backgroundColor: isActive ? '#4A7DFF' : '#D1D5DB',
+                                width: isActive ? 14 : 8,
+                                height: isActive ? 14 : 8,
+                                borderRadius: isActive ? 7 : 4,
+                            },
+                        ]}
+                    />
+                );
+            })}
         </View>
     );
 };
@@ -99,10 +104,30 @@ export default function OnboardingScreen() {
     const router = useRouter();
     const flatListRef = useRef<FlatList>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
+    const fadeAnim = useRef(new Animated.Value(0)).current;
 
     const { completeOnboarding, setNotificationPermission } = useOnboardingStore();
 
     const isLastSlide = currentIndex === ONBOARDING_SLIDES.length - 1;
+
+    // Show transition loader with fade-in animation
+    const showTransitionLoader = useCallback(() => {
+        setIsLoading(true);
+        Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+        }).start();
+    }, [fadeAnim]);
+
+    // Navigate to login after a brief delay for smooth transition
+    const navigateToLogin = useCallback(() => {
+        showTransitionLoader();
+        setTimeout(() => {
+            router.replace('/(auth)/login');
+        }, 800);
+    }, [router, showTransitionLoader]);
 
     const handleMomentumScrollEnd = useCallback(
         (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -124,22 +149,22 @@ export default function OnboardingScreen() {
 
     const handleSkip = useCallback(async () => {
         await completeOnboarding();
-        router.replace('/(auth)/login');
-    }, [completeOnboarding, router]);
+        navigateToLogin();
+    }, [completeOnboarding, navigateToLogin]);
 
     // Handle notification permission
     // Permission preference is saved and will work when app is built for staging/production
     const handleAllow = useCallback(async () => {
         await setNotificationPermission(true);
         await completeOnboarding();
-        router.replace('/(auth)/login');
-    }, [completeOnboarding, setNotificationPermission, router]);
+        navigateToLogin();
+    }, [completeOnboarding, setNotificationPermission, navigateToLogin]);
 
     const handleNotNow = useCallback(async () => {
         await setNotificationPermission(false);
         await completeOnboarding();
-        router.replace('/(auth)/login');
-    }, [completeOnboarding, setNotificationPermission, router]);
+        navigateToLogin();
+    }, [completeOnboarding, setNotificationPermission, navigateToLogin]);
 
     const renderSlide = useCallback(
         ({ item }: { item: OnboardingSlideData }) => {
@@ -199,6 +224,7 @@ export default function OnboardingScreen() {
                     style={styles.primaryButton}
                     onPress={isLastSlide ? handleAllow : handleNext}
                     activeOpacity={0.8}
+                    disabled={isLoading}
                 >
                     <Text style={styles.primaryButtonText}>
                         {isLastSlide ? 'Allow' : 'Next'}
@@ -217,12 +243,20 @@ export default function OnboardingScreen() {
                 <TouchableOpacity
                     onPress={isLastSlide ? handleNotNow : handleSkip}
                     style={styles.secondaryButton}
+                    disabled={isLoading}
                 >
                     <Text style={styles.secondaryButtonText}>
                         {isLastSlide ? 'Not Now' : 'Skip'}
                     </Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Transition Loader Overlay */}
+            {isLoading && (
+                <Animated.View style={[styles.loaderOverlay, { opacity: fadeAnim }]}>
+                    <ActivityIndicator size="large" color="#4A7DFF" />
+                </Animated.View>
+            )}
         </SafeAreaView>
     );
 }
@@ -272,7 +306,7 @@ const styles = StyleSheet.create({
     primaryButton: {
         alignItems: 'center',
         backgroundColor: '#4A7DFF',
-        borderRadius: 26,
+        borderRadius: 10,
         elevation: 4,
         flexDirection: 'row',
         height: 52,
@@ -311,5 +345,21 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         marginBottom: 12,
         textAlign: 'center',
+    },
+    loaderOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loaderText: {
+        marginTop: 16,
+        fontSize: 16,
+        color: '#4A7DFF',
+        fontWeight: '500',
     },
 });

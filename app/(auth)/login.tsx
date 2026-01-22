@@ -1,225 +1,211 @@
 /**
  * Login Screen - Figma Design Implementation
  * Username + Password login with CRM API pattern
- * Shows PIN creation modal after first successful login
+ * OPTIMIZED: Uses local state - no external state updates during typing
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import {
     View,
     StyleSheet,
-    KeyboardAvoidingView,
-    Platform,
     ScrollView,
     Alert,
     TouchableOpacity,
-    TextInput as RNTextInput,
+    TextInput,
     Dimensions,
     ActivityIndicator,
+    ImageBackground,
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useOnboardingStore } from '@/store/useOnboardingStore';
 import { usePinStore } from '@/store/usePinStore';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { LinearGradient } from 'expo-linear-gradient';
 import PinModal from '@/components/auth/PinModal';
 
 // MMD Logo SVG
-import LoginLogo from '../../assets/Frame-login.svg';
+import LoginLogo from '../../assets/login.svg';
+
+// Background Image
+const backgroundImage = require('../../assets/login-background.jpg');
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-// Login schema with userName (matching CRM)
-const loginSchema = z.object({
-    userName: z
-        .string()
-        .min(1, 'Username is required')
-        .max(50, 'Username is too long'),
-    password: z
-        .string()
-        .min(1, 'Password is required')
-        .max(50, 'Password is too long'),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginScreen() {
     const router = useRouter();
     const { login } = useAuthStore();
     const { loadPinState } = usePinStore();
 
-    const {
-        control,
-        handleSubmit,
-        formState: { errors },
-    } = useForm<LoginFormData>({
-        resolver: zodResolver(loginSchema),
-        defaultValues: {
-            userName: '',
-            password: '',
-        },
-    });
+    // LOCAL state - no external state updates during typing
+    const [userName, setUserName] = useState('');
+    const [password, setPassword] = useState('');
+    const [errors, setErrors] = useState<{ userName?: string; password?: string }>({});
+
+    const passwordRef = useRef<TextInput>(null);
+
+
 
     const loginMutation = useMutation({
         mutationKey: ['login'],
-        mutationFn: async (data: LoginFormData) => {
-            // Using userName for login (matching CRM pattern)
-            await login(data.userName, data.password);
+        mutationFn: async () => {
+            // Validate before submitting
+            const newErrors: typeof errors = {};
+            if (!userName.trim()) newErrors.userName = 'Username is required';
+            if (!password.trim()) newErrors.password = 'Password is required';
+
+            if (Object.keys(newErrors).length > 0) {
+                setErrors(newErrors);
+                throw new Error('Validation failed');
+            }
+
+            await login(userName.trim(), password);
         },
         onSuccess: async () => {
-            // After successful login, reload PIN state
-            // The _layout.tsx useProtectedRoute hook will handle:
-            // - Showing PIN creation modal if no PIN exists
-            // - Showing PIN verification modal if PIN exists but not verified
-            // - Navigating to tabs once PIN is set and verified
             await loadPinState();
         },
         onError: (error: Error & { message?: string }) => {
-            Alert.alert(
-                'Login Failed',
-                error?.message || 'Please check your credentials and try again.'
-            );
+            if (error.message !== 'Validation failed') {
+                Alert.alert(
+                    'Login Failed',
+                    error?.message || 'Please check your credentials and try again.'
+                );
+            }
         },
     });
 
-    const handleLogin = useCallback(
-        (data: LoginFormData) => {
-            loginMutation.mutate(data);
-        },
-        [loginMutation]
-    );
+    const handleLogin = useCallback(() => {
+        setErrors({});
+        loginMutation.mutate();
+    }, [loginMutation]);
+
 
     const handleForgotPassword = useCallback(() => {
         router.push('/(auth)/forgot-password');
     }, [router]);
 
+    // DEV ONLY: Reset onboarding state for testing
+    const handleResetOnboarding = useCallback(async () => {
+        await useOnboardingStore.getState().reset();
+        Alert.alert('Reset Complete', 'Onboarding state has been reset. Restart the app to see onboarding.');
+    }, []);
+
     return (
         <View style={styles.container}>
-            {/* Background gradient (placeholder for martial arts background image) */}
-            <LinearGradient
-                colors={['#9CA3AF', '#6B7280', '#4B5563']}
+            {/* Background Image with Overlay */}
+            <ImageBackground
+                source={backgroundImage}
                 style={styles.background}
+                resizeMode="cover"
             >
+                {/* Semi-transparent overlay */}
+                <View style={styles.overlay} />
+
                 <SafeAreaView style={styles.safeArea}>
-                    <KeyboardAvoidingView
-                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                        style={styles.keyboardView}
+                    <ScrollView
+                        contentContainerStyle={styles.scrollContent}
+                        keyboardShouldPersistTaps="handled"
+                        showsVerticalScrollIndicator={false}
                     >
-                        <ScrollView
-                            contentContainerStyle={styles.scrollContent}
-                            keyboardShouldPersistTaps="handled"
-                            showsVerticalScrollIndicator={false}
-                        >
-                            {/* White Card */}
-                            <View style={styles.card}>
-                                {/* MMD Logo with Blue Gradient Background */}
-                                <View style={styles.logoContainer}>
-                                    <LinearGradient
-                                        colors={['#4A90D9', '#5EA0E8', '#72B0F5']}
-                                        start={{ x: 0, y: 0 }}
-                                        end={{ x: 1, y: 1 }}
-                                        style={styles.logoGradient}
-                                    >
-                                        <LoginLogo width={SCREEN_WIDTH * 0.65} height={90} />
-                                    </LinearGradient>
-                                </View>
-
-                                {/* Title - Black color as per Figma */}
-                                <Text style={styles.title}>Attendance Kiosk</Text>
-
-                                {/* Username Input */}
-                                <Controller
-                                    control={control}
-                                    name="userName"
-                                    render={({ field: { onChange, onBlur, value } }) => (
-                                        <View style={styles.inputContainer}>
-                                            <RNTextInput
-                                                style={[
-                                                    styles.input,
-                                                    errors.userName && styles.inputError,
-                                                ]}
-                                                placeholder="Enter your email"
-                                                placeholderTextColor="#9CA3AF"
-                                                value={value}
-                                                onChangeText={onChange}
-                                                onBlur={onBlur}
-                                                autoCapitalize="none"
-                                                autoComplete="username"
-                                                editable={!loginMutation.isPending}
-                                            />
-                                            {errors.userName && (
-                                                <Text style={styles.errorText}>
-                                                    {errors.userName.message}
-                                                </Text>
-                                            )}
-                                        </View>
-                                    )}
-                                />
-
-                                {/* Password Input */}
-                                <Controller
-                                    control={control}
-                                    name="password"
-                                    render={({ field: { onChange, onBlur, value } }) => (
-                                        <View style={styles.inputContainer}>
-                                            <RNTextInput
-                                                style={[
-                                                    styles.input,
-                                                    errors.password && styles.inputError,
-                                                ]}
-                                                placeholder="Enter your password"
-                                                placeholderTextColor="#9CA3AF"
-                                                value={value}
-                                                onChangeText={onChange}
-                                                onBlur={onBlur}
-                                                secureTextEntry
-                                                autoCapitalize="none"
-                                                editable={!loginMutation.isPending}
-                                            />
-                                            {errors.password && (
-                                                <Text style={styles.errorText}>
-                                                    {errors.password.message}
-                                                </Text>
-                                            )}
-                                        </View>
-                                    )}
-                                />
-
-                                {/* Forgot Password Link */}
-                                <TouchableOpacity
-                                    onPress={handleForgotPassword}
-                                    style={styles.forgotPasswordButton}
+                        {/* White Card */}
+                        <View style={styles.card}>
+                            {/* MMD Logo */}
+                            <View style={styles.logoContainer}>
+                                <LinearGradient
+                                    colors={['#4A90D9', '#5EA0E8', '#72B0F5']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                    style={styles.logoGradient}
                                 >
-                                    <Text style={styles.forgotPasswordText}>Forgot Password</Text>
-                                </TouchableOpacity>
-
-                                {/* Log In Button */}
-                                <TouchableOpacity
-                                    style={[
-                                        styles.loginButton,
-                                        loginMutation.isPending && styles.loginButtonDisabled,
-                                    ]}
-                                    onPress={handleSubmit(handleLogin)}
-                                    disabled={loginMutation.isPending}
-                                    activeOpacity={0.8}
-                                >
-                                    {loginMutation.isPending ? (
-                                        <ActivityIndicator size="small" color="#FFFFFF" />
-                                    ) : (
-                                        <Text style={styles.loginButtonText}>Log In</Text>
-                                    )}
-                                </TouchableOpacity>
+                                    <LoginLogo width={SCREEN_WIDTH * 0.65} height={90} />
+                                </LinearGradient>
                             </View>
-                        </ScrollView>
-                    </KeyboardAvoidingView>
+
+                            {/* Title */}
+                            <Text style={styles.title}>Attendance Kiosk</Text>
+
+                            {/* Username Input - LOCAL STATE */}
+                            <View style={styles.inputContainer}>
+                                <TextInput
+                                    style={[styles.input, errors.userName && styles.inputError]}
+                                    placeholder="Enter your email"
+                                    placeholderTextColor="#9CA3AF"
+                                    value={userName}
+                                    onChangeText={setUserName}
+                                    autoCapitalize="none"
+                                    autoCorrect={false}
+                                    keyboardType="email-address"
+                                    returnKeyType="next"
+                                    onSubmitEditing={() => passwordRef.current?.focus()}
+                                    editable={!loginMutation.isPending}
+                                />
+                                {errors.userName && (
+                                    <Text style={styles.errorText}>{errors.userName}</Text>
+                                )}
+                            </View>
+
+                            {/* Password Input - LOCAL STATE */}
+                            <View style={styles.inputContainer}>
+                                <TextInput
+                                    ref={passwordRef}
+                                    style={[styles.input, errors.password && styles.inputError]}
+                                    placeholder="Enter your password"
+                                    placeholderTextColor="#9CA3AF"
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    secureTextEntry
+                                    autoCapitalize="none"
+                                    autoCorrect={false}
+                                    returnKeyType="done"
+                                    onSubmitEditing={handleLogin}
+                                    editable={!loginMutation.isPending}
+                                />
+                                {errors.password && (
+                                    <Text style={styles.errorText}>{errors.password}</Text>
+                                )}
+                            </View>
+
+                            {/* Forgot Password Link */}
+                            <TouchableOpacity
+                                onPress={handleForgotPassword}
+                                style={styles.forgotPasswordButton}
+                            >
+                                <Text style={styles.forgotPasswordText}>Forgot Password</Text>
+                            </TouchableOpacity>
+
+                            {/* Log In Button */}
+                            <TouchableOpacity
+                                style={[
+                                    styles.loginButton,
+                                    loginMutation.isPending && styles.loginButtonDisabled,
+                                ]}
+                                onPress={handleLogin}
+                                disabled={loginMutation.isPending}
+                                activeOpacity={0.8}
+                            >
+                                {loginMutation.isPending ? (
+                                    <ActivityIndicator size="small" color="#FFFFFF" />
+                                ) : (
+                                    <Text style={styles.loginButtonText}>Log In</Text>
+                                )}
+                            </TouchableOpacity>
+
+                            {/* DEV ONLY: Reset button for testing */}
+                            {__DEV__ && (
+                                <TouchableOpacity
+                                    style={styles.devResetButton}
+                                    onPress={handleResetOnboarding}
+                                >
+                                    <Text style={styles.devResetText}>🔧 Reset Onboarding (Dev)</Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    </ScrollView>
                 </SafeAreaView>
-            </LinearGradient>
-            {/* PIN Modal for PIN creation after login */}
+            </ImageBackground>
+            {/* PIN Modal */}
             <PinModal />
         </View>
     );
@@ -229,8 +215,15 @@ const styles = StyleSheet.create({
     background: {
         flex: 1,
     },
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(107, 114, 128, 0.5)',
+    },
     card: {
         alignItems: 'center',
+        alignSelf: 'center', // Center value
+        width: '100%', // Take available width up to max
+        maxWidth: 596, // Rule B: 596px for Content Modals
         backgroundColor: '#FFFFFF',
         borderRadius: 24,
         elevation: 8,
@@ -285,7 +278,7 @@ const styles = StyleSheet.create({
     loginButton: {
         alignItems: 'center',
         backgroundColor: '#4A7DFF',
-        borderRadius: 26,
+        borderRadius: 10,
         elevation: 4,
         height: 52,
         justifyContent: 'center',
@@ -302,6 +295,15 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '600',
+    },
+    devResetButton: {
+        marginTop: 16,
+        paddingVertical: 8,
+    },
+    devResetText: {
+        color: '#9CA3AF',
+        fontSize: 12,
+        textAlign: 'center',
     },
     logoContainer: {
         borderRadius: 16,
@@ -328,7 +330,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: '700',
-        color: '#1F2937', // Black as per Figma
+        color: '#1F2937',
         marginBottom: 28,
         textAlign: 'center',
     },

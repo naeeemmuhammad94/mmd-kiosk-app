@@ -10,18 +10,18 @@ import {
   List,
   useTheme,
 } from 'react-native-paper';
-import { useAppStore } from '@/store/useAppStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { useThemeStore } from '@/store/useThemeStore';
 import { useAppTheme } from '@/hooks/useAppTheme';
 
 export default function ProfileScreen() {
   const theme = useTheme();
-  const { user, clearUser } = useAppStore();
+  const { user, logout } = useAuthStore();
   const { theme: themeMode, setTheme } = useThemeStore();
   const { isDark } = useAppTheme();
 
-  const handleLogout = () => {
-    clearUser();
+  const handleLogout = async () => {
+    await logout();
   };
 
   const toggleTheme = () => {
@@ -36,8 +36,8 @@ export default function ProfileScreen() {
             <Title>Profile</Title>
             {user ? (
               <>
-                <Paragraph>Name: {user.name}</Paragraph>
-                <Paragraph>Email: {user.email}</Paragraph>
+                <Paragraph>Name: {user.user.firstName} {user.user.lastName}</Paragraph>
+                <Paragraph>Email: {user.user.email}</Paragraph>
                 <Button
                   mode="outlined"
                   onPress={handleLogout}

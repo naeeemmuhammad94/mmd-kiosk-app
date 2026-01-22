@@ -17,6 +17,7 @@ interface PinActions {
     clearPin: () => Promise<void>;
     showCreatePinModal: () => void;
     showVerifyPinModal: () => void;
+    setPinLoading: (loading: boolean) => void;
     hidePinModal: () => void;
     clearError: () => void;
     reset: () => Promise<void>;
@@ -140,6 +141,13 @@ export const usePinStore = create<PinStore>((set, get) => ({
             pinMode: 'verify',
             pinError: null,
         });
+    },
+
+    /**
+     * Set PIN loading state manually (for auth flow)
+     */
+    setPinLoading: (loading: boolean) => {
+        set({ isPinLoading: loading });
     },
 
     /**

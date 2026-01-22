@@ -14,6 +14,7 @@ interface AuthActions {
     setToken: (token: string | null) => void;
     loadStoredAuth: () => Promise<void>;
     reset: () => void;
+    loginWithSavedCredentials: () => Promise<void>;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -62,8 +63,16 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
                     await secureStorage.setRefreshToken(refreshToken);
                 }
 
-                // Store user data
-                await secureStorage.setUserData(JSON.stringify(userData));
+                // Store only essential user data to avoid SecureStore size limit (2048 bytes)
+                // Access nested user object if present, or use direct properties
+                const userInfo = userData.user || userData;
+                const essentialUserData = {
+                    _id: (userInfo as { _id?: string })._id || '',
+                    email: (userInfo as { email?: string }).email || '',
+                    fullName: (userInfo as { firstName?: string; lastName?: string }).firstName || '',
+                };
+                await secureStorage.setUserData(JSON.stringify(essentialUserData));
+                await secureStorage.setSavedCredentials(userName, password);
 
                 set({
                     user: { ...userData, accessToken: token as string },
@@ -91,21 +100,31 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
         } catch {
             // Continue with local logout even if API fails
         } finally {
-            // Clear all stored auth credentials
-            await secureStorage.clearAll();
+            // Clear ALL stored auth credentials, including saved username/password
+            await secureStorage.clearEverything();
 
-            // Clear the PIN from secure store
-            try {
-                const SecureStore = await import('expo-secure-store');
-                await SecureStore.deleteItemAsync('mmd_kiosk_pin');
-            } catch {
-                // Ignore error if PIN doesn't exist
-            }
+            // Reset PIN store state
+            // Import dynamically to avoid circular dependencies if any
+            const { usePinStore } = await import('./usePinStore');
+            await usePinStore.getState().reset();
 
             set({
                 ...initialState,
                 isInitialized: true,
             });
+        }
+    },
+
+    /**
+     * Automated login using saved credentials (for PIN-based login)
+     */
+    loginWithSavedCredentials: async () => {
+        const { userName, password } = await secureStorage.getSavedCredentials();
+        if (userName && password) {
+            const useAuthStore = (await import('./useAuthStore')).default;
+            await useAuthStore.getState().login(userName, password);
+        } else {
+            throw new Error('No saved credentials found');
         }
     },
 

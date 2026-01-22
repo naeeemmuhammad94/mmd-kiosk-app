@@ -11,6 +11,7 @@ export default function AuthLayout() {
 
     return (
         <Stack
+            initialRouteName="onboarding"
             screenOptions={{
                 headerShown: false,
                 contentStyle: {
@@ -29,8 +30,8 @@ export default function AuthLayout() {
             <Stack.Screen
                 name="forgot-password"
                 options={{
-                    presentation: 'modal',
-                    animation: 'slide_from_bottom',
+                    animation: 'slide_from_right',
+                    animationDuration: 200,
                 }}
             />
         </Stack>

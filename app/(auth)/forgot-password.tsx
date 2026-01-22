@@ -15,6 +15,7 @@ import {
     TextInput as RNTextInput,
     Dimensions,
     ActivityIndicator,
+    ImageBackground,
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useRouter } from 'expo-router';
@@ -28,7 +29,10 @@ import { authService } from '@/services/authService';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 // MMD Logo SVG
-import LoginLogo from '../../assets/Frame-login.svg';
+import LoginLogo from '../../assets/login.svg';
+
+// Background Image
+const backgroundImage = require('../../assets/login-background.jpg');
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -43,6 +47,8 @@ export default function ForgotPasswordScreen() {
     const router = useRouter();
     const [isSuccess, setIsSuccess] = useState(false);
     const [submittedEmail, setSubmittedEmail] = useState('');
+    const [resendSuccess, setResendSuccess] = useState(false);
+    const [apiError, setApiError] = useState<string | null>(null);
 
     const {
         control,
@@ -65,11 +71,14 @@ export default function ForgotPasswordScreen() {
                 email: '', // CRM allows empty email if userName is provided
             }),
         onSuccess: () => {
+            setApiError(null);
             setSubmittedEmail(getValues('userName'));
             setIsSuccess(true);
         },
         onError: (error: Error & { message?: string }) => {
-            // Show error inline or alert
+            // Show error from API or default message
+            const errorMessage = error?.message || 'Invalid username or email. Please try again.';
+            setApiError(errorMessage);
         },
     });
 
@@ -86,17 +95,28 @@ export default function ForgotPasswordScreen() {
 
     const handleResendEmail = useCallback(() => {
         if (submittedEmail) {
-            forgotPasswordMutation.mutate({ userName: submittedEmail });
+            setResendSuccess(false);
+            forgotPasswordMutation.mutate({ userName: submittedEmail }, {
+                onSuccess: () => {
+                    setResendSuccess(true);
+                    // Hide success message after 3 seconds
+                    setTimeout(() => setResendSuccess(false), 3000);
+                },
+            });
         }
     }, [submittedEmail, forgotPasswordMutation]);
 
     return (
         <View style={styles.container}>
-            {/* Background gradient */}
-            <LinearGradient
-                colors={['#9CA3AF', '#6B7280', '#4B5563']}
+            {/* Background Image with Overlay */}
+            <ImageBackground
+                source={backgroundImage}
                 style={styles.background}
+                resizeMode="cover"
             >
+                {/* Semi-transparent overlay */}
+                <View style={styles.overlay} />
+
                 <SafeAreaView style={styles.safeArea}>
                     <KeyboardAvoidingView
                         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -125,21 +145,19 @@ export default function ForgotPasswordScreen() {
                                 {isSuccess ? (
                                     // Success State
                                     <>
-                                        {/* Success Checkmark */}
-                                        <View style={styles.successIconContainer}>
+                                        {/* Success Header - Checkmark and Title in same row */}
+                                        <View style={styles.successHeader}>
                                             <Ionicons
                                                 name="checkmark-circle"
-                                                size={48}
+                                                size={28}
                                                 color="#22C55E"
                                             />
+                                            <Text style={styles.successTitle}>Forgot Password</Text>
                                         </View>
-
-                                        {/* Title */}
-                                        <Text style={styles.title}>Forgot Password</Text>
 
                                         {/* Success Message */}
                                         <Text style={styles.successDescription}>
-                                            We've sent a password reset link to{'\n'}your email address
+                                            We've sent a password reset link to{"\n"}your email address
                                         </Text>
 
                                         {/* Back to Login Button */}
@@ -160,7 +178,9 @@ export default function ForgotPasswordScreen() {
                                             <Text style={styles.secondaryButtonText}>
                                                 {forgotPasswordMutation.isPending
                                                     ? 'Sending...'
-                                                    : 'Resend Email'}
+                                                    : resendSuccess
+                                                        ? '✓ Email Sent!'
+                                                        : 'Resend Email'}
                                             </Text>
                                         </TouchableOpacity>
                                     </>
@@ -190,7 +210,10 @@ export default function ForgotPasswordScreen() {
                                                         placeholder="Enter your email"
                                                         placeholderTextColor="#9CA3AF"
                                                         value={value}
-                                                        onChangeText={onChange}
+                                                        onChangeText={(text) => {
+                                                            onChange(text);
+                                                            if (apiError) setApiError(null);
+                                                        }}
                                                         onBlur={onBlur}
                                                         autoCapitalize="none"
                                                         autoComplete="username"
@@ -199,6 +222,11 @@ export default function ForgotPasswordScreen() {
                                                     {errors.userName && (
                                                         <Text style={styles.errorText}>
                                                             {errors.userName.message}
+                                                        </Text>
+                                                    )}
+                                                    {apiError && !errors.userName && (
+                                                        <Text style={styles.errorText}>
+                                                            {apiError}
                                                         </Text>
                                                     )}
                                                 </View>
@@ -242,12 +270,16 @@ export default function ForgotPasswordScreen() {
                         </ScrollView>
                     </KeyboardAvoidingView>
                 </SafeAreaView>
-            </LinearGradient>
+            </ImageBackground>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(107, 114, 128, 0.5)',
+    },
     backArrow: {
         marginRight: 6,
     },
@@ -336,7 +368,7 @@ const styles = StyleSheet.create({
     primaryButton: {
         alignItems: 'center',
         backgroundColor: '#4A7DFF',
-        borderRadius: 8,
+        borderRadius: 10,
         elevation: 4,
         height: 52,
         justifyContent: 'center',
@@ -395,5 +427,16 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         marginBottom: 8,
         textAlign: 'center',
+    },
+    successHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+        gap: 8,
+    },
+    successTitle: {
+        color: '#1F2937',
+        fontSize: 22,
+        fontWeight: '700',
     },
 });

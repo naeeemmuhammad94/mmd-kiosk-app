@@ -1,9 +1,10 @@
 /**
  * PIN Input Component
  * 4-digit PIN input with auto-focus progression
+ * OPTIMIZED: Uses useRef for values - no state updates during typing
  */
 
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
 import {
     View,
     TextInput,
@@ -13,23 +14,42 @@ import {
 } from 'react-native';
 
 interface PinInputProps {
-    value: string;
-    onChange: (value: string) => void;
+    onComplete: (pin: string) => void;
+    onClear?: () => void;
     error?: boolean;
     disabled?: boolean;
     autoFocus?: boolean;
 }
 
+export interface PinInputRef {
+    clear: () => void;
+    getPin: () => string;
+    focus: () => void;
+}
+
 const PIN_LENGTH = 4;
 
-export default function PinInput({
-    value,
-    onChange,
+const PinInput = forwardRef<PinInputRef, PinInputProps>(({
+    onComplete,
+    onClear,
     error = false,
     disabled = false,
     autoFocus = true,
-}: PinInputProps) {
+}, ref) => {
+    // Use REFS for PIN values - no re-renders during typing
+    const pinValuesRef = useRef<string[]>(['', '', '', '']);
     const inputRefs = useRef<(TextInput | null)[]>([]);
+
+    // Expose methods to parent
+    useImperativeHandle(ref, () => ({
+        clear: () => {
+            pinValuesRef.current = ['', '', '', ''];
+            inputRefs.current.forEach((input) => input?.clear());
+            inputRefs.current[0]?.focus();
+        },
+        getPin: () => pinValuesRef.current.join(''),
+        focus: () => inputRefs.current[0]?.focus(),
+    }));
 
     // Focus first input on mount if autoFocus is true
     useEffect(() => {
@@ -40,47 +60,39 @@ export default function PinInput({
         }
     }, [autoFocus]);
 
-    // Clear inputs when value is reset
-    useEffect(() => {
-        if (value === '') {
-            // Focus first input when cleared
-            setTimeout(() => {
-                inputRefs.current[0]?.focus();
-            }, 100);
-        }
-    }, [value]);
-
     const handleChange = useCallback(
         (text: string, index: number) => {
             // Only allow single digit
             const digit = text.replace(/[^0-9]/g, '').slice(-1);
 
-            // Update the value
-            const newValue = value.split('');
-            newValue[index] = digit;
-            const updatedValue = newValue.join('').slice(0, PIN_LENGTH);
-            onChange(updatedValue);
+            // Store in ref - NO STATE UPDATE
+            pinValuesRef.current[index] = digit;
 
             // Move to next input if digit entered
             if (digit && index < PIN_LENGTH - 1) {
                 inputRefs.current[index + 1]?.focus();
             }
+
+            // Check if PIN is complete
+            const pin = pinValuesRef.current.join('');
+            if (pin.length === PIN_LENGTH) {
+                onComplete(pin);
+            }
         },
-        [value, onChange]
+        [onComplete]
     );
 
     const handleKeyPress = useCallback(
         (e: NativeSyntheticEvent<TextInputKeyPressEventData>, index: number) => {
             // Move to previous input on backspace if current is empty
-            if (e.nativeEvent.key === 'Backspace' && !value[index] && index > 0) {
+            if (e.nativeEvent.key === 'Backspace' && !pinValuesRef.current[index] && index > 0) {
+                pinValuesRef.current[index - 1] = '';
+                inputRefs.current[index - 1]?.clear();
                 inputRefs.current[index - 1]?.focus();
-                // Clear the previous value
-                const newValue = value.split('');
-                newValue[index - 1] = '';
-                onChange(newValue.join(''));
+                onClear?.();
             }
         },
-        [value, onChange]
+        [onClear]
     );
 
     return (
@@ -88,15 +100,15 @@ export default function PinInput({
             {Array.from({ length: PIN_LENGTH }).map((_, index) => (
                 <TextInput
                     key={index}
-                    ref={(ref) => {
-                        inputRefs.current[index] = ref;
+                    ref={(inputRef) => {
+                        inputRefs.current[index] = inputRef;
                     }}
                     style={[
                         styles.input,
                         error && styles.inputError,
                         disabled && styles.inputDisabled,
                     ]}
-                    value={value[index] || ''}
+                    defaultValue=""
                     onChangeText={(text) => handleChange(text, index)}
                     onKeyPress={(e) => handleKeyPress(e, index)}
                     keyboardType="number-pad"
@@ -109,7 +121,11 @@ export default function PinInput({
             ))}
         </View>
     );
-}
+});
+
+PinInput.displayName = 'PinInput';
+
+export default PinInput;
 
 const styles = StyleSheet.create({
     container: {

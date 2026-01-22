@@ -58,6 +58,7 @@ export interface AuthState {
 export interface OnboardingState {
     isOnboardingComplete: boolean;
     notificationPermissionGranted: boolean;
+    isInitialized: boolean;
 }
 
 export interface OnboardingSlideData {

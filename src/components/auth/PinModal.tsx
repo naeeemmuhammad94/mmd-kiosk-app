@@ -1,9 +1,10 @@
 /**
  * PIN Modal Component
  * Modal for PIN creation and verification matching Figma design
+ * OPTIMIZED: Uses ref-based PinInput for instant response
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useRef, useCallback } from 'react';
 import {
     View,
     StyleSheet,
@@ -13,17 +14,17 @@ import {
     Keyboard,
 } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
-import PinInput from './PinInput';
+import PinInput, { PinInputRef } from './PinInput';
 import { usePinStore } from '@/store/usePinStore';
+import { useAuthStore } from '@/store/useAuthStore';
 
 // Lock Icon SVG
-import LockIcon from '../../../assets/Frame-lock.svg';
-
-const PIN_LENGTH = 4;
+import LockIcon from '../../../assets/lock.svg';
 
 export default function PinModal() {
-    const [pin, setPin] = useState('');
+    const pinInputRef = useRef<PinInputRef>(null);
 
+    const { isAuthenticated, loginWithSavedCredentials } = useAuthStore();
     const {
         showPinModal,
         pinMode,
@@ -31,50 +32,47 @@ export default function PinModal() {
         pinError,
         createPin,
         verifyPin,
+        setPinLoading,
         clearError,
     } = usePinStore();
 
-    // Clear PIN when modal opens or on error
-    useEffect(() => {
-        if (pinError) {
-            // Clear PIN on error so user can re-enter
-            setPin('');
-        }
-    }, [pinError]);
+    const handlePinComplete = useCallback(() => {
+        // PIN will be used when confirm is pressed
+    }, []);
 
-    // Reset PIN when modal visibility changes
-    useEffect(() => {
-        if (showPinModal) {
-            setPin('');
+    const handlePinClear = useCallback(() => {
+        if (pinError) {
             clearError();
         }
-    }, [showPinModal, clearError]);
+    }, [pinError, clearError]);
 
     const handleConfirm = useCallback(async () => {
-        if (pin.length !== PIN_LENGTH) return;
+        const pin = pinInputRef.current?.getPin() || '';
+        if (pin.length !== 4) return;
 
         if (pinMode === 'create') {
             await createPin(pin);
         } else {
             const success = await verifyPin(pin);
-            if (!success) {
-                // PIN is cleared by the useEffect above
+            if (success) {
+                // If this is a returning user (not authenticated yet), trigger login
+                if (!isAuthenticated) {
+                    try {
+                        setPinLoading(true);
+                        await loginWithSavedCredentials();
+                    } catch (error) {
+                        console.error('Direct login failed:', error);
+                        // Pin store handles error visibility usually, but here we might need a custom error
+                    } finally {
+                        setPinLoading(false);
+                    }
+                }
+            } else {
+                // Clear the input on failed verification
+                pinInputRef.current?.clear();
             }
         }
-    }, [pin, pinMode, createPin, verifyPin]);
-
-    const handlePinChange = useCallback(
-        (value: string) => {
-            // Clear error when user starts typing
-            if (pinError) {
-                clearError();
-            }
-            setPin(value);
-        },
-        [pinError, clearError]
-    );
-
-    const isConfirmDisabled = pin.length !== PIN_LENGTH || isPinLoading;
+    }, [pinMode, createPin, verifyPin, isAuthenticated, loginWithSavedCredentials, setPinLoading]);
 
     return (
         <Modal
@@ -86,9 +84,9 @@ export default function PinModal() {
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <View style={styles.overlay}>
                     <View style={styles.modalContainer}>
-                        {/* Lock Icon */}
+                        {/* Lock Icon - No background per Figma */}
                         <View style={styles.iconContainer}>
-                            <LockIcon width={40} height={34} />
+                            <LockIcon width={36} height={32} />
                         </View>
 
                         {/* Title */}
@@ -103,11 +101,12 @@ export default function PinModal() {
                                 : 'Enter your pin to access your kiosk'}
                         </Text>
 
-                        {/* PIN Input */}
+                        {/* PIN Input - Ref-based */}
                         <View style={styles.pinContainer}>
                             <PinInput
-                                value={pin}
-                                onChange={handlePinChange}
+                                ref={pinInputRef}
+                                onComplete={handlePinComplete}
+                                onClear={handlePinClear}
                                 error={!!pinError}
                                 disabled={isPinLoading}
                             />
@@ -123,10 +122,10 @@ export default function PinModal() {
                             <TouchableOpacity
                                 style={[
                                     styles.confirmButton,
-                                    isConfirmDisabled && styles.confirmButtonDisabled,
+                                    isPinLoading && styles.confirmButtonDisabled,
                                 ]}
                                 onPress={handleConfirm}
-                                disabled={isConfirmDisabled}
+                                disabled={isPinLoading}
                                 activeOpacity={0.8}
                             >
                                 {isPinLoading ? (
@@ -152,11 +151,11 @@ const styles = StyleSheet.create({
     confirmButton: {
         alignItems: 'center',
         backgroundColor: '#4A7DFF',
-        borderRadius: 24,
+        borderRadius: 10,
         height: 48,
         justifyContent: 'center',
-        minWidth: 200,
-        width: '100%',
+        minWidth: 160,
+        paddingHorizontal: 40,
     },
     confirmButtonDisabled: {
         opacity: 0.6,
@@ -175,20 +174,16 @@ const styles = StyleSheet.create({
     },
     iconContainer: {
         alignItems: 'center',
-        backgroundColor: '#EBF2FF',
-        borderRadius: 28,
-        height: 56,
         justifyContent: 'center',
         marginBottom: 16,
-        width: 56,
     },
     modalContainer: {
         alignItems: 'center',
         backgroundColor: '#FFFFFF',
         borderRadius: 16,
         elevation: 10,
+        width: '90%',
         maxWidth: 400,
-        minWidth: 320,
         paddingHorizontal: 32,
         paddingVertical: 28,
         shadowColor: '#000',

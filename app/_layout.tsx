@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PaperProvider, ActivityIndicator } from 'react-native-paper';
@@ -23,15 +23,18 @@ import PinModal from '@/components/auth/PinModal';
 function useProtectedRoute() {
   const segments = useSegments();
   const router = useRouter();
+  const navigationState = useRootNavigationState();
 
   const { isAuthenticated, isInitialized: authInitialized } = useAuthStore();
   const { isOnboardingComplete } = useOnboardingStore();
   const { isPinSet, isPinVerified, showPinModal, showVerifyPinModal, showCreatePinModal } = usePinStore();
 
   useEffect(() => {
-    if (!authInitialized) return;
+    // Crucial: Wait for both auth to be initialized AND the root navigation to be ready
+    if (!authInitialized || !navigationState?.key) return;
 
-    const inAuthGroup = segments[0] === '(auth)';
+    const inAuthGroup = segments.includes('(auth)');
+    const inOnboarding = segments.includes('onboarding');
 
     // First time user - show onboarding
     if (!isOnboardingComplete && !inAuthGroup) {
@@ -39,22 +42,27 @@ function useProtectedRoute() {
       return;
     }
 
-    // Onboarding complete but not authenticated - show login
+    // 2. Returning user - Onboarding complete but not authenticated - show login
     if (isOnboardingComplete && !isAuthenticated && !inAuthGroup) {
       router.replace('/(auth)/login');
       return;
     }
 
-    // If PIN modal is currently showing, don't do any navigation
-    if (showPinModal) {
+    // 3. Returning user with PIN set - Show PIN verification on top of login
+    if (isOnboardingComplete && !isAuthenticated && isPinSet && !isPinVerified && inAuthGroup) {
+      showVerifyPinModal();
       return;
     }
 
-    // Authenticated user with PIN set but not verified - show PIN verification modal
-    // First ensure we're on login screen (not onboarding) as background
+    // 4. If PIN modal is currently showing or we are in onboarding, don't do any navigation related to PIN
+    if (showPinModal || inOnboarding) {
+      return;
+    }
+
+    // 5. Authenticated user with PIN set but not verified - show PIN verification modal
+    // (This handles the case where session expires or user re-authenticates)
     if (isAuthenticated && isPinSet && !isPinVerified) {
-      const currentPath = segments.join('/');
-      if (!currentPath.includes('login')) {
+      if (!inAuthGroup) {
         router.replace('/(auth)/login');
         return;
       }
@@ -68,13 +76,15 @@ function useProtectedRoute() {
       return;
     }
 
-    // Authenticated user with PIN verified - navigate to main app
+    // Authenticated user with PIN verified - navigate to main kiosk app
     if (isAuthenticated && isPinSet && isPinVerified && inAuthGroup) {
-      router.replace('/(tabs)');
+      router.replace('/(kiosk)');
       return;
     }
-  }, [authInitialized, isAuthenticated, isOnboardingComplete, isPinSet, isPinVerified, showPinModal, segments, router, showVerifyPinModal, showCreatePinModal]);
+  }, [authInitialized, navigationState?.key, isAuthenticated, isOnboardingComplete, isPinSet, isPinVerified, showPinModal, segments, router, showVerifyPinModal, showCreatePinModal]);
 }
+
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function RootLayout() {
   const { theme, isDark } = useAppTheme();
@@ -124,24 +134,27 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <PaperProvider theme={theme}>
-          <StatusBar style={isDark ? 'light' : 'dark'} />
-          <Stack
-            screenOptions={{
-              headerShown: false,
-            }}
-          >
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-          {/* PIN Modal - rendered globally for PIN verification */}
-          <PinModal />
-        </PaperProvider>
-      </QueryClientProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <QueryClientProvider client={queryClient}>
+          <PaperProvider theme={theme}>
+            <StatusBar style={isDark ? 'light' : 'dark'} />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+              }}
+            >
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(kiosk)" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+            {/* PIN Modal - rendered globally for PIN verification */}
+            <PinModal />
+          </PaperProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 

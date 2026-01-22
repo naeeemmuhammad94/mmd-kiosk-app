@@ -15,6 +15,8 @@ export const STORAGE_KEYS = {
     REFRESH_TOKEN: 'refresh_token',
     USER_DATA: 'user_data',
     ONBOARDING_COMPLETE: 'onboarding_complete',
+    SAVED_USERNAME: 'saved_username',
+    SAVED_PASSWORD: 'saved_password',
 } as const;
 
 /**
@@ -30,7 +32,7 @@ export const axiosInstance = axios.create({
 });
 
 /**
- * Request interceptor to attach auth token
+ * Request interceptor to attach auth token and log requests
  */
 axiosInstance.interceptors.request.use(
     async (config: InternalAxiosRequestConfig) => {
@@ -42,6 +44,16 @@ axiosInstance.interceptors.request.use(
         } catch (error) {
             console.error('Error reading token from secure store:', error);
         }
+
+        // Log API request for debugging
+        // Log API request for debugging
+        if (__DEV__) {
+            console.log(`🌐 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+            if (config.data) {
+                console.log('📦 Request Data:', JSON.stringify(config.data, null, 2));
+            }
+        }
+
         return config;
     },
     (error: AxiosError) => {
@@ -50,11 +62,24 @@ axiosInstance.interceptors.request.use(
 );
 
 /**
- * Response interceptor for error handling
+ * Response interceptor for error handling and logging
  */
 axiosInstance.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        // Log successful response
+        // Log successful response
+        if (__DEV__) {
+            console.log(`✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`);
+        }
+        return response;
+    },
     async (error: AxiosError) => {
+        // Log error response
+        if (__DEV__) {
+            console.log(`❌ API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${error.response?.status || 'Network Error'}`);
+            console.log('Error Message:', error.message);
+        }
+
         if (error.response?.status === 401) {
             // Clear stored credentials on unauthorized
             try {
@@ -115,6 +140,31 @@ export const secureStorage = {
             SecureStore.deleteItemAsync(STORAGE_KEYS.REFRESH_TOKEN),
             SecureStore.deleteItemAsync(STORAGE_KEYS.USER_DATA),
         ]);
+    },
+
+    async clearEverything(): Promise<void> {
+        await Promise.all([
+            SecureStore.deleteItemAsync(STORAGE_KEYS.ACCESS_TOKEN),
+            SecureStore.deleteItemAsync(STORAGE_KEYS.REFRESH_TOKEN),
+            SecureStore.deleteItemAsync(STORAGE_KEYS.USER_DATA),
+            SecureStore.deleteItemAsync(STORAGE_KEYS.SAVED_USERNAME),
+            SecureStore.deleteItemAsync(STORAGE_KEYS.SAVED_PASSWORD),
+        ]);
+    },
+
+    async setSavedCredentials(userName: string, password: string): Promise<void> {
+        await Promise.all([
+            SecureStore.setItemAsync(STORAGE_KEYS.SAVED_USERNAME, userName),
+            SecureStore.setItemAsync(STORAGE_KEYS.SAVED_PASSWORD, password),
+        ]);
+    },
+
+    async getSavedCredentials(): Promise<{ userName: string | null; password: string | null }> {
+        const [userName, password] = await Promise.all([
+            SecureStore.getItemAsync(STORAGE_KEYS.SAVED_USERNAME),
+            SecureStore.getItemAsync(STORAGE_KEYS.SAVED_PASSWORD),
+        ]);
+        return { userName, password };
     },
 };
 

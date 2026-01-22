@@ -21,6 +21,7 @@ type OnboardingStore = OnboardingState & OnboardingActions;
 const initialState: OnboardingState = {
     isOnboardingComplete: false,
     notificationPermissionGranted: false,
+    isInitialized: false,
 };
 
 export const useOnboardingStore = create<OnboardingStore>((set) => ({
@@ -66,9 +67,11 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
             set({
                 isOnboardingComplete: onboardingComplete === 'true',
                 notificationPermissionGranted: notificationPermission === 'true',
+                isInitialized: true,
             });
         } catch (error) {
             console.error('Error loading onboarding state:', error);
+            set({ isInitialized: true });
         }
     },
 

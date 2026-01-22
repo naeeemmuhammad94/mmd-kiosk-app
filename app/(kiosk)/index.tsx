@@ -1,0 +1,449 @@
+import React, { useEffect, useMemo, useState, useCallback, memo } from 'react';
+import {
+    View,
+    StyleSheet,
+    FlatList,
+    TextInput,
+    TouchableOpacity,
+    Dimensions,
+    RefreshControl,
+} from 'react-native';
+import { Text, ActivityIndicator } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useQuery } from '@tanstack/react-query';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useRouter } from 'expo-router';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useKioskStore } from '@/store/useKioskStore';
+import { attendanceService } from '@/services/attendanceService';
+import StudentCard from '@/components/kiosk/StudentCard';
+import AttendanceModal from '@/components/kiosk/AttendanceModal';
+import KioskSettingsModal from '@/components/kiosk/KioskSettingsModal';
+import KioskPinModal from '@/components/kiosk/KioskPinModal';
+import ArrowOutlined from '../../assets/weui_arrow-outlined.svg';
+import type { AttendanceContact, ProgramAttendance } from '@/types/attendance';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// Calculate columns based on screen width for tablet optimization
+// Increased column count to fill space better on iPad Landscape
+const getNumColumns = () => {
+    if (SCREEN_WIDTH >= 1024) return 6; // iPad Pro Landscape
+    if (SCREEN_WIDTH >= 768) return 5; // iPad Portrait
+    return 3; // Phone
+};
+
+const NUM_COLUMNS = getNumColumns();
+
+// Memoized StudentCard wrapper
+const MemoizedStudentCard = memo(StudentCard);
+
+export default function KioskHomeScreen() {
+    const router = useRouter();
+    const {
+        setAttendanceData,
+        setSettings,
+        setSelectedStudent,
+        isSettingsModalOpen,
+        isAttendanceModalOpen,
+        isConfirmModalOpen, // Although unused in render, triggers re-renders if needed
+        isPinModalOpen,
+        toggleAttendanceModal,
+        openPinModal,
+        settings,
+    } = useKioskStore();
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    // Debounce search for better performance
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    const { isAuthenticated } = useAuthStore();
+
+    // Fetch attendance data
+    const {
+        data: attendanceData,
+        isLoading,
+        isFetching,
+        refetch,
+    } = useQuery({
+        queryKey: ['getAttendance'],
+        queryFn: () => {
+            const today = new Date().toISOString().split('T')[0];
+            return attendanceService.getAttendance({ startingDate: today });
+        },
+        select: (response) => getProgramBasedData(response.data?.allAttendance || []),
+        staleTime: 30000, // Cache for 30 seconds
+        enabled: isAuthenticated,
+    });
+
+    // Fetch kiosk settings
+    const { data: settingsData } = useQuery({
+        queryKey: ['getKioskSettings'],
+        queryFn: () => attendanceService.getKioskSettingsByDojo(),
+        select: (response) => response.data,
+        staleTime: 60000, // Cache for 1 minute
+        enabled: isAuthenticated,
+    });
+
+    // Update store when data changes
+    useEffect(() => {
+        if (attendanceData) {
+            setAttendanceData(attendanceData);
+        }
+    }, [attendanceData, setAttendanceData]);
+
+    useEffect(() => {
+        if (settingsData) {
+            setSettings(settingsData);
+        }
+    }, [settingsData, setSettings]);
+
+    // Get all students from all programs
+    const allStudents = useMemo(() => {
+        if (!attendanceData) return [];
+        const students: AttendanceContact[] = [];
+        attendanceData.forEach((program: ProgramAttendance) => {
+            students.push(...program.contacts);
+        });
+        return students;
+    }, [attendanceData]);
+
+    // Filter by debounced search query
+    const filteredStudents = useMemo(() => {
+        if (!debouncedSearch.trim()) return allStudents;
+        const lowerSearch = debouncedSearch.toLowerCase();
+        return allStudents.filter((student) =>
+            (student.name || '').toLowerCase().includes(lowerSearch)
+        );
+    }, [allStudents, debouncedSearch]);
+
+    const isSearching = debouncedSearch.trim().length > 0;
+    const showStudentImages = settings?.showStudentImages ?? settingsData?.showStudentImages ?? true;
+
+    // Stable callbacks
+    const handleStudentPress = useCallback((student: AttendanceContact) => {
+        setSelectedStudent(student);
+        toggleAttendanceModal();
+    }, [setSelectedStudent, toggleAttendanceModal]);
+
+    const handleAllProgramsPress = useCallback(() => {
+        router.push('/(kiosk)/programs');
+    }, [router]);
+
+    const handleSettingsPress = useCallback(() => {
+        openPinModal('settings');
+    }, [openPinModal]);
+
+    const handleRefresh = useCallback(async () => {
+        setIsRefreshing(true);
+        await refetch();
+        setIsRefreshing(false);
+    }, [refetch]);
+
+    // Optimized renderItem
+    const renderItem = useCallback(({ item }: { item: AttendanceContact }) => (
+        <View style={styles.cardWrapper}>
+            <MemoizedStudentCard
+                student={item}
+                showImage={showStudentImages}
+                onPress={() => handleStudentPress(item)}
+            />
+        </View>
+    ), [showStudentImages, handleStudentPress]);
+
+    const keyExtractor = useCallback((item: AttendanceContact) => item._id, []);
+
+    return (
+        <View style={styles.container}>
+            {/* Blue Header */}
+            <LinearGradient colors={['#4A7DFF', '#4A7DFF']} style={styles.header}>
+                <SafeAreaView edges={['top']} style={styles.headerContent}>
+                    {/* Search Bar */}
+                    <View style={styles.searchContainer}>
+                        <Ionicons name="search-outline" size={18} color="#9CA3AF" />
+                        <TextInput
+                            style={styles.searchInput}
+                            placeholder="Search..."
+                            placeholderTextColor="#9CA3AF"
+                            value={searchQuery}
+                            onChangeText={setSearchQuery}
+                            autoCorrect={false}
+                            autoCapitalize="none"
+                        />
+                    </View>
+
+                    {/* Right Actions */}
+                    <View style={styles.headerActions}>
+                        {/* All Programs Button */}
+                        <TouchableOpacity
+                            style={styles.programButton}
+                            onPress={handleAllProgramsPress}
+                        >
+                            <Text style={styles.programButtonText}>All Programs</Text>
+                            <ArrowOutlined width={18} height={18} color="#4A7DFF" />
+                        </TouchableOpacity>
+
+                        {/* Refresh Button */}
+                        <TouchableOpacity style={styles.iconButton} onPress={handleRefresh}>
+                            <Ionicons name="refresh-outline" size={22} color="#4A7DFF" />
+                        </TouchableOpacity>
+
+                        {/* Settings Button */}
+                        <TouchableOpacity style={styles.iconButton} onPress={handleSettingsPress}>
+                            <Ionicons name="settings-outline" size={22} color="#4A7DFF" />
+                        </TouchableOpacity>
+                    </View>
+                </SafeAreaView>
+            </LinearGradient>
+
+            {/* Searched Results Label */}
+            {isSearching && (
+                <View style={styles.searchResultsLabelContainer}>
+                    <View style={[styles.searchResultsLabel, { backgroundColor: '#4A7DFF', flexDirection: 'row', alignItems: 'center' }]}>
+                        <Text style={styles.searchResultsText}>Searched Results</Text>
+                    </View>
+                </View>
+            )}
+
+            {/* Main Content Area 
+                - Render wrapper even during loading to maintain layout structure 
+                - Loader placed inside the card/grid view
+            */}
+            <View style={isSearching ? styles.searchResultsContainer : styles.gridWrapper}>
+                <View style={isSearching ? styles.searchResultsCard : styles.fullWidthGrid}>
+
+                    {/* Loader - Centered in remaining space 
+                        Only show during initial load (isLoading). 
+                        Background fetches (isFetching) should remain silent to avoid UI disruption during check-in.
+                    */}
+                    {isLoading && (
+                        <View style={styles.centeredLoaderContainer}>
+                            <ActivityIndicator
+                                size="large"
+                                color="#4A7DFF"
+                            />
+                        </View>
+                    )}
+
+                    {/* Student Grid */}
+                    {!isLoading && (
+                        <FlatList
+                            data={filteredStudents}
+                            keyExtractor={keyExtractor}
+                            numColumns={NUM_COLUMNS}
+                            key={NUM_COLUMNS}
+                            contentContainerStyle={styles.gridContent}
+                            columnWrapperStyle={styles.columnWrapper}
+                            removeClippedSubviews={true}
+                            maxToRenderPerBatch={20}
+                            windowSize={10}
+                            initialNumToRender={20}
+                            getItemLayout={undefined}
+                            refreshControl={
+                                <RefreshControl
+                                    refreshing={isRefreshing}
+                                    onRefresh={handleRefresh}
+                                    tintColor="#4A7DFF"
+                                />
+                            }
+                            renderItem={renderItem}
+                            ListEmptyComponent={
+                                <View style={styles.emptyContainer}>
+                                    <Ionicons name="people-outline" size={48} color="#9CA3AF" />
+                                    <Text style={styles.emptyText}>
+                                        {isSearching
+                                            ? 'No students found matching your search'
+                                            : 'No students to display'}
+                                    </Text>
+                                </View>
+                            }
+                        />
+                    )}
+                </View>
+            </View>
+
+            {/* Modals */}
+            {isAttendanceModalOpen && <AttendanceModal />}
+            {isSettingsModalOpen && <KioskSettingsModal />}
+
+            {/* Helper: Only render PIN modal at root if Settings is NOT open. 
+                If Settings IS open, it handles rendering PIN modal nested inside itself. */}
+            {isPinModalOpen && !isSettingsModalOpen && <KioskPinModal />}
+        </View>
+    );
+}
+
+// Helper function to group contacts by program (from CRM)
+const getProgramBasedData = (dataList: AttendanceContact[]): ProgramAttendance[] => {
+    const programData: ProgramAttendance[] = [];
+    for (let index = 0; index < dataList.length; index++) {
+        if (!programData.some((v) => v.id === dataList[index].program)) {
+            programData.push({
+                name: dataList[index].programName,
+                id: dataList[index].program,
+                contacts: getProgramBasedContacts(dataList[index].program, dataList),
+            });
+        }
+    }
+    return programData;
+};
+
+const getProgramBasedContacts = (
+    program: string,
+    dataList: AttendanceContact[]
+): AttendanceContact[] => {
+    const contactsData: AttendanceContact[] = [];
+    for (let index = 0; index < dataList.length; index++) {
+        if (
+            program === dataList[index].program &&
+            !contactsData.some((v) => v._id === dataList[index]._id)
+        ) {
+            contactsData.push({
+                ...dataList[index],
+                // API returns contactName, map it to name field (matches CRM pattern)
+                name: (dataList[index] as any).contactName || dataList[index].name || '',
+                isPresent: dataList[index].todayPresent,
+            });
+        }
+    }
+    return contactsData;
+};
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+    },
+    header: {
+        paddingBottom: 16,
+    },
+    headerContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingTop: 12,
+        gap: 12,
+    },
+    searchContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        height: 40,
+        gap: 8,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 15,
+        color: '#1F2937',
+    },
+    headerActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    programButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        gap: 6,
+    },
+    programButtonText: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: '#4A7DFF',
+    },
+    iconButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+    },
+    searchResultsLabelContainer: {
+        backgroundColor: '#E8EFFF',
+        paddingTop: 8,
+        paddingHorizontal: 16, // Fix: Match grid padding
+    },
+    searchResultsLabel: {
+        backgroundColor: '#4A7DFF', // Blue header to match theme
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderTopLeftRadius: 8,
+        borderTopRightRadius: 8,
+    },
+    searchResultsText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    searchResultsContainer: {
+        flex: 1,
+        backgroundColor: '#E8EFFF',
+        paddingHorizontal: 16, // Fix: Match grid padding
+    },
+    gridWrapper: {
+        flex: 1,
+        width: '100%',
+    },
+    fullWidthGrid: {
+        flex: 1,
+        width: '100%',
+    },
+    searchResultsCard: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+        borderBottomLeftRadius: 8,
+        borderBottomRightRadius: 8,
+        minHeight: 200,
+    },
+    centeredLoaderContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: 200,
+    },
+
+    gridContent: {
+        padding: 16,
+        width: '100%',
+    },
+    columnWrapper: {
+        justifyContent: 'flex-start', // Force left alignment
+        gap: 20, // Horizontal gap
+        marginBottom: 20, // Vertical gap
+    },
+    cardWrapper: {
+        flex: 1,
+        maxWidth: (SCREEN_WIDTH - 32 - (20 * (NUM_COLUMNS - 1))) / NUM_COLUMNS,
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 48,
+    },
+    emptyText: {
+        fontSize: 16,
+        color: '#6B7280',
+        marginTop: 12,
+        textAlign: 'center',
+    },
+});
