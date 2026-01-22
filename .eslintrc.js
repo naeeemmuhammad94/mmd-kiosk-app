@@ -24,6 +24,9 @@ module.exports = {
     'react-native/no-inline-styles': 'warn',
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
+    // Disable import/namespace - crashes with TypeScript 5.6+ until eslint-plugin-import is updated
+    'import/namespace': 'off',
+    'import/no-unresolved': 'off',
   },
   settings: {
     react: {
