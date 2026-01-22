@@ -1,4 +1,4 @@
-import { MD3LightTheme, MD3DarkTheme, configureFonts } from 'react-native-paper';
+import { MD3LightTheme, configureFonts } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 
 const fontConfig = {
@@ -113,24 +113,32 @@ export const lightTheme: MD3Theme = {
   ...MD3LightTheme,
   colors: {
     ...MD3LightTheme.colors,
-    primary: '#6200ee',
-    secondary: '#03dac6',
+    primary: '#4A7DFF', // App Primary Blue
+    secondary: '#5EA0E8', // Light Blue
     tertiary: '#018786',
-    error: '#b00020',
+    error: '#EF4444',
+    background: '#FFFFFF',
+    surface: '#FFFFFF',
+    onPrimary: '#FFFFFF',
+    onSurface: '#1F2937', // Text Gray 800
+    onSurfaceVariant: '#6B7280', // Text Gray 500
+    outline: '#E5E7EB', // Border Gray 200
   },
   fonts: configureFonts({ config: fontConfig }),
 };
 
-export const darkTheme: MD3Theme = {
-  ...MD3DarkTheme,
-  colors: {
-    ...MD3DarkTheme.colors,
-    primary: '#bb86fc',
-    secondary: '#03dac6',
-    tertiary: '#018786',
-    error: '#cf6679',
-  },
-  fonts: configureFonts({ config: fontConfig }),
+export const customColors = {
+  shadow: '#000000',
+  backdrop: 'rgba(107, 114, 128, 0.5)',
+  backdropDark: 'rgba(0, 0, 0, 0.5)',
+  backdropLight: 'rgba(255, 255, 255, 0.95)',
+  surfaceDisabled: '#F3F4F6',
+  onSurfaceDisabled: '#9CA3AF',
+  outlineVariant: '#D1D5DB',
+  white: '#FFFFFF',
+  textGray: '#1F2937',
+  textLight: '#6B7280',
+  primary: '#4A7DFF',
 };
 
 export type AppTheme = typeof lightTheme;
