@@ -8,13 +8,22 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mmd.kioskapp"
+      "bundleIdentifier": "com.mmd.kioskapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.mmd.kioskapp"
     },
     "web": {},
     "scheme": "mmd-kiosk-app",
-    "plugins": ["expo-router", "expo-secure-store"]
+    "plugins": ["expo-router", "expo-secure-store"],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6bb3228d-db45-48f0-ba25-2011fc935e73"
+      }
+    }
   }
 }
