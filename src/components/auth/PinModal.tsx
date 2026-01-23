@@ -158,7 +158,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     // height: 56, // Removed in favor of dynamic height
     justifyContent: 'center',
-    width: '100%', // Full width matching design
+    width: 240, // Constrained width per polish request
+    alignSelf: 'center',
   },
   confirmButtonDisabled: {
     opacity: 0.6,
@@ -183,7 +184,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: 16,
     elevation: 10,
-    maxWidth: 400,
+    maxWidth: 448,
     paddingHorizontal: 32,
     paddingVertical: 28,
     shadowColor: customColors.shadow,

@@ -126,8 +126,9 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: 20, // Increased for airy look per Figma
-    justifyContent: 'center',
+    gap: 12, // Reduced from 20 to match KioskPinModal
+    justifyContent: 'space-between',
+    width: '100%',
   },
   input: {
     backgroundColor: '#FFFFFF', // White background per Figma
@@ -135,11 +136,12 @@ const styles = StyleSheet.create({
     borderRadius: 12, // Square-ish corners per Figma
     borderWidth: 1.5,
     color: colors.onSurface,
+    flex: 1, // Allow input to shrink/grow
     fontSize: 26,
     fontWeight: '600',
     height: 64, // Square shape
     textAlign: 'center',
-    width: 64, // Square shape
+    // width removed in favor of flex
   },
   inputDisabled: {
     backgroundColor: customColors.surfaceDisabled, // Gray 100

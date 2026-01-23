@@ -38,8 +38,7 @@ export const getKioskSettingsByDojo = async () => {
 /**
  * Update kiosk settings
  */
-export const updateKioskSettings = async (id: string, data: any) => {
-  // eslint-disable-line @typescript-eslint/no-explicit-any
+export const updateKioskSettings = async (id: string, data: Partial<KioskSettings>) => {
   const response = await axiosInstance.put<{ data: KioskSettings }>(
     `${ApiEndpoints.UpdateKioskSettings}/${id}`,
     data

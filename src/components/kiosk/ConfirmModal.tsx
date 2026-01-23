@@ -5,8 +5,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useKioskStore } from '@/store/useKioskStore';
 import moment from 'moment';
 // Assets
-import TickIcon from '../../../assets/tick.svg';
-import CloseIcon from '../../../assets/close.svg';
+import CheckCircleIcon from '../../../assets/check-circle.svg';
+import CheckoutCircleIcon from '../../../assets/checkout-circle.svg';
+// TickIcon/CloseIcon removed in favor of new assets
 
 export default function ConfirmModal() {
   const {
@@ -47,16 +48,18 @@ export default function ConfirmModal() {
       <View style={styles.cardContainer}>
         {/* Close Button */}
         <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-          <Ionicons name="close" size={24} color="#9CA3AF" />
+          <Ionicons name="close" size={24} color={styles.closeIcon.color} />
         </TouchableOpacity>
 
         {/* Large Status Icon */}
-        <View style={styles.statusIconWrapper}>
+        <View
+          style={[styles.statusIconWrapper, { backgroundColor: isCheckIn ? '#ECFDF5' : '#FEF2F2' }]}
+        >
           {isCheckIn ? (
-            <TickIcon width={64} height={64} />
+            <CheckCircleIcon width={80} height={80} />
           ) : (
             // Check Out - Red Cross
-            <CloseIcon width={64} height={64} />
+            <CheckoutCircleIcon width={80} height={80} />
           )}
         </View>
 
@@ -94,9 +97,9 @@ export default function ConfirmModal() {
               {/* Status badge floating on bottom right */}
               <View style={styles.floatingBadge}>
                 {isCheckIn ? (
-                  <TickIcon width={24} height={24} />
+                  <CheckCircleIcon width={24} height={24} />
                 ) : (
-                  <CloseIcon width={24} height={24} />
+                  <CheckoutCircleIcon width={24} height={24} />
                 )}
               </View>
             </View>
@@ -125,28 +128,31 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)', // User requested "blurred or darkened". SLight dark blur.
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Darker overlay per Figma
   },
   cardContainer: {
+    alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderRadius: 24, // Rounded corners
-    width: '90%', // Responsive width
+    elevation: 8,
     maxWidth: 400, // Compact max width
-    paddingVertical: 40,
     paddingHorizontal: 24,
-    alignItems: 'center',
+    paddingVertical: 40,
+    position: 'relative',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
-    elevation: 8,
-    position: 'relative',
+    width: '90%', // Responsive width
   },
   closeButton: {
     padding: 4,
     position: 'absolute',
     right: 16,
     top: 16,
+  },
+  closeIcon: {
+    color: '#9CA3AF',
   },
   feedbackLink: {
     color: '#3B82F6',
@@ -173,11 +179,11 @@ const styles = StyleSheet.create({
     zIndex: 50,
   },
   profileImage: {
-    width: 80,
-    height: 80,
+    borderColor: '#EAB308', // Gold border from screenshot? Or just clean. Let's add the gold border seen in some designs.
     borderRadius: 16, // Squircle
     borderWidth: 2,
-    borderColor: '#EAB308', // Gold border from screenshot? Or just clean. Let's add the gold border seen in some designs.
+    height: 80,
+    width: 80,
   },
   profileImageContainer: {
     marginBottom: 12,
@@ -188,7 +194,12 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   statusIconWrapper: {
+    alignItems: 'center',
+    borderRadius: 60, // Circle
+    height: 120,
+    justifyContent: 'center',
     marginBottom: 20,
+    width: 120,
   },
   studentName: {
     color: '#1F2937',
@@ -204,10 +215,10 @@ const styles = StyleSheet.create({
   },
   timeBadge: {
     // Dynamic background in component, this is base
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 8,
     alignItems: 'center',
+    borderRadius: 8,
+    paddingHorizontal: 32,
+    paddingVertical: 12,
     width: '100%',
   },
   timeBadgeLabel: {

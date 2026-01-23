@@ -229,11 +229,11 @@ function InfoRow({ icon, label, value, valueColor, isRank }: InfoRowProps) {
 
 const styles = StyleSheet.create({
   actionButton: {
+    alignItems: 'center',
     backgroundColor: '#2563EB', // Stronger blue
     borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
     elevation: 2,
+    paddingVertical: 14,
     shadowColor: '#2563EB',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -252,18 +252,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   checkOutButton: {
-    backgroundColor: '#2563EB', // Keep Blue for consistent UI, or Red? Figma screenshot 3 shows Blue "Check Out"
+    backgroundColor: '#2563EB', // Keep Blue for consistent UI
   },
   closeButton: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)', // Semi-transparent circle
+    borderRadius: 14,
+    height: 28,
+    justifyContent: 'center',
     position: 'absolute',
     right: 16,
     top: 16,
     width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)', // Semi-transparent circle
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   constraintContainer: {
     alignItems: 'center',
@@ -274,34 +274,35 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   header: {
-    alignItems: 'center',
+    alignItems: 'flex-end', // Align text to bottom
     flexDirection: 'row',
     justifyContent: 'center',
+    minHeight: 100, // Ensure minimum height
+    paddingBottom: 20, // Reduce bottom space
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingTop: 48, // Increase top space
     position: 'relative',
   },
   headerTitle: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '600',
+    marginBottom: 4, // Fine tune alignment
   },
   iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#EFF6FF', // Light blue bg
-    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#EFF6FF', // Light blue bg
+    borderRadius: 18,
+    height: 36,
+    justifyContent: 'center',
+    width: 36,
   },
   imageContainer: {
-    // Yellow border container relative to student rank?
-    // Screenshot shows a yellow/gold border around the image
-    padding: 3,
+    borderColor: '#EAB308', // Yellow-500
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: '#EAB308', // Yellow-500
     marginBottom: 8,
+    padding: 3,
   },
   infoLabel: {
     color: '#6B7280',
@@ -334,15 +335,14 @@ const styles = StyleSheet.create({
   modalContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    // width and maxWidth set dynamically via inline style
     overflow: 'hidden',
     position: 'relative',
   },
   overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(31, 41, 55, 0.7)', // Darker overlay for better contrast
-    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(31, 41, 55, 0.7)', // Darker overlay for better contrast
+    flex: 1,
+    justifyContent: 'center',
   },
   profileImage: {
     borderRadius: 10,

@@ -45,7 +45,11 @@ export default function KioskHomeScreen() {
 
   // Calculate dynamic card width to fill screen available width
   // This ensures no right-side gap and proper 3-column layout
-  const totalHorizontalPadding = dims.gridPadding * 2;
+  // FIX: Search view has 48px padding on tablet, so we must account for that in grid calculation
+  // to prevent grid disturbance when searching.
+  const containerPadding = isTablet ? 48 : dims.gridPadding;
+  const listPadding = dims.gridPadding;
+  const totalHorizontalPadding = containerPadding * 2 + listPadding * 2;
   const totalGap = dims.gridGap * (numColumns - 1);
   const availableWidth = screenWidth - totalHorizontalPadding;
   const cardWidth = Math.floor((availableWidth - totalGap) / numColumns);
@@ -213,7 +217,9 @@ export default function KioskHomeScreen() {
 
       {/* Searched Results Label */}
       {isSearching && (
-        <View style={styles.searchResultsLabelContainer}>
+        <View
+          style={[styles.searchResultsLabelContainer, { paddingHorizontal: isTablet ? 48 : 16 }]}
+        >
           <View
             style={[
               styles.searchResultsLabel,
@@ -229,7 +235,13 @@ export default function KioskHomeScreen() {
                 - Render wrapper even during loading to maintain layout structure 
                 - Loader placed inside the card/grid view
             */}
-      <View style={isSearching ? styles.searchResultsContainer : styles.gridWrapper}>
+      <View
+        style={
+          isSearching
+            ? [styles.searchResultsContainer, { paddingHorizontal: isTablet ? 48 : 16 }]
+            : styles.gridWrapper
+        }
+      >
         <View style={isSearching ? styles.searchResultsCard : styles.fullWidthGrid}>
           {/* Loader - Centered in remaining space 
                         Only show during initial load (isLoading). 
@@ -250,7 +262,13 @@ export default function KioskHomeScreen() {
               key={numColumns}
               contentContainerStyle={[
                 styles.gridContent,
-                { padding: dims.gridPadding, paddingBottom: 100 },
+                {
+                  paddingHorizontal: isSearching
+                    ? dims.gridPadding
+                    : containerPadding + listPadding,
+                  paddingTop: dims.gridPadding,
+                  paddingBottom: 100,
+                },
               ]}
               columnWrapperStyle={[
                 styles.columnWrapper,
@@ -389,7 +407,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 48,
   },
   iconButton: {
     alignItems: 'center',

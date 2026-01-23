@@ -255,11 +255,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   description: {
+    alignSelf: 'center',
     color: customColors.textLight,
     fontSize: 16,
     fontWeight: '400',
     lineHeight: 24,
     marginBottom: 20,
+    maxWidth: 360, // Fix: Force 3-line wrapping on wider screens
     paddingHorizontal: 20,
     textAlign: 'center',
   },

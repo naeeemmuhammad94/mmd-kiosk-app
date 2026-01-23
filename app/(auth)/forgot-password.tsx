@@ -30,7 +30,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 // MMD Logo SVG
 // MMD Logo SVG
 import LoginLogo from '../../assets/login.svg';
-import loginBackground from '../../assets/login-background.jpg';
+import loginBackground from '../../assets/login-background.png';
 import { lightTheme, customColors } from '@/theme';
 import { getResponsiveDimensions } from '@/theme/dimensions';
 
@@ -155,7 +155,7 @@ export default function ForgotPasswordScreen() {
                   <>
                     {/* Success Header - Checkmark and Title in same row */}
                     <View style={styles.successHeader}>
-                      <Ionicons name="checkmark-circle" size={28} color="#22C55E" />
+                      <Ionicons name="checkmark-circle" size={48} color="#22C55E" />
                       <Text style={styles.successTitle}>Forgot Password</Text>
                     </View>
 
@@ -394,7 +394,8 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 16,
     fontWeight: '500',
-    textDecorationLine: 'underline',
+    fontWeight: '500',
+    // textDecorationLine: 'underline', // Removed per polish request
   },
 
   safeArea: {

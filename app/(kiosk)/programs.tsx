@@ -6,7 +6,14 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { View, StyleSheet, FlatList, TextInput, TouchableOpacity } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  TextInput,
+  TouchableOpacity,
+  useWindowDimensions,
+} from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -21,6 +28,7 @@ import AttendanceModal from '@/components/kiosk/AttendanceModal';
 import KioskPinModal from '@/components/kiosk/KioskPinModal';
 import KioskSettingsModal from '@/components/kiosk/KioskSettingsModal';
 import type { AttendanceContact, ProgramAttendance } from '@/types/attendance';
+import { getResponsiveDimensions } from '@/theme/dimensions';
 
 export default function ProgramsScreen() {
   const router = useRouter();
@@ -59,6 +67,23 @@ export default function ProgramsScreen() {
     select: response => response.data,
     enabled: isAuthenticated && !settings,
   });
+
+  // Responsive Grid Calculation
+  const { width: screenWidth } = useWindowDimensions();
+  const isTablet = screenWidth >= 768;
+  const isLandscape = screenWidth >= 1024;
+
+  // Columns: 6 for iPad Landscape, 5 for Tablet, 3 for Mobile
+  const numColumns = isLandscape ? 6 : isTablet ? 5 : 3;
+
+  const dims = getResponsiveDimensions(isTablet);
+
+  // Calculate dynamic card width
+  // Account for nested padding: 16px (List) + 16px (Accordion Content) = 32px per side -> 64px total
+  const totalHorizontalPadding = 64;
+  const totalGap = dims.gridGap * (numColumns - 1);
+  const availableWidth = screenWidth - totalHorizontalPadding;
+  const cardWidth = Math.max(80, Math.floor((availableWidth - totalGap) / numColumns));
 
   useEffect(() => {
     if (fetchedData && attendanceData.length === 0) {
@@ -194,6 +219,7 @@ export default function ProgramsScreen() {
                           student={student}
                           showImage={showStudentImages}
                           onPress={() => handleStudentPress(student)}
+                          width={cardWidth}
                         />
                       ))}
                     </View>

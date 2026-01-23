@@ -27,7 +27,7 @@ import PinModal from '@/components/auth/PinModal';
 
 // MMD Logo SVG
 import LoginLogo from '../../assets/login.svg';
-import loginBackground from '../../assets/login-background.jpg';
+import loginBackground from '../../assets/login-background.png';
 import { lightTheme, customColors } from '@/theme';
 import { getResponsiveDimensions } from '@/theme/dimensions';
 
