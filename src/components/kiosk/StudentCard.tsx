@@ -157,9 +157,15 @@ export default function StudentCard({ student, showImage, onPress, width }: Stud
       </View>
 
       {/* Name */}
-      <Text style={[styles.name, { fontSize: dims.nameFontSize }]} numberOfLines={2}>
-        {studentName}
-      </Text>
+      <View style={styles.nameContainer}>
+        <Text
+          style={[styles.name, { fontSize: dims.nameFontSize }]}
+          numberOfLines={2}
+          ellipsizeMode="tail"
+        >
+          {studentName}
+        </Text>
+      </View>
 
       {/* Attendance - colored based on status */}
       <Text
@@ -195,6 +201,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     padding: 8,
+    paddingTop: 12, // Added top padding to accommodate top badge
     // width set dynamically via inline style
   },
   gradientBorder: {
@@ -213,39 +220,49 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
   },
   imageWrapper: {
-    marginBottom: 8,
+    marginBottom: 12, // Increased from 8 to prevent bottom badge overlap
     position: 'relative',
+    zIndex: 1, // Ensure badges sit on top
   },
   name: {
     color: '#1F2937',
     // fontSize set dynamically via inline style
     fontWeight: '700',
-    lineHeight: 18,
-    marginBottom: 2,
+    lineHeight: 16, // Tighter line height for better 2-line fit
     textAlign: 'center',
+  },
+  nameContainer: {
+    height: 34, // Fixed height for 2 lines (~16px * 2 + padding) to prevent jumping
+    justifyContent: 'flex-start',
+    marginBottom: 4,
+    width: '100%',
   },
   profileImage: {
     borderRadius: 20,
     // width and height set dynamically via inline style
   },
   statusBadgeBottomRight: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 999,
+    bottom: -6,
     position: 'absolute',
-    bottom: -10, // Overlapping
-    right: -10, // Overlapping
-    zIndex: 10,
+    right: -6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    zIndex: 10,
   },
   statusBadgeTopLeft: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 999,
+    left: -6,
     position: 'absolute',
-    top: -10, // Overlapping
-    left: -10, // Overlapping
-    zIndex: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    top: -6,
+    zIndex: 10,
   },
 });

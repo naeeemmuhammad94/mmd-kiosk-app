@@ -83,7 +83,8 @@ export default function ProgramsScreen() {
   const totalHorizontalPadding = 64;
   const totalGap = dims.gridGap * (numColumns - 1);
   const availableWidth = screenWidth - totalHorizontalPadding;
-  const cardWidth = Math.max(80, Math.floor((availableWidth - totalGap) / numColumns));
+  // Subtract a small buffer (2px) to prevent sub-pixel rounding issues causing line breaks
+  const cardWidth = Math.max(80, Math.floor((availableWidth - totalGap - 2) / numColumns));
 
   useEffect(() => {
     if (fetchedData && attendanceData.length === 0) {
@@ -212,7 +213,7 @@ export default function ProgramsScreen() {
                 {/* Accordion Content - Student Grid */}
                 {isExpanded && (
                   <View style={styles.accordionContent}>
-                    <View style={styles.studentGrid}>
+                    <View style={[styles.studentGrid, { gap: dims.gridGap }]}>
                       {program.contacts.map(student => (
                         <StudentCard
                           key={student._id}
