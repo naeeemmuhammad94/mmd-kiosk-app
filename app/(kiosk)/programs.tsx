@@ -29,6 +29,7 @@ import KioskPinModal from '@/components/kiosk/KioskPinModal';
 import KioskSettingsModal from '@/components/kiosk/KioskSettingsModal';
 import type { AttendanceContact, ProgramAttendance } from '@/types/attendance';
 import { getResponsiveDimensions } from '@/theme/dimensions';
+import { lightTheme as theme, customColors } from '@/theme';
 
 export default function ProgramsScreen() {
   const router = useRouter();
@@ -90,16 +91,19 @@ export default function ProgramsScreen() {
     if (fetchedData && attendanceData.length === 0) {
       setAttendanceData(fetchedData);
     }
-  }, [fetchedData]);
+  }, [fetchedData, attendanceData.length, setAttendanceData]);
 
   useEffect(() => {
     if (settingsData && !settings) {
       setSettings(settingsData);
     }
-  }, [settingsData]);
+  }, [settingsData, settings, setSettings]);
 
   // Use fetched data or store data
-  const programs = attendanceData.length > 0 ? attendanceData : fetchedData || [];
+  const programs = useMemo(
+    () => (attendanceData.length > 0 ? attendanceData : fetchedData || []),
+    [attendanceData, fetchedData]
+  );
 
   // Check if any accordion is expanded
   const hasExpandedProgram = expandedPrograms.length > 0;
@@ -145,12 +149,12 @@ export default function ProgramsScreen() {
   return (
     <View style={styles.container}>
       {/* Blue Header */}
-      <LinearGradient colors={['#4A7DFF', '#4A7DFF']} style={styles.header}>
+      <LinearGradient colors={[theme.colors.primary, theme.colors.primary]} style={styles.header}>
         <SafeAreaView edges={['top']} style={styles.headerContent}>
           {/* Back Button Container */}
           <View style={styles.headerLeft}>
             <TouchableOpacity style={styles.iconButton} onPress={handleBack}>
-              <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+              <Ionicons name="chevron-back" size={24} color={theme.colors.onPrimary} />
             </TouchableOpacity>
           </View>
 
@@ -160,7 +164,7 @@ export default function ProgramsScreen() {
           {/* Settings Button Container */}
           <View style={styles.headerRight}>
             <TouchableOpacity style={styles.iconButton} onPress={handleSettingsPress}>
-              <Ionicons name="settings-outline" size={22} color="#FFFFFF" />
+              <Ionicons name="settings-outline" size={22} color={theme.colors.onPrimary} />
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -169,11 +173,11 @@ export default function ProgramsScreen() {
       {/* Search Bar */}
       <View style={styles.searchWrapper}>
         <View style={styles.searchContainer}>
-          <Ionicons name="search-outline" size={18} color="#9CA3AF" />
+          <Ionicons name="search-outline" size={18} color={customColors.onSurfaceDisabled} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search..."
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={customColors.onSurfaceDisabled}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -183,7 +187,7 @@ export default function ProgramsScreen() {
       {/* Loading State */}
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#4A7DFF" />
+          <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
       ) : (
         /* Programs Accordion List */
@@ -206,7 +210,7 @@ export default function ProgramsScreen() {
                   <Ionicons
                     name={isExpanded ? 'chevron-down' : 'chevron-forward'}
                     size={20}
-                    color="#6B7280"
+                    color={theme.colors.onSurfaceVariant}
                   />
                 </TouchableOpacity>
 
@@ -231,7 +235,7 @@ export default function ProgramsScreen() {
           }}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Ionicons name="albums-outline" size={48} color="#9CA3AF" />
+              <Ionicons name="albums-outline" size={48} color={customColors.onSurfaceDisabled} />
               <Text style={styles.emptyText}>No programs available</Text>
             </View>
           }
@@ -288,19 +292,70 @@ const getProgramBasedContacts = (
 };
 
 const styles = StyleSheet.create({
+  accordionContent: {
+    backgroundColor: theme.colors.surface,
+    borderBottomLeftRadius: 6,
+    borderBottomRightRadius: 6,
+    padding: 16,
+  },
+  accordionHeader: {
+    alignItems: 'center',
+    backgroundColor: customColors.surfaceDisabled,
+    borderColor: theme.colors.outline,
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  accordionHeaderExpanded: {
+    borderBottomColor: theme.colors.outline,
+    borderBottomWidth: 1,
+    borderRadius: 0,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    borderWidth: 0,
+  },
+  accordionItem: {
+    marginBottom: 8,
+  },
+  // Expanded state styles
+  accordionItemExpanded: {
+    borderColor: theme.colors.outline,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  accordionTitle: {
+    color: theme.colors.onSurface,
+    fontSize: 15,
+    fontWeight: '500',
+  },
   container: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     flex: 1,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  emptyText: {
+    color: theme.colors.onSurfaceVariant,
+    fontSize: 16,
+    marginTop: 12,
   },
   header: {
     paddingBottom: 20,
   },
   headerContent: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
     paddingBottom: 12, // More balanced padding
+    paddingHorizontal: 16,
     paddingTop: 8,
   },
   headerLeft: {
@@ -311,6 +366,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     width: 40,
   },
+  headerTitle: {
+    color: theme.colors.onPrimary,
+    flex: 1,
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
   iconButton: {
     alignItems: 'center',
     height: 40,
@@ -318,22 +380,19 @@ const styles = StyleSheet.create({
     width: 40,
     // Visual touch target
   },
-  headerTitle: {
-    color: '#FFFFFF',
-    flex: 1,
-    fontSize: 18,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  searchWrapper: {
-    backgroundColor: '#FFFFFF',
+  listContent: {
+    paddingBottom: 24,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
   },
   searchContainer: {
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderColor: '#E5E7EB',
+    backgroundColor: customColors.surfaceDisabled,
+    borderColor: theme.colors.outline,
     borderRadius: 8,
     borderWidth: 1,
     flexDirection: 'row',
@@ -342,72 +401,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   searchInput: {
-    color: '#1F2937',
+    color: theme.colors.onSurface,
     flex: 1,
     fontSize: 15,
   },
-  loadingContainer: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-  },
-  listContent: {
-    paddingBottom: 24,
+  searchWrapper: {
+    backgroundColor: theme.colors.surface,
     paddingHorizontal: 16,
-  },
-  accordionItem: {
-    marginBottom: 8,
-  },
-  accordionHeader: {
-    alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    borderWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  accordionTitle: {
-    color: '#1F2937',
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  accordionContent: {
-    backgroundColor: '#FFFFFF',
-    borderBottomLeftRadius: 6,
-    borderBottomRightRadius: 6,
-    padding: 16,
+    paddingVertical: 12,
   },
   studentGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    paddingVertical: 48,
-  },
-  emptyText: {
-    color: '#6B7280',
-    fontSize: 16,
-    marginTop: 12,
-  },
-  // Expanded state styles
-  accordionItemExpanded: {
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 12,
-  },
-  accordionHeaderExpanded: {
-    borderBottomColor: '#E5E7EB',
-    borderBottomWidth: 1,
-    borderRadius: 0,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-    borderWidth: 0,
   },
 });

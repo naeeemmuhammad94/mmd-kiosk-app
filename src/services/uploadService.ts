@@ -17,7 +17,7 @@ export interface UploadResponse {
  * Matches CRM's uploadFileToS3 implementation
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const uploadImage = async (files: any): Promise<UploadResponse> => {
+export const uploadFileToS3 = async (files: any): Promise<UploadResponse> => {
   const formData = new FormData();
 
   files.forEach((file: any) => {

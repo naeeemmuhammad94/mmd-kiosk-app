@@ -118,12 +118,7 @@ export default function LoginScreen() {
             showsVerticalScrollIndicator={false}
           >
             {/* White Card */}
-            <View
-              style={[
-                styles.card,
-                { width: isTablet ? 672 : '90%', maxWidth: isTablet ? 672 : 400 },
-              ]}
-            >
+            <View style={[styles.card, isTablet ? styles.cardTablet : styles.cardMobile]}>
               {/* MMD Logo */}
               <View style={styles.logoContainer}>
                 {/* Responsive Logo: Max 540px, or Inputs Width */}
@@ -136,7 +131,7 @@ export default function LoginScreen() {
               </Text>
 
               {/* Username Input - LOCAL STATE */}
-              <View style={[styles.inputContainer, { width: logoWidth, alignSelf: 'center' }]}>
+              <View style={[styles.inputContainer, { width: logoWidth }, styles.centered]}>
                 <TextInput
                   style={[
                     styles.input,
@@ -158,7 +153,7 @@ export default function LoginScreen() {
               </View>
 
               {/* Password Input - LOCAL STATE */}
-              <View style={[styles.inputContainer, { width: logoWidth, alignSelf: 'center' }]}>
+              <View style={[styles.inputContainer, { width: logoWidth }, styles.centered]}>
                 <TextInput
                   ref={passwordRef}
                   style={[
@@ -189,7 +184,8 @@ export default function LoginScreen() {
               <TouchableOpacity
                 style={[
                   styles.loginButton,
-                  { height: dims.buttonHeight, width: logoWidth, alignSelf: 'center' },
+                  { height: dims.buttonHeight, width: logoWidth },
+                  styles.centered,
                   loginMutation.isPending && styles.loginButtonDisabled,
                 ]}
                 onPress={handleLogin}
@@ -237,6 +233,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
     shadowRadius: 24,
+  },
+  cardMobile: {
+    maxWidth: 400,
+    width: '90%',
+  },
+  cardTablet: {
+    maxWidth: 672,
+    width: 672,
+  },
+  centered: {
+    alignSelf: 'center',
   },
   container: {
     flex: 1,

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Image, useWindowDimensions } from 'react-native';
 import { Text, Avatar } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
+import { lightTheme as theme, customColors } from '@/theme';
 // MMD Assets
 import TickIcon from '../../../assets/tick.svg';
 import CloseIcon from '../../../assets/close.svg';
@@ -54,7 +55,7 @@ const getVibrantColor = (studentId: string): string => {
 // Get the effective color - uses rank color if valid, otherwise uses vibrant fallback
 const getEffectiveColor = (rankColor: string | undefined, studentId: string): string => {
   // If no rank color, use vibrant fallback
-  if (!rankColor || rankColor === '#E5E7EB' || rankColor === '') {
+  if (!rankColor || rankColor === theme.colors.outline || rankColor === '') {
     return getVibrantColor(studentId);
   }
   // If rank color is too dark, use vibrant fallback
@@ -184,16 +185,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   attendanceGreen: {
-    color: '#4B5563', // Grey text for attendance count per design
+    color: theme.colors.onSurfaceVariant, // Grey text for attendance count per design
   },
   attendanceRed: {
-    color: '#4B5563', // Grey text for attendance count per design
+    color: theme.colors.onSurfaceVariant, // Grey text for attendance count per design
   },
   avatar: {
     borderRadius: 20,
   },
   avatarLabel: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 26,
     fontWeight: '600',
   },
@@ -205,19 +206,19 @@ const styles = StyleSheet.create({
     // width set dynamically via inline style
   },
   gradientBorder: {
-    // width and height set dynamically via inline style
-    borderRadius: 24, // Matching Figma rounded corners
-    padding: 3,
-    justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 24, // Matching Figma rounded corners
+    justifyContent: 'center',
+    padding: 3,
+    // width and height set dynamically via inline style
   },
   imageContainer: {
-    // width and height set dynamically via inline style
-    borderRadius: 20, // Matching inner radius
-    overflow: 'hidden',
-    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: customColors.surfaceDisabled,
+    borderRadius: 20, // Matching inner radius
+    justifyContent: 'center',
+    overflow: 'hidden',
+    // width and height set dynamically via inline style
   },
   imageWrapper: {
     marginBottom: 12, // Increased from 8 to prevent bottom badge overlap
@@ -225,7 +226,7 @@ const styles = StyleSheet.create({
     zIndex: 1, // Ensure badges sit on top
   },
   name: {
-    color: '#1F2937',
+    color: theme.colors.onSurface,
     // fontSize set dynamically via inline style
     fontWeight: '700',
     lineHeight: 16, // Tighter line height for better 2-line fit
@@ -242,23 +243,23 @@ const styles = StyleSheet.create({
     // width and height set dynamically via inline style
   },
   statusBadgeBottomRight: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 999,
     bottom: -6,
     position: 'absolute',
     right: -6,
-    shadowColor: '#000',
+    shadowColor: customColors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     zIndex: 10,
   },
   statusBadgeTopLeft: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 999,
     left: -6,
     position: 'absolute',
-    shadowColor: '#000',
+    shadowColor: customColors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,

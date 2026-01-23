@@ -8,6 +8,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, TouchableWithoutFeedback, AppState } from 'react-native';
 import { useKioskStore } from '@/store/useKioskStore';
+import { customColors } from '@/theme';
 
 const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
@@ -85,7 +86,7 @@ export default function PowerSavingOverlay() {
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(71, 85, 105, 0.8)',
+    backgroundColor: customColors.backdropStrong,
     zIndex: 9999,
   },
 });

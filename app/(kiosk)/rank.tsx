@@ -15,6 +15,7 @@ import AttendanceModal from '@/components/kiosk/AttendanceModal';
 import KioskPinModal from '@/components/kiosk/KioskPinModal';
 import KioskSettingsModal from '@/components/kiosk/KioskSettingsModal';
 import type { AttendanceContact } from '@/types/attendance';
+import { lightTheme as theme, customColors } from '@/theme';
 
 export default function RankScreen() {
   const router = useRouter();
@@ -64,11 +65,11 @@ export default function RankScreen() {
   return (
     <View style={styles.container}>
       {/* Blue Header */}
-      <LinearGradient colors={['#4A7DFF', '#4A7DFF']} style={styles.header}>
+      <LinearGradient colors={[theme.colors.primary, theme.colors.primary]} style={styles.header}>
         <SafeAreaView edges={['top']} style={styles.headerContent}>
           {/* Back Button */}
           <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+            <Ionicons name="chevron-back" size={24} color={theme.colors.onPrimary} />
           </TouchableOpacity>
 
           {/* Title with Rank Dropdown */}
@@ -76,13 +77,13 @@ export default function RankScreen() {
             <Text style={styles.headerSubtitle}>Select rank</Text>
             <TouchableOpacity style={styles.rankDropdown} onPress={() => setShowRankDropdown(true)}>
               <Text style={styles.rankText}>{selectedRank || 'All Ranks'}</Text>
-              <Ionicons name="chevron-down" size={16} color="#FFFFFF" />
+              <Ionicons name="chevron-down" size={16} color={theme.colors.onPrimary} />
             </TouchableOpacity>
           </View>
 
           {/* Settings Button */}
           <TouchableOpacity style={styles.settingsButton} onPress={handleSettingsPress}>
-            <Ionicons name="settings-outline" size={22} color="#FFFFFF" />
+            <Ionicons name="settings-outline" size={22} color={theme.colors.onPrimary} />
           </TouchableOpacity>
         </SafeAreaView>
       </LinearGradient>
@@ -115,13 +116,17 @@ export default function RankScreen() {
             <View
               style={[styles.statusIcon, item.isPresent ? styles.statusGreen : styles.statusRed]}
             >
-              <Ionicons name={item.isPresent ? 'checkmark' : 'close'} size={14} color="#FFFFFF" />
+              <Ionicons
+                name={item.isPresent ? 'checkmark' : 'close'}
+                size={14}
+                color={theme.colors.surface}
+              />
             </View>
           </TouchableOpacity>
         )}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="people-outline" size={48} color="#9CA3AF" />
+            <Ionicons name="people-outline" size={48} color={customColors.onSurfaceDisabled} />
             <Text style={styles.emptyText}>No students found</Text>
           </View>
         }
@@ -143,7 +148,7 @@ export default function RankScreen() {
             <View style={styles.dropdownHeader}>
               <Text style={styles.dropdownTitle}>Select Rank</Text>
               <TouchableOpacity onPress={() => setShowRankDropdown(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
               </TouchableOpacity>
             </View>
             <ScrollView>
@@ -153,7 +158,9 @@ export default function RankScreen() {
                 onPress={() => handleRankSelect(null)}
               >
                 <Text style={styles.dropdownItemText}>All Ranks</Text>
-                {!selectedRank && <Ionicons name="checkmark" size={20} color="#4A7DFF" />}
+                {!selectedRank && (
+                  <Ionicons name="checkmark" size={20} color={theme.colors.primary} />
+                )}
               </TouchableOpacity>
 
               {/* Individual Ranks */}
@@ -167,7 +174,9 @@ export default function RankScreen() {
                   onPress={() => handleRankSelect(rank as string)}
                 >
                   <Text style={styles.dropdownItemText}>{rank}</Text>
-                  {selectedRank === rank && <Ionicons name="checkmark" size={20} color="#4A7DFF" />}
+                  {selectedRank === rank && (
+                    <Ionicons name="checkmark" size={20} color={theme.colors.primary} />
+                  )}
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -185,7 +194,7 @@ export default function RankScreen() {
 
 const styles = StyleSheet.create({
   avatar: {
-    backgroundColor: '#4A7DFF',
+    backgroundColor: theme.colors.primary,
   },
   backButton: {
     alignItems: 'center',
@@ -197,11 +206,11 @@ const styles = StyleSheet.create({
     width: 40,
   },
   container: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     flex: 1,
   },
   dropdownContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     maxHeight: '60%',
     maxWidth: 360,
@@ -209,7 +218,7 @@ const styles = StyleSheet.create({
   },
   dropdownHeader: {
     alignItems: 'center',
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: theme.colors.outline,
     borderBottomWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -217,7 +226,7 @@ const styles = StyleSheet.create({
   },
   dropdownItem: {
     alignItems: 'center',
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: customColors.surfaceDisabled,
     borderBottomWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -225,20 +234,20 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   dropdownItemSelected: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: customColors.primaryContainer, // Use primary container for selection if available or light blue
   },
   dropdownItemText: {
-    color: '#1F2937',
+    color: theme.colors.onSurface,
     fontSize: 15,
   },
   dropdownOverlay: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: customColors.backdropDark,
     flex: 1,
     justifyContent: 'center',
   },
   dropdownTitle: {
-    color: '#1F2937',
+    color: theme.colors.onSurface,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -248,7 +257,7 @@ const styles = StyleSheet.create({
     paddingVertical: 48,
   },
   emptyText: {
-    color: '#6B7280',
+    color: theme.colors.onSurfaceVariant,
     fontSize: 16,
     marginTop: 12,
   },
@@ -267,7 +276,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   headerSubtitle: {
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: customColors.whiteOpacity,
     fontSize: 12,
   },
   listContent: {
@@ -279,7 +288,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   rankText: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -293,7 +302,7 @@ const styles = StyleSheet.create({
     width: 40,
   },
   statusGreen: {
-    backgroundColor: '#22C55E',
+    backgroundColor: customColors.success,
   },
   statusIcon: {
     alignItems: 'center',
@@ -303,25 +312,25 @@ const styles = StyleSheet.create({
     width: 28,
   },
   statusRed: {
-    backgroundColor: '#EF4444',
+    backgroundColor: theme.colors.error,
   },
   studentInfo: {
     flex: 1,
     marginLeft: 12,
   },
   studentName: {
-    color: '#1F2937',
+    color: theme.colors.onSurface,
     fontSize: 15,
     fontWeight: '600',
   },
   studentProgram: {
-    color: '#6B7280',
+    color: theme.colors.onSurfaceVariant,
     fontSize: 13,
   },
   studentRow: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E5E7EB',
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.outline,
     borderRadius: 8,
     borderWidth: 1,
     flexDirection: 'row',

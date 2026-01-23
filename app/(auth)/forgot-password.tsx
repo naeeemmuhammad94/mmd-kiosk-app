@@ -138,12 +138,7 @@ export default function ForgotPasswordScreen() {
               showsVerticalScrollIndicator={false}
             >
               {/* White Card */}
-              <View
-                style={[
-                  styles.card,
-                  { width: isTablet ? 672 : '90%', maxWidth: isTablet ? 672 : 400 },
-                ]}
-              >
+              <View style={[styles.card, isTablet ? styles.cardTablet : styles.cardMobile]}>
                 {/* MMD Logo with Blue Gradient Background */}
                 {/* MMD Logo - Clean on White Card */}
                 <View style={styles.logoContainer}>
@@ -168,7 +163,8 @@ export default function ForgotPasswordScreen() {
                     <TouchableOpacity
                       style={[
                         styles.primaryButton,
-                        { height: dims.buttonHeight, width: logoWidth, alignSelf: 'center' },
+                        { height: dims.buttonHeight, width: logoWidth },
+                        styles.centered,
                       ]}
                       onPress={handleBackToLogin}
                       activeOpacity={0.8}
@@ -213,7 +209,7 @@ export default function ForgotPasswordScreen() {
                       name="userName"
                       render={({ field: { onChange, onBlur, value } }) => (
                         <View
-                          style={[styles.inputContainer, { width: logoWidth, alignSelf: 'center' }]}
+                          style={[styles.inputContainer, { width: logoWidth }, styles.centered]}
                         >
                           <RNTextInput
                             style={[
@@ -247,7 +243,8 @@ export default function ForgotPasswordScreen() {
                     <TouchableOpacity
                       style={[
                         styles.primaryButton,
-                        { height: dims.buttonHeight, width: logoWidth, alignSelf: 'center' },
+                        { height: dims.buttonHeight, width: logoWidth },
+                        styles.centered,
                         forgotPasswordMutation.isPending && styles.primaryButtonDisabled,
                       ]}
                       onPress={handleSubmit(handleSendResetLink)}
@@ -315,6 +312,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
     shadowRadius: 24,
+  },
+  cardMobile: {
+    maxWidth: 400,
+    width: '90%',
+  },
+  cardTablet: {
+    maxWidth: 672,
+    width: 672,
+  },
+  centered: {
+    alignSelf: 'center',
   },
   container: {
     flex: 1,
@@ -393,7 +401,6 @@ const styles = StyleSheet.create({
   resendButtonText: {
     color: colors.primary,
     fontSize: 16,
-    fontWeight: '500',
     fontWeight: '500',
     // textDecorationLine: 'underline', // Removed per polish request
   },

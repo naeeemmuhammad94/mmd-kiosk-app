@@ -4,6 +4,7 @@ import { Text, Avatar } from 'react-native-paper';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useKioskStore } from '@/store/useKioskStore';
 import moment from 'moment';
+import { lightTheme as theme, customColors } from '@/theme';
 // Assets
 import CheckCircleIcon from '../../../assets/check-circle.svg';
 import CheckoutCircleIcon from '../../../assets/checkout-circle.svg';
@@ -48,12 +49,19 @@ export default function ConfirmModal() {
       <View style={styles.cardContainer}>
         {/* Close Button */}
         <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-          <Ionicons name="close" size={24} color={styles.closeIcon.color} />
+          <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
         </TouchableOpacity>
 
         {/* Large Status Icon */}
         <View
-          style={[styles.statusIconWrapper, { backgroundColor: isCheckIn ? '#ECFDF5' : '#FEF2F2' }]}
+          style={[
+            styles.statusIconWrapper,
+            {
+              backgroundColor: isCheckIn
+                ? customColors.successContainer
+                : customColors.errorContainer,
+            },
+          ]}
         >
           {isCheckIn ? (
             <CheckCircleIcon width={80} height={80} />
@@ -108,11 +116,34 @@ export default function ConfirmModal() {
         </View>
 
         {/* Checked In At Badge */}
-        <View style={[styles.timeBadge, { backgroundColor: isCheckIn ? '#ECFDF5' : '#FEF2F2' }]}>
-          <Text style={[styles.timeBadgeLabel, { color: isCheckIn ? '#059669' : '#EF4444' }]}>
+        <View
+          style={[
+            styles.timeBadge,
+            {
+              backgroundColor: isCheckIn
+                ? customColors.successContainer
+                : customColors.errorContainer,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.timeBadgeLabel,
+              {
+                color: isCheckIn ? customColors.onSuccessContainer : customColors.onErrorContainer,
+              },
+            ]}
+          >
             {isCheckIn ? 'Checked in at' : 'Checked out at'}
           </Text>
-          <Text style={[styles.timeBadgeValue, { color: isCheckIn ? '#059669' : '#EF4444' }]}>
+          <Text
+            style={[
+              styles.timeBadgeValue,
+              {
+                color: isCheckIn ? customColors.onSuccessContainer : customColors.onErrorContainer,
+              },
+            ]}
+          >
             {currentTime}
           </Text>
         </View>
@@ -123,23 +154,23 @@ export default function ConfirmModal() {
 
 const styles = StyleSheet.create({
   avatar: {
-    backgroundColor: '#4A7DFF',
+    backgroundColor: theme.colors.primary,
     borderRadius: 16,
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Darker overlay per Figma
+    backgroundColor: customColors.backdropDark, // Darker overlay per Figma
   },
   cardContainer: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 24, // Rounded corners
     elevation: 8,
     maxWidth: 400, // Compact max width
     paddingHorizontal: 24,
     paddingVertical: 40,
     position: 'relative',
-    shadowColor: '#000',
+    shadowColor: customColors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
@@ -151,18 +182,16 @@ const styles = StyleSheet.create({
     right: 16,
     top: 16,
   },
-  closeIcon: {
-    color: '#9CA3AF',
-  },
+
   feedbackLink: {
-    color: '#3B82F6',
+    color: theme.colors.primary,
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 24,
     textAlign: 'center',
   },
   floatingBadge: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     bottom: -6,
     position: 'absolute',
@@ -179,7 +208,7 @@ const styles = StyleSheet.create({
     zIndex: 50,
   },
   profileImage: {
-    borderColor: '#EAB308', // Gold border from screenshot? Or just clean. Let's add the gold border seen in some designs.
+    borderColor: customColors.warn, // Gold border from screenshot? Or just clean. Let's add the gold border seen in some designs.
     borderRadius: 16, // Squircle
     borderWidth: 2,
     height: 80,
@@ -202,12 +231,12 @@ const styles = StyleSheet.create({
     width: 120,
   },
   studentName: {
-    color: '#1F2937',
+    color: theme.colors.onSurface,
     fontSize: 18,
     fontWeight: '700',
   },
   subtitle: {
-    color: '#6B7280',
+    color: theme.colors.onSurfaceVariant,
     fontSize: 13,
     marginBottom: 8,
     paddingHorizontal: 10,
@@ -232,7 +261,7 @@ const styles = StyleSheet.create({
     // Dynamic color in component
   },
   title: {
-    color: '#111827',
+    color: theme.colors.onSurface,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 8,

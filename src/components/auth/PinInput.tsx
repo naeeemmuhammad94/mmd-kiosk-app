@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   input: {
-    backgroundColor: '#FFFFFF', // White background per Figma
+    backgroundColor: colors.surface, // White background per Figma
     borderColor: colors.outline,
     borderRadius: 12, // Square-ish corners per Figma
     borderWidth: 1.5,

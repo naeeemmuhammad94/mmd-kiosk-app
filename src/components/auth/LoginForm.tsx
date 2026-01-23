@@ -117,9 +117,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
   },
-  input: {
-    backgroundColor: 'transparent',
-  },
+  input: {},
   inputOutline: {
     borderRadius: 12,
   },

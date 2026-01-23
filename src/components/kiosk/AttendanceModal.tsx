@@ -15,6 +15,7 @@ import { useKioskStore } from '@/store/useKioskStore';
 import { attendanceService } from '@/services/attendanceService';
 import ConfirmModal from './ConfirmModal';
 import moment from 'moment';
+import { lightTheme as theme, customColors } from '@/theme';
 
 export default function AttendanceModal() {
   const { width: screenWidth } = useWindowDimensions();
@@ -98,20 +99,15 @@ export default function AttendanceModal() {
                    Structure: Overlay -> Constraints -> Modal Card
                 */}
         <View style={styles.constraintContainer}>
-          <View
-            style={[
-              styles.modalContainer,
-              { width: isTablet ? 672 : '90%', maxWidth: isTablet ? 672 : 400 },
-            ]}
-          >
+          <View style={[styles.modalContainer, isTablet ? styles.modalTablet : styles.modalMobile]}>
             {/* Blue Header */}
             <LinearGradient
-              colors={['#4A7DFF', '#4A7DFF']} // Solid Blue as per design
+              colors={[theme.colors.primary, theme.colors.primary]} // Solid Blue as per design
               style={styles.header}
             >
               <Text style={styles.headerTitle}>Attendance</Text>
               <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-                <Ionicons name="close" size={20} color="#FFFFFF" />
+                <Ionicons name="close" size={20} color={theme.colors.onPrimary} />
               </TouchableOpacity>
             </LinearGradient>
 
@@ -213,7 +209,7 @@ function InfoRow({ icon, label, value, valueColor, isRank }: InfoRowProps) {
           <Ionicons
             name={icon as keyof typeof Ionicons.glyphMap}
             size={20}
-            color="#4A7DFF" // Blue icons
+            color={theme.colors.primary} // Blue icons
           />
         </View>
         <View>
@@ -230,11 +226,11 @@ function InfoRow({ icon, label, value, valueColor, isRank }: InfoRowProps) {
 const styles = StyleSheet.create({
   actionButton: {
     alignItems: 'center',
-    backgroundColor: '#2563EB', // Stronger blue
+    backgroundColor: theme.colors.primary, // Stronger blue
     borderRadius: 8,
     elevation: 2,
     paddingVertical: 14,
-    shadowColor: '#2563EB',
+    shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -243,20 +239,18 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   actionButtonText: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 16,
     fontWeight: '600',
   },
   avatar: {
-    backgroundColor: '#4A7DFF',
+    backgroundColor: theme.colors.primary,
     marginBottom: 8,
   },
-  checkOutButton: {
-    backgroundColor: '#2563EB', // Keep Blue for consistent UI
-  },
+
   closeButton: {
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)', // Semi-transparent circle
+    backgroundColor: customColors.whiteOpacity, // Semi-transparent circle
     borderRadius: 14,
     height: 28,
     justifyContent: 'center',
@@ -284,28 +278,28 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 4, // Fine tune alignment
   },
   iconContainer: {
     alignItems: 'center',
-    backgroundColor: '#EFF6FF', // Light blue bg
+    backgroundColor: customColors.surfaceDisabled, // Light blue bg
     borderRadius: 18,
     height: 36,
     justifyContent: 'center',
     width: 36,
   },
   imageContainer: {
-    borderColor: '#EAB308', // Yellow-500
+    borderColor: customColors.warn, // Yellow-500
     borderRadius: 14,
     borderWidth: 2,
     marginBottom: 8,
     padding: 3,
   },
   infoLabel: {
-    color: '#6B7280',
+    color: theme.colors.onSurfaceVariant,
     fontSize: 12,
     marginBottom: 2,
   },
@@ -316,31 +310,39 @@ const styles = StyleSheet.create({
   },
   infoRow: {
     alignItems: 'center',
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: customColors.surfaceDisabled,
     borderBottomWidth: 1,
     flexDirection: 'row',
     paddingVertical: 12,
   },
   infoSection: {
-    borderTopColor: '#F3F4F6',
+    borderTopColor: customColors.surfaceDisabled,
     borderTopWidth: 1,
     marginBottom: 24,
     paddingTop: 8,
   },
   infoValue: {
-    color: '#1F2937',
+    color: theme.colors.onSurface,
     fontSize: 15,
     fontWeight: '600',
   },
   modalContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     overflow: 'hidden',
     position: 'relative',
   },
+  modalMobile: {
+    maxWidth: 400,
+    width: '90%',
+  },
+  modalTablet: {
+    maxWidth: 672,
+    width: 672,
+  },
   overlay: {
     alignItems: 'center',
-    backgroundColor: 'rgba(31, 41, 55, 0.7)', // Darker overlay for better contrast
+    backgroundColor: customColors.backdropDark, // Darker overlay for better contrast
     flex: 1,
     justifyContent: 'center',
   },
@@ -354,7 +356,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   studentName: {
-    color: '#111827',
+    color: theme.colors.onSurface,
     fontSize: 20,
     fontWeight: '700',
     textAlign: 'center',
