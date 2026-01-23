@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "MMD Kiosk App",
+    "name": "Kioske",
     "slug": "mmd-kiosk-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mmd.kioskapp",
-      "icon": "./assets/logo.png",
+      "icon": "./assets/icon.png",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -18,7 +18,7 @@
     "android": {
       "package": "com.mmd.kioskapp",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
       }
     },

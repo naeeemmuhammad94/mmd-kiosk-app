@@ -23,6 +23,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { lightTheme, customColors } from '@/theme';
 
 // Import SVG illustrations with updated file names
@@ -141,8 +142,28 @@ export default function OnboardingScreen() {
 
   // Handle notification permission
   // Permission preference is saved and will work when app is built for staging/production
+
   const handleAllow = useCallback(async () => {
-    await setNotificationPermission(true);
+    try {
+      const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+      if (isExpoGo) {
+        // Expo Go SDK 53+ does not support expo-notifications for Android
+        // We simulate a successful grant for development flow
+        console.log('Skipping notification request in Expo Go');
+        await setNotificationPermission(true);
+      } else {
+        // Production/Development Build: Use native module
+        // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+        const Notifications = require('expo-notifications');
+        const { status } = await Notifications.requestPermissionsAsync();
+        await setNotificationPermission(status === 'granted');
+      }
+    } catch (error) {
+      console.warn('Error seeking notification permissions:', error);
+      // Fallback on error
+      await setNotificationPermission(true);
+    }
     await completeOnboarding();
     navigateToLogin();
   }, [completeOnboarding, setNotificationPermission, navigateToLogin]);
