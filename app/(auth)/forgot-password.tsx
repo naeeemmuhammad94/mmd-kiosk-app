@@ -32,6 +32,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import LoginLogo from '../../assets/login.svg';
 import loginBackground from '../../assets/login-background.jpg';
 import { lightTheme, customColors } from '@/theme';
+import { getResponsiveDimensions } from '@/theme/dimensions';
 
 const colors = lightTheme.colors;
 
@@ -49,8 +50,12 @@ export default function ForgotPasswordScreen() {
 
   // Calculate Logo Width
   // Tablet: Match inputs exactly (672 - 48px padding = 624px)
-  // Mobile: Use safer logic (Screen - 112px) to prevent overflow
-  const logoWidth = isTablet ? 672 - 48 : Math.min(screenWidth - 112, 400);
+  // Mobile: Reverted to original logic per user request
+  const cardContentWidth = isTablet ? 672 - 48 : Math.min(screenWidth * 0.9 - 48, 400);
+  const logoWidth = isTablet ? 672 - 48 : Math.min(screenWidth - 112, cardContentWidth);
+
+  // Responsive dimensions for mobile-first design
+  const dims = getResponsiveDimensions(isTablet);
 
   const [isSuccess, setIsSuccess] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
@@ -161,11 +166,16 @@ export default function ForgotPasswordScreen() {
 
                     {/* Back to Login Button */}
                     <TouchableOpacity
-                      style={styles.primaryButton}
+                      style={[
+                        styles.primaryButton,
+                        { height: dims.buttonHeight, width: logoWidth, alignSelf: 'center' },
+                      ]}
                       onPress={handleBackToLogin}
                       activeOpacity={0.8}
                     >
-                      <Text style={styles.primaryButtonText}>Back to Login</Text>
+                      <Text style={[styles.primaryButtonText, { fontSize: dims.buttonFontSize }]}>
+                        Back to Login
+                      </Text>
                     </TouchableOpacity>
 
                     {/* Resend Email Link */}
@@ -187,7 +197,9 @@ export default function ForgotPasswordScreen() {
                   // Request State
                   <>
                     {/* Title */}
-                    <Text style={styles.title}>Forgot Password</Text>
+                    <Text style={[styles.title, { fontSize: dims.headerFontSize }]}>
+                      Forgot Password
+                    </Text>
 
                     {/* Description */}
                     <Text style={styles.description}>
@@ -200,9 +212,15 @@ export default function ForgotPasswordScreen() {
                       control={control}
                       name="userName"
                       render={({ field: { onChange, onBlur, value } }) => (
-                        <View style={styles.inputContainer}>
+                        <View
+                          style={[styles.inputContainer, { width: logoWidth, alignSelf: 'center' }]}
+                        >
                           <RNTextInput
-                            style={[styles.input, errors.userName && styles.inputError]}
+                            style={[
+                              styles.input,
+                              { height: dims.inputHeight },
+                              errors.userName && styles.inputError,
+                            ]}
                             placeholder="Enter your email"
                             placeholderTextColor="#9CA3AF"
                             value={value}
@@ -229,6 +247,7 @@ export default function ForgotPasswordScreen() {
                     <TouchableOpacity
                       style={[
                         styles.primaryButton,
+                        { height: dims.buttonHeight, width: logoWidth, alignSelf: 'center' },
                         forgotPasswordMutation.isPending && styles.primaryButtonDisabled,
                       ]}
                       onPress={handleSubmit(handleSendResetLink)}
@@ -238,7 +257,9 @@ export default function ForgotPasswordScreen() {
                       {forgotPasswordMutation.isPending ? (
                         <ActivityIndicator size="small" color="#FFFFFF" />
                       ) : (
-                        <Text style={styles.primaryButtonText}>Send Reset Link</Text>
+                        <Text style={[styles.primaryButtonText, { fontSize: dims.buttonFontSize }]}>
+                          Send Reset Link
+                        </Text>
                       )}
                     </TouchableOpacity>
 
@@ -320,7 +341,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     color: colors.onSurface,
     fontSize: 16,
-    height: 52,
+    // height set dynamically via inline style
     paddingHorizontal: 16,
     width: '100%',
   },
@@ -348,7 +369,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderRadius: 12,
     elevation: 4,
-    height: 56,
+    // height set dynamically via inline style
     justifyContent: 'center',
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
@@ -361,7 +382,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: colors.onPrimary,
-    fontSize: 18,
+    // fontSize set dynamically via inline style
     fontWeight: '600',
   },
   resendButton: {
@@ -407,7 +428,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.onSurface,
-    fontSize: 22,
+    // fontSize set dynamically via inline style
     fontWeight: '700',
     marginBottom: 8,
     textAlign: 'center',

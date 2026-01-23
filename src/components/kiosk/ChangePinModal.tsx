@@ -12,7 +12,9 @@ import {
   TextInput,
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
+  useWindowDimensions,
 } from 'react-native';
+import { getResponsiveDimensions } from '@/theme/dimensions';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
@@ -33,6 +35,10 @@ export default function ChangePinModal({
   isFirstTime = false,
   currentPin = '',
 }: ChangePinModalProps) {
+  const { width: screenWidth } = useWindowDimensions();
+  const isTablet = screenWidth >= 768;
+  const dims = getResponsiveDimensions(isTablet);
+
   const pinValuesRef = useRef(['', '', '', '']);
   const inputRefs = useRef<(TextInput | null)[]>([]);
   const [error, setError] = useState('');
@@ -97,8 +103,10 @@ export default function ChangePinModal({
             <Ionicons name="close" size={24} color="#6B7280" />
           </TouchableOpacity>
         )}
-        <Text style={styles.title}>{isFirstTime ? 'Set PIN' : 'Set/Change PIN'}</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.title, { fontSize: dims.headerFontSize }]}>
+          {isFirstTime ? 'Set PIN' : 'Set/Change PIN'}
+        </Text>
+        <Text style={[styles.subtitle, { fontSize: dims.bodyFontSize }]}>
           {isFirstTime
             ? 'Please set a PIN to secure your kiosk settings.'
             : 'Set or change your kiosk PIN here.'}
@@ -110,7 +118,11 @@ export default function ChangePinModal({
               ref={ref => {
                 inputRefs.current[index] = ref;
               }}
-              style={[styles.pinInput, error && styles.pinInputError]}
+              style={[
+                styles.pinInput,
+                error && styles.pinInputError,
+                // Optional: Adjust PIN font size if needed, e.g. { fontSize: isTablet ? 24 : 20 }
+              ]}
               defaultValue={currentPin?.[index] || ''}
               onChangeText={value => handlePinChange(value, index)}
               onKeyPress={e => handleKeyPress(e, index)}
@@ -123,22 +135,33 @@ export default function ChangePinModal({
             />
           ))}
         </View>
-        {error && <Text style={styles.errorText}>{error}</Text>}
+        {error && <Text style={[styles.errorText, { fontSize: dims.smallFontSize }]}>{error}</Text>}
         <View style={styles.buttonContainer}>
           {!isFirstTime && (
-            <TouchableOpacity style={styles.cancelButton} onPress={handleClose}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+            <TouchableOpacity
+              style={[styles.cancelButton, { height: dims.buttonHeight }]}
+              onPress={handleClose}
+            >
+              <Text style={[styles.cancelButtonText, { fontSize: dims.buttonFontSize }]}>
+                Cancel
+              </Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            style={[styles.confirmButton, isFirstTime && styles.confirmButtonFull]}
+            style={[
+              styles.confirmButton,
+              isFirstTime && styles.confirmButtonFull,
+              { height: dims.buttonHeight },
+            ]}
             onPress={handleConfirm}
             disabled={isLoading}
           >
             {isLoading ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
-              <Text style={styles.confirmButtonText}>Confirm</Text>
+              <Text style={[styles.confirmButtonText, { fontSize: dims.buttonFontSize }]}>
+                Confirm
+              </Text>
             )}
           </TouchableOpacity>
         </View>
@@ -155,20 +178,22 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     flex: 1,
-    paddingVertical: 14,
+    justifyContent: 'center',
+    // paddingVertical removed
   },
-  cancelButtonText: { color: '#6B7280', fontSize: 16, fontWeight: '500' },
+  cancelButtonText: { color: '#6B7280', fontWeight: '500' },
   closeButton: { position: 'absolute', right: 16, top: 16, zIndex: 100000 },
   confirmButton: {
     alignItems: 'center',
     backgroundColor: '#4A7DFF',
     borderRadius: 8,
     flex: 1,
-    paddingVertical: 14,
+    justifyContent: 'center',
+    // paddingVertical removed
   },
   confirmButtonFull: { flex: 1 },
-  confirmButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
-  errorText: { color: '#EF4444', fontSize: 14, marginBottom: 16, textAlign: 'center' },
+  confirmButtonText: { color: '#FFFFFF', fontWeight: '600' },
+  errorText: { color: '#EF4444', marginBottom: 16, textAlign: 'center' },
   iconContainer: {
     alignItems: 'center',
     backgroundColor: '#EFF6FF',
@@ -220,6 +245,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   pinInputError: { borderColor: '#EF4444' },
-  subtitle: { color: '#6B7280', fontSize: 15, marginBottom: 24 },
-  title: { color: '#1F2937', fontSize: 22, fontWeight: '700', marginBottom: 8 },
+  subtitle: { color: '#6B7280', marginBottom: 24 },
+  title: { color: '#1F2937', fontWeight: '700', marginBottom: 8 },
 });

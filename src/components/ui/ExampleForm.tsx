@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-raw-text */
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
@@ -26,8 +27,8 @@ export const ExampleForm: React.FC = () => {
   return (
     <Card style={styles.card}>
       <Card.Content>
-        <Title>Login Form Example</Title>
-        <Paragraph>Example form using React Hook Form + Zod</Paragraph>
+        <Title>{'Login Form Example'}</Title>
+        <Paragraph>{'Example form using React Hook Form + Zod'}</Paragraph>
 
         <Controller
           control={control}
@@ -46,9 +47,7 @@ export const ExampleForm: React.FC = () => {
             />
           )}
         />
-        {errors.email && (
-          <Paragraph style={styles.error}>{errors.email.message}</Paragraph>
-        )}
+        {errors.email && <Paragraph style={styles.error}>{errors.email.message}</Paragraph>}
 
         <Controller
           control={control}
@@ -66,9 +65,7 @@ export const ExampleForm: React.FC = () => {
             />
           )}
         />
-        {errors.password && (
-          <Paragraph style={styles.error}>{errors.password.message}</Paragraph>
-        )}
+        {errors.password && <Paragraph style={styles.error}>{errors.password.message}</Paragraph>}
 
         <Button
           mode="contained"
@@ -77,7 +74,7 @@ export const ExampleForm: React.FC = () => {
           disabled={isSubmitting}
           style={styles.button}
         >
-          Submit
+          {'Submit'}
         </Button>
       </Card.Content>
     </Card>

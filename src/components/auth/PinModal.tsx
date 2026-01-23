@@ -12,7 +12,9 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
+  useWindowDimensions,
 } from 'react-native';
+import { getResponsiveDimensions } from '@/theme/dimensions';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import PinInput, { PinInputRef } from './PinInput';
 import { usePinStore } from '@/store/usePinStore';
@@ -23,6 +25,10 @@ import { lightTheme, customColors } from '@/theme';
 import LockIcon from '../../../assets/lock.svg';
 
 export default function PinModal() {
+  const { width: screenWidth } = useWindowDimensions();
+  const isTablet = screenWidth >= 768;
+  const dims = getResponsiveDimensions(isTablet);
+
   const pinInputRef = useRef<PinInputRef>(null);
 
   const { isAuthenticated, loginWithSavedCredentials } = useAuthStore();
@@ -86,12 +92,12 @@ export default function PinModal() {
             </View>
 
             {/* Title */}
-            <Text style={styles.title}>
+            <Text style={[styles.title, { fontSize: dims.headerFontSize }]}>
               {pinMode === 'create' ? 'Create your PIN' : 'Enter your PIN'}
             </Text>
 
             {/* Subtitle */}
-            <Text style={styles.subtitle}>
+            <Text style={[styles.subtitle, { fontSize: dims.bodyFontSize }]}>
               {pinMode === 'create'
                 ? 'Create your pin to access your kiosk setting easily'
                 : 'Enter your pin to access your kiosk'}
@@ -114,7 +120,11 @@ export default function PinModal() {
             {/* Confirm Button */}
             <View style={styles.buttonContainer}>
               <TouchableOpacity
-                style={[styles.confirmButton, isPinLoading && styles.confirmButtonDisabled]}
+                style={[
+                  styles.confirmButton,
+                  isPinLoading && styles.confirmButtonDisabled,
+                  { height: dims.buttonHeight },
+                ]}
                 onPress={handleConfirm}
                 disabled={isPinLoading}
                 activeOpacity={0.8}
@@ -122,7 +132,9 @@ export default function PinModal() {
                 {isPinLoading ? (
                   <ActivityIndicator color="#FFFFFF" size="small" />
                 ) : (
-                  <Text style={styles.confirmButtonText}>Confirm</Text>
+                  <Text style={[styles.confirmButtonText, { fontSize: dims.buttonFontSize }]}>
+                    Confirm
+                  </Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -144,7 +156,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.primary,
     borderRadius: 12,
-    height: 56,
+    // height: 56, // Removed in favor of dynamic height
     justifyContent: 'center',
     width: '100%', // Full width matching design
   },
@@ -153,12 +165,10 @@ const styles = StyleSheet.create({
   },
   confirmButtonText: {
     color: colors.onPrimary,
-    fontSize: 18, // Increased from 16
     fontWeight: '600',
   },
   errorText: {
     color: colors.error,
-    fontSize: 14,
     fontWeight: '500',
     marginBottom: 16,
     textAlign: 'center',
@@ -193,7 +203,6 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     color: colors.onSurfaceVariant,
-    fontSize: 14,
     fontWeight: '400',
     marginBottom: 24,
     paddingHorizontal: 8,
@@ -201,7 +210,6 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.primary,
-    fontSize: 22,
     fontWeight: '700',
     marginBottom: 8,
     textAlign: 'center',

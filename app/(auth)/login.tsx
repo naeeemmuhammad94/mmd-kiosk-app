@@ -29,6 +29,7 @@ import PinModal from '@/components/auth/PinModal';
 import LoginLogo from '../../assets/login.svg';
 import loginBackground from '../../assets/login-background.jpg';
 import { lightTheme, customColors } from '@/theme';
+import { getResponsiveDimensions } from '@/theme/dimensions';
 
 const colors = lightTheme.colors;
 
@@ -39,8 +40,13 @@ export default function LoginScreen() {
 
   // Calculate Logo Width
   // Tablet: Match inputs exactly (672 - 48px padding = 624px)
-  // Mobile: Use safer logic (Screen - 112px) to prevent overflow "out of model"
-  const logoWidth = isTablet ? 672 - 48 : Math.min(screenWidth - 112, 400);
+  // Mobile: Reverted to original logic per user request, but max capped at card content width
+  // This ensures logo doesn't overflow, but maintains the "visual size" user expects
+  const cardContentWidth = isTablet ? 672 - 48 : Math.min(screenWidth * 0.9 - 48, 400);
+  const logoWidth = isTablet ? 672 - 48 : Math.min(screenWidth - 112, cardContentWidth);
+
+  // Responsive dimensions for mobile-first design
+  const dims = getResponsiveDimensions(isTablet);
 
   const { login } = useAuthStore();
   const { loadPinState } = usePinStore();
@@ -125,12 +131,18 @@ export default function LoginScreen() {
               </View>
 
               {/* Title */}
-              <Text style={styles.title}>Attendance Kiosk</Text>
+              <Text style={[styles.title, { fontSize: dims.headerFontSize }]}>
+                Attendance Kiosk
+              </Text>
 
               {/* Username Input - LOCAL STATE */}
-              <View style={styles.inputContainer}>
+              <View style={[styles.inputContainer, { width: logoWidth, alignSelf: 'center' }]}>
                 <TextInput
-                  style={[styles.input, errors.userName && styles.inputError]}
+                  style={[
+                    styles.input,
+                    { height: dims.inputHeight },
+                    errors.userName && styles.inputError,
+                  ]}
                   placeholder="Enter your email"
                   placeholderTextColor="#9CA3AF"
                   value={userName}
@@ -146,10 +158,14 @@ export default function LoginScreen() {
               </View>
 
               {/* Password Input - LOCAL STATE */}
-              <View style={styles.inputContainer}>
+              <View style={[styles.inputContainer, { width: logoWidth, alignSelf: 'center' }]}>
                 <TextInput
                   ref={passwordRef}
-                  style={[styles.input, errors.password && styles.inputError]}
+                  style={[
+                    styles.input,
+                    { height: dims.inputHeight },
+                    errors.password && styles.inputError,
+                  ]}
                   placeholder="Enter your password"
                   placeholderTextColor="#9CA3AF"
                   value={password}
@@ -171,7 +187,11 @@ export default function LoginScreen() {
 
               {/* Log In Button */}
               <TouchableOpacity
-                style={[styles.loginButton, loginMutation.isPending && styles.loginButtonDisabled]}
+                style={[
+                  styles.loginButton,
+                  { height: dims.buttonHeight, width: logoWidth, alignSelf: 'center' },
+                  loginMutation.isPending && styles.loginButtonDisabled,
+                ]}
                 onPress={handleLogin}
                 disabled={loginMutation.isPending}
                 activeOpacity={0.8}
@@ -179,7 +199,9 @@ export default function LoginScreen() {
                 {loginMutation.isPending ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
-                  <Text style={styles.loginButtonText}>Log In</Text>
+                  <Text style={[styles.loginButtonText, { fontSize: dims.buttonFontSize }]}>
+                    Log In
+                  </Text>
                 )}
               </TouchableOpacity>
 
@@ -252,7 +274,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     color: colors.onSurface,
     fontSize: 16,
-    height: 52,
+    // height set dynamically via inline style
     paddingHorizontal: 16,
     width: '100%',
   },
@@ -269,7 +291,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderRadius: 12,
     elevation: 4,
-    height: 56,
+    // height set dynamically via inline style
     justifyContent: 'center',
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
@@ -282,7 +304,7 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     color: colors.onPrimary,
-    fontSize: 18,
+    // fontSize set dynamically via inline style
     fontWeight: '600',
   },
   logoContainer: {
@@ -305,7 +327,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: customColors.textGray,
-    fontSize: 24,
+    // fontSize set dynamically via inline style
     fontWeight: '700',
     marginBottom: 28,
     textAlign: 'center',

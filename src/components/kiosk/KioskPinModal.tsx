@@ -13,7 +13,9 @@ import {
   TextInput,
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
+  useWindowDimensions,
 } from 'react-native';
+import { getResponsiveDimensions } from '@/theme/dimensions';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMutation } from '@tanstack/react-query';
@@ -24,6 +26,9 @@ import { useRouter } from 'expo-router';
 
 export default function KioskPinModal() {
   const router = useRouter();
+  const { width: screenWidth } = useWindowDimensions();
+  const isTablet = screenWidth >= 768;
+  const dims = getResponsiveDimensions(isTablet);
   const { closePinModal, pinPurpose, toggleSettingsModal } = useKioskStore();
   const { logout } = useAuthStore();
 
@@ -116,8 +121,10 @@ export default function KioskPinModal() {
           <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
             <Ionicons name="close" size={24} color="#6B7280" />
           </TouchableOpacity>
-          <Text style={styles.title}>Confirm PIN</Text>
-          <Text style={styles.subtitle}>Enter the PIN code below in order to access settings.</Text>
+          <Text style={[styles.title, { fontSize: dims.headerFontSize }]}>Confirm PIN</Text>
+          <Text style={[styles.subtitle, { fontSize: dims.bodyFontSize }]}>
+            Enter the PIN code below in order to access settings.
+          </Text>
           <View style={styles.pinContainer}>
             {[0, 1, 2, 3].map(index => (
               <TextInput
@@ -139,20 +146,29 @@ export default function KioskPinModal() {
               />
             ))}
           </View>
-          {error && <Text style={styles.errorText}>{error}</Text>}
+          {error && (
+            <Text style={[styles.errorText, { fontSize: dims.smallFontSize }]}>{error}</Text>
+          )}
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.cancelButton} onPress={handleClose}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+            <TouchableOpacity
+              style={[styles.cancelButton, { height: dims.buttonHeight }]}
+              onPress={handleClose}
+            >
+              <Text style={[styles.cancelButtonText, { fontSize: dims.buttonFontSize }]}>
+                Cancel
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.confirmButton}
+              style={[styles.confirmButton, { height: dims.buttonHeight }]}
               onPress={handleConfirm}
               disabled={isPending}
             >
               {isPending ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
-                <Text style={styles.confirmButtonText}>Confirm</Text>
+                <Text style={[styles.confirmButtonText, { fontSize: dims.buttonFontSize }]}>
+                  Confirm
+                </Text>
               )}
             </TouchableOpacity>
           </View>
@@ -170,19 +186,21 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     flex: 1,
-    paddingVertical: 14,
+    justifyContent: 'center',
+    // paddingVertical removed in favor of dynamic height
   },
-  cancelButtonText: { color: '#6B7280', fontSize: 16, fontWeight: '500' },
+  cancelButtonText: { color: '#6B7280', fontWeight: '500' },
   closeButton: { position: 'absolute', right: 16, top: 16 },
   confirmButton: {
     alignItems: 'center',
     backgroundColor: '#4A7DFF',
     borderRadius: 8,
     flex: 1,
-    paddingVertical: 14,
+    justifyContent: 'center',
+    // paddingVertical removed in favor of dynamic height
   },
-  confirmButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
-  errorText: { color: '#EF4444', fontSize: 14, marginBottom: 16, textAlign: 'center' },
+  confirmButtonText: { color: '#FFFFFF', fontWeight: '600' },
+  errorText: { color: '#EF4444', marginBottom: 16, textAlign: 'center' },
   iconContainer: {
     alignItems: 'center',
     backgroundColor: '#EFF6FF',
@@ -224,6 +242,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   pinInputError: { borderColor: '#EF4444' },
-  subtitle: { color: '#6B7280', fontSize: 15, marginBottom: 24 },
-  title: { color: '#1F2937', fontSize: 22, fontWeight: '700', marginBottom: 8 },
+  subtitle: { color: '#6B7280', marginBottom: 24 },
+  title: { color: '#1F2937', fontWeight: '700', marginBottom: 8 },
 });

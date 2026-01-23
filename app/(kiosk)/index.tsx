@@ -23,13 +23,14 @@ import KioskSettingsModal from '@/components/kiosk/KioskSettingsModal';
 import KioskPinModal from '@/components/kiosk/KioskPinModal';
 import ArrowOutlined from '../../assets/weui_arrow-outlined.svg';
 import type { AttendanceContact, ProgramAttendance } from '@/types/attendance';
+import { getResponsiveDimensions } from '@/theme/dimensions';
 
 // Calculate columns based on screen width for responsive grid
-// Mobile (<768px): 2 columns, Tablet (>=768px): 5, iPad Landscape (>=1024px): 6
+// Mobile (<768px): 3 columns, Tablet (>=768px): 5, iPad Landscape (>=1024px): 6
 const getNumColumns = (width: number) => {
   if (width >= 1024) return 6; // iPad Pro Landscape
   if (width >= 768) return 5; // iPad Portrait / Tablet
-  return 2; // Mobile (was 3, now 2 per Figma)
+  return 3; // Mobile - user requirement: fit 3 cards per row
 };
 
 // Memoized StudentCard wrapper
@@ -38,7 +39,16 @@ const MemoizedStudentCard = memo(StudentCard);
 export default function KioskHomeScreen() {
   const router = useRouter();
   const { width: screenWidth } = useWindowDimensions();
+  const isTablet = screenWidth >= 768;
   const numColumns = getNumColumns(screenWidth);
+  const dims = getResponsiveDimensions(isTablet);
+
+  // Calculate dynamic card width to fill screen available width
+  // This ensures no right-side gap and proper 3-column layout
+  const totalHorizontalPadding = dims.gridPadding * 2;
+  const totalGap = dims.gridGap * (numColumns - 1);
+  const availableWidth = screenWidth - totalHorizontalPadding;
+  const cardWidth = Math.floor((availableWidth - totalGap) / numColumns);
 
   const {
     setAttendanceData,
@@ -122,7 +132,6 @@ export default function KioskHomeScreen() {
   }, [allStudents, debouncedSearch]);
 
   const isSearching = debouncedSearch.trim().length > 0;
-  const showStudentImages = settings?.showStudentImages ?? settingsData?.showStudentImages ?? true;
 
   // Stable callbacks
   const handleStudentPress = useCallback(
@@ -147,24 +156,17 @@ export default function KioskHomeScreen() {
     setIsRefreshing(false);
   }, [refetch]);
 
-  // Calculate card max width based on current screen and columns
-  const cardMaxWidth = useMemo(
-    () => (screenWidth - 32 - 20 * (numColumns - 1)) / numColumns,
-    [screenWidth, numColumns]
-  );
-
   // Optimized renderItem
   const renderItem = useCallback(
     ({ item }: { item: AttendanceContact }) => (
-      <View style={[styles.cardWrapper, { maxWidth: cardMaxWidth }]}>
-        <MemoizedStudentCard
-          student={item}
-          showImage={showStudentImages}
-          onPress={() => handleStudentPress(item)}
-        />
-      </View>
+      <MemoizedStudentCard
+        student={item}
+        showImage={settings?.showStudentImages ?? true}
+        onPress={() => handleStudentPress(item)}
+        width={cardWidth}
+      />
     ),
-    [showStudentImages, handleStudentPress, cardMaxWidth]
+    [settings?.showStudentImages, handleStudentPress, cardWidth]
   );
 
   const keyExtractor = useCallback((item: AttendanceContact) => item._id, []);
@@ -246,8 +248,14 @@ export default function KioskHomeScreen() {
               keyExtractor={keyExtractor}
               numColumns={numColumns}
               key={numColumns}
-              contentContainerStyle={styles.gridContent}
-              columnWrapperStyle={styles.columnWrapper}
+              contentContainerStyle={[
+                styles.gridContent,
+                { padding: dims.gridPadding, paddingBottom: 100 },
+              ]}
+              columnWrapperStyle={[
+                styles.columnWrapper,
+                { gap: dims.gridGap, marginBottom: dims.gridGap },
+              ]}
               removeClippedSubviews={true}
               maxToRenderPerBatch={20}
               windowSize={10}
@@ -339,8 +347,7 @@ const styles = StyleSheet.create({
   },
   columnWrapper: {
     justifyContent: 'flex-start', // Force left alignment
-    gap: 20, // Horizontal gap
-    marginBottom: 20, // Vertical gap
+    // gap and marginBottom set dynamically inline
   },
   container: {
     backgroundColor: '#FFFFFF',
@@ -363,7 +370,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   gridContent: {
-    padding: 16,
     width: '100%',
   },
   gridWrapper: {

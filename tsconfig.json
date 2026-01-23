@@ -8,6 +8,6 @@
     },
     "types": ["expo-router/types", "jest", "node"]
   },
-  "include": ["**/*.ts", "**/*.tsx", ".eslintrc.js"],
+  "include": ["**/*.ts", "**/*.tsx", ".eslintrc.js", "*.js"],
   "exclude": ["node_modules"]
 }

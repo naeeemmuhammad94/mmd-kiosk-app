@@ -1,14 +1,8 @@
 import React, { useCallback } from 'react';
-import { ScrollView, StyleSheet, View, Alert } from 'react-native';
+import { ScrollView, StyleSheet, Alert } from 'react-native';
+/* eslint-disable react-native/no-raw-text */
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  Card,
-  Title,
-  Paragraph,
-  Button,
-  Text,
-  useTheme,
-} from 'react-native-paper';
+import { Card, Title, Paragraph, Button, Text, useTheme } from 'react-native-paper';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePinStore } from '@/store/usePinStore';
 import { useRouter } from 'expo-router';
@@ -20,30 +14,26 @@ export default function HomeScreen() {
   const { reset: resetPin } = usePinStore();
 
   const handleLogout = useCallback(async () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              // Logout clears both auth tokens and PIN
-              await logout();
-              // Reset PIN store state to match cleared storage
-              await resetPin();
-              // Navigate to login
-              router.replace('/(auth)/login');
-            } catch (error) {
-              console.error('Logout error:', error);
-              Alert.alert('Error', 'Failed to logout. Please try again.');
-            }
-          },
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            // Logout clears both auth tokens and PIN
+            await logout();
+            // Reset PIN store state to match cleared storage
+            await resetPin();
+            // Navigate to login
+            router.replace('/(auth)/login');
+          } catch (error) {
+            console.error('Logout error:', error);
+            Alert.alert('Error', 'Failed to logout. Please try again.');
+          }
         },
-      ]
-    );
+      },
+    ]);
   }, [logout, resetPin, router]);
 
   const userName = user?.user?.firstName || user?.user?.email || 'User';
@@ -54,9 +44,7 @@ export default function HomeScreen() {
         <Card style={styles.card}>
           <Card.Content>
             <Title>Welcome, {userName}!</Title>
-            <Paragraph>
-              You are logged in to MMD Kiosk App.
-            </Paragraph>
+            <Paragraph>You are logged in to MMD Kiosk App.</Paragraph>
           </Card.Content>
         </Card>
 

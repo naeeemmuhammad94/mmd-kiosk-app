@@ -9,7 +9,7 @@ describe('ExampleForm', () => {
   });
 
   it('shows validation errors for empty form', async () => {
-    const { getByText, getByLabelText } = render(<ExampleForm />);
+    const { getByText } = render(<ExampleForm />);
     const submitButton = getByText('Submit');
 
     fireEvent.press(submitButton);

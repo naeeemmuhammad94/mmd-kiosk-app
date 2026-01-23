@@ -1,15 +1,8 @@
 import React from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+/* eslint-disable react-native/no-raw-text */
+import { StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  Card,
-  Title,
-  Paragraph,
-  Button,
-  Switch,
-  List,
-  useTheme,
-} from 'react-native-paper';
+import { Card, Title, Paragraph, Button, Switch, List, useTheme } from 'react-native-paper';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useThemeStore } from '@/store/useThemeStore';
 import { useAppTheme } from '@/hooks/useAppTheme';
@@ -36,13 +29,11 @@ export default function ProfileScreen() {
             <Title>Profile</Title>
             {user ? (
               <>
-                <Paragraph>Name: {user.user.firstName} {user.user.lastName}</Paragraph>
+                <Paragraph>
+                  Name: {user.user.firstName} {user.user.lastName}
+                </Paragraph>
                 <Paragraph>Email: {user.user.email}</Paragraph>
-                <Button
-                  mode="outlined"
-                  onPress={handleLogout}
-                  style={styles.button}
-                >
+                <Button mode="outlined" onPress={handleLogout} style={styles.button}>
                   Logout
                 </Button>
               </>
@@ -58,14 +49,9 @@ export default function ProfileScreen() {
             <List.Item
               title="Dark Mode"
               description="Toggle dark theme"
-              right={() => (
-                <Switch value={isDark} onValueChange={toggleTheme} />
-              )}
+              right={() => <Switch value={isDark} onValueChange={toggleTheme} />}
             />
-            <List.Item
-              title="Theme Mode"
-              description={`Current: ${themeMode}`}
-            />
+            <List.Item title="Theme Mode" description={`Current: ${themeMode}`} />
           </Card.Content>
         </Card>
       </ScrollView>

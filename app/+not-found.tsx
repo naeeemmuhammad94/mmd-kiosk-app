@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-raw-text, react/no-unescaped-entities */
 import { Link, Stack } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { Text, Button } from 'react-native-paper';

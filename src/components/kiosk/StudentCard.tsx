@@ -1,16 +1,18 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, useWindowDimensions } from 'react-native';
 import { Text, Avatar } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 // MMD Assets
 import TickIcon from '../../../assets/tick.svg';
 import CloseIcon from '../../../assets/close.svg';
 import type { AttendanceContact } from '@/types/attendance';
+import { getResponsiveDimensions } from '@/theme/dimensions';
 
 interface StudentCardProps {
   student: AttendanceContact;
   showImage: boolean;
   onPress: () => void;
+  width?: number;
 }
 
 // Vibrant fallback colors matching Figma design
@@ -83,7 +85,14 @@ const adjustBrightness = (hex: string, percent: number): string => {
   }
 };
 
-export default function StudentCard({ student, showImage, onPress }: StudentCardProps) {
+export default function StudentCard({ student, showImage, onPress, width }: StudentCardProps) {
+  const { width: screenWidth } = useWindowDimensions();
+  const isTablet = screenWidth >= 768;
+  const dims = getResponsiveDimensions(isTablet);
+
+  // Use provided width or fallback to responsive default
+  const cardWidth = width || dims.cardWidth;
+
   // Handle null, undefined, and empty string
   const studentName = student?.name && student.name.length > 0 ? student.name : 'Unknown';
   const attendanceText = `Attendance (${student?.totalPresentCount || 0}/${student?.totalClasses || 0})`;
@@ -94,7 +103,11 @@ export default function StudentCard({ student, showImage, onPress }: StudentCard
   const gradientColors = getGradientColors(effectiveColor);
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={[styles.container, { width: cardWidth }]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
       {/* Profile Image Container */}
       <View style={styles.imageWrapper}>
         {/* Status Badge - Top Left (red cross) - ONLY if NOT checked in */}
@@ -102,7 +115,7 @@ export default function StudentCard({ student, showImage, onPress }: StudentCard
         {!isCheckedIn && (
           <View style={styles.statusBadgeTopLeft}>
             {/* Use SVG Asset */}
-            <CloseIcon width={32} height={32} />
+            <CloseIcon width={dims.badgeSize} height={dims.badgeSize} />
           </View>
         )}
 
@@ -111,18 +124,23 @@ export default function StudentCard({ student, showImage, onPress }: StudentCard
           colors={gradientColors}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.gradientBorder}
+          style={[styles.gradientBorder, { width: dims.avatarBorder, height: dims.avatarBorder }]}
         >
           {/* Inner container for image */}
-          <View style={styles.imageContainer}>
+          <View
+            style={[styles.imageContainer, { width: dims.avatarInner, height: dims.avatarInner }]}
+          >
             {showImage && student?.profilePicURL ? (
-              <Image source={{ uri: student.profilePicURL }} style={styles.profileImage} />
+              <Image
+                source={{ uri: student.profilePicURL }}
+                style={[styles.profileImage, { width: dims.avatarInner, height: dims.avatarInner }]}
+              />
             ) : (
               <Avatar.Text
-                size={68}
+                size={dims.avatarSize}
                 label={studentName.charAt(0).toUpperCase()}
                 style={[styles.avatar, { backgroundColor: effectiveColor }]}
-                labelStyle={styles.avatarLabel}
+                labelStyle={[styles.avatarLabel, { fontSize: dims.avatarSize * 0.4 }]}
               />
             )}
           </View>
@@ -133,13 +151,13 @@ export default function StudentCard({ student, showImage, onPress }: StudentCard
         {isCheckedIn && (
           <View style={styles.statusBadgeBottomRight}>
             {/* Use SVG Asset */}
-            <TickIcon width={32} height={32} />
+            <TickIcon width={dims.badgeSize} height={dims.badgeSize} />
           </View>
         )}
       </View>
 
       {/* Name */}
-      <Text style={styles.name} numberOfLines={2}>
+      <Text style={[styles.name, { fontSize: dims.nameFontSize }]} numberOfLines={2}>
         {studentName}
       </Text>
 
@@ -177,19 +195,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     padding: 8,
-    width: 120,
+    // width set dynamically via inline style
   },
   gradientBorder: {
-    width: 84,
-    height: 84,
+    // width and height set dynamically via inline style
     borderRadius: 24, // Matching Figma rounded corners
     padding: 3,
     justifyContent: 'center',
     alignItems: 'center',
   },
   imageContainer: {
-    width: 78,
-    height: 78,
+    // width and height set dynamically via inline style
     borderRadius: 20, // Matching inner radius
     overflow: 'hidden',
     justifyContent: 'center',
@@ -202,7 +218,7 @@ const styles = StyleSheet.create({
   },
   name: {
     color: '#1F2937',
-    fontSize: 13,
+    // fontSize set dynamically via inline style
     fontWeight: '700',
     lineHeight: 18,
     marginBottom: 2,
@@ -210,8 +226,7 @@ const styles = StyleSheet.create({
   },
   profileImage: {
     borderRadius: 20,
-    height: 78,
-    width: 78,
+    // width and height set dynamically via inline style
   },
   statusBadgeBottomRight: {
     position: 'absolute',

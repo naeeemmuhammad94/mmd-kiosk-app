@@ -11,13 +11,13 @@ export const useThemeStore = create<ThemeState>((set, _get) => {
   const colorScheme = Appearance.getColorScheme();
 
   // Listen to system theme changes
-  const _subscription = Appearance.addChangeListener(({ colorScheme: newColorScheme }) => {
+  Appearance.addChangeListener(({ colorScheme: newColorScheme }) => {
     set({ colorScheme: newColorScheme });
   });
 
   return {
     theme: 'auto',
     colorScheme,
-    setTheme: (theme) => set({ theme }),
+    setTheme: theme => set({ theme }),
   };
 });

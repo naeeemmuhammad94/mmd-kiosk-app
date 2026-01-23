@@ -1,10 +1,8 @@
 import { useMemo } from 'react';
-import { useColorScheme } from 'react-native';
 import { useThemeStore } from '@/store/useThemeStore';
 import { lightTheme, darkTheme } from '@/theme';
 
 export const useAppTheme = () => {
-  const _systemColorScheme = useColorScheme();
   const { theme, colorScheme } = useThemeStore();
 
   const currentTheme = useMemo(() => {
