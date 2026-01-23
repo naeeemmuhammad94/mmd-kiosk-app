@@ -127,6 +127,11 @@ export const lightTheme: MD3Theme = {
   fonts: configureFonts({ config: fontConfig }),
 };
 
+// Dark theme (mirrors light theme for now - can be customized later)
+export const darkTheme: MD3Theme = {
+  ...lightTheme,
+};
+
 export const customColors = {
   shadow: '#000000',
   backdrop: 'rgba(107, 114, 128, 0.5)',

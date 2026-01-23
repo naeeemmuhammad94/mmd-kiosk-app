@@ -8,237 +8,229 @@ import CloseIcon from '../../../assets/close.svg';
 import type { AttendanceContact } from '@/types/attendance';
 
 interface StudentCardProps {
-    student: AttendanceContact;
-    showImage: boolean;
-    onPress: () => void;
+  student: AttendanceContact;
+  showImage: boolean;
+  onPress: () => void;
 }
 
 // Vibrant fallback colors matching Figma design
 const VIBRANT_COLORS = [
-    '#22C55E', // Green
-    '#84CC16', // Lime/Yellow-green
-    '#F59E0B', // Orange
-    '#EC4899', // Pink
-    '#8B5CF6', // Purple
-    '#3B82F6', // Blue
-    '#14B8A6', // Teal
-    '#EF4444', // Red
+  '#22C55E', // Green
+  '#84CC16', // Lime/Yellow-green
+  '#F59E0B', // Orange
+  '#EC4899', // Pink
+  '#8B5CF6', // Purple
+  '#3B82F6', // Blue
+  '#14B8A6', // Teal
+  '#EF4444', // Red
 ];
 
 // Check if a color is too dark (perceived brightness < threshold)
 const isColorTooDark = (hex: string): boolean => {
-    try {
-        const cleanHex = hex.replace('#', '');
-        const r = parseInt(cleanHex.substring(0, 2), 16);
-        const g = parseInt(cleanHex.substring(2, 4), 16);
-        const b = parseInt(cleanHex.substring(4, 6), 16);
-        // Calculate perceived brightness
-        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-        return brightness < 80; // If too dark, use fallback
-    } catch {
-        return true;
-    }
+  try {
+    const cleanHex = hex.replace('#', '');
+    const r = parseInt(cleanHex.substring(0, 2), 16);
+    const g = parseInt(cleanHex.substring(2, 4), 16);
+    const b = parseInt(cleanHex.substring(4, 6), 16);
+    // Calculate perceived brightness
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness < 80; // If too dark, use fallback
+  } catch {
+    return true;
+  }
 };
 
 // Get a vibrant color based on student ID (consistent per student)
 const getVibrantColor = (studentId: string): string => {
-    let hash = 0;
-    for (let i = 0; i < studentId.length; i++) {
-        hash = studentId.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return VIBRANT_COLORS[Math.abs(hash) % VIBRANT_COLORS.length];
+  let hash = 0;
+  for (let i = 0; i < studentId.length; i++) {
+    hash = studentId.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return VIBRANT_COLORS[Math.abs(hash) % VIBRANT_COLORS.length];
 };
 
 // Get the effective color - uses rank color if valid, otherwise uses vibrant fallback
 const getEffectiveColor = (rankColor: string | undefined, studentId: string): string => {
-    // If no rank color, use vibrant fallback
-    if (!rankColor || rankColor === '#E5E7EB' || rankColor === '') {
-        return getVibrantColor(studentId);
-    }
-    // If rank color is too dark, use vibrant fallback
-    if (isColorTooDark(rankColor)) {
-        return getVibrantColor(studentId);
-    }
-    return rankColor;
+  // If no rank color, use vibrant fallback
+  if (!rankColor || rankColor === '#E5E7EB' || rankColor === '') {
+    return getVibrantColor(studentId);
+  }
+  // If rank color is too dark, use vibrant fallback
+  if (isColorTooDark(rankColor)) {
+    return getVibrantColor(studentId);
+  }
+  return rankColor;
 };
 
 // Helper to create gradient colors from base color
 const getGradientColors = (baseColor: string): [string, string, string] => {
-    // Create a gradient that starts and ends with the base color
-    // with a slightly lighter middle for visual effect
-    return [baseColor, adjustBrightness(baseColor, 20), baseColor];
+  // Create a gradient that starts and ends with the base color
+  // with a slightly lighter middle for visual effect
+  return [baseColor, adjustBrightness(baseColor, 20), baseColor];
 };
 
 // Helper to adjust color brightness
 const adjustBrightness = (hex: string, percent: number): string => {
-    try {
-        const num = parseInt(hex.replace('#', ''), 16);
-        const amt = Math.round(2.55 * percent);
-        const R = Math.min(255, Math.max(0, (num >> 16) + amt));
-        const G = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amt));
-        const B = Math.min(255, Math.max(0, (num & 0x0000FF) + amt));
-        return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
-    } catch {
-        return hex;
-    }
+  try {
+    const num = parseInt(hex.replace('#', ''), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = Math.min(255, Math.max(0, (num >> 16) + amt));
+    const G = Math.min(255, Math.max(0, ((num >> 8) & 0x00ff) + amt));
+    const B = Math.min(255, Math.max(0, (num & 0x0000ff) + amt));
+    return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
+  } catch {
+    return hex;
+  }
 };
 
 export default function StudentCard({ student, showImage, onPress }: StudentCardProps) {
-    // Handle null, undefined, and empty string
-    const studentName = (student?.name && student.name.length > 0) ? student.name : 'Unknown';
-    const attendanceText = `Attendance (${student?.totalPresentCount || 0}/${student?.totalClasses || 0})`;
-    const isCheckedIn = student?.isPresent;
+  // Handle null, undefined, and empty string
+  const studentName = student?.name && student.name.length > 0 ? student.name : 'Unknown';
+  const attendanceText = `Attendance (${student?.totalPresentCount || 0}/${student?.totalClasses || 0})`;
+  const isCheckedIn = student?.isPresent;
 
-    // Get effective color - vibrant fallback if rank color is missing or too dark
-    const effectiveColor = getEffectiveColor(student?.rankColor, student?._id || 'default');
-    const gradientColors = getGradientColors(effectiveColor);
+  // Get effective color - vibrant fallback if rank color is missing or too dark
+  const effectiveColor = getEffectiveColor(student?.rankColor, student?._id || 'default');
+  const gradientColors = getGradientColors(effectiveColor);
 
-    return (
-        <TouchableOpacity
-            style={styles.container}
-            onPress={onPress}
-            activeOpacity={0.7}
+  return (
+    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
+      {/* Profile Image Container */}
+      <View style={styles.imageWrapper}>
+        {/* Status Badge - Top Left (red cross) - ONLY if NOT checked in */}
+        {/* Visual refinement: overlapping top-left corner */}
+        {!isCheckedIn && (
+          <View style={styles.statusBadgeTopLeft}>
+            {/* Use SVG Asset */}
+            <CloseIcon width={32} height={32} />
+          </View>
+        )}
+
+        {/* Gradient Border Container */}
+        <LinearGradient
+          colors={gradientColors}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientBorder}
         >
-            {/* Profile Image Container */}
-            <View style={styles.imageWrapper}>
-                {/* Status Badge - Top Left (red cross) - ONLY if NOT checked in */}
-                {/* Visual refinement: overlapping top-left corner */}
-                {!isCheckedIn && (
-                    <View style={styles.statusBadgeTopLeft}>
-                        {/* Use SVG Asset */}
-                        <CloseIcon width={32} height={32} />
-                    </View>
-                )}
+          {/* Inner container for image */}
+          <View style={styles.imageContainer}>
+            {showImage && student?.profilePicURL ? (
+              <Image source={{ uri: student.profilePicURL }} style={styles.profileImage} />
+            ) : (
+              <Avatar.Text
+                size={68}
+                label={studentName.charAt(0).toUpperCase()}
+                style={[styles.avatar, { backgroundColor: effectiveColor }]}
+                labelStyle={styles.avatarLabel}
+              />
+            )}
+          </View>
+        </LinearGradient>
 
-                {/* Gradient Border Container */}
-                <LinearGradient
-                    colors={gradientColors}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.gradientBorder}
-                >
-                    {/* Inner container for image */}
-                    <View style={styles.imageContainer}>
-                        {showImage && student?.profilePicURL ? (
-                            <Image
-                                source={{ uri: student.profilePicURL }}
-                                style={styles.profileImage}
-                            />
-                        ) : (
-                            <Avatar.Text
-                                size={68}
-                                label={studentName.charAt(0).toUpperCase()}
-                                style={[styles.avatar, { backgroundColor: effectiveColor }]}
-                                labelStyle={styles.avatarLabel}
-                            />
-                        )}
-                    </View>
-                </LinearGradient>
+        {/* Status Badge - Bottom Right (green check) - ONLY if checked in */}
+        {/* Visual refinement: overlapping bottom-right corner */}
+        {isCheckedIn && (
+          <View style={styles.statusBadgeBottomRight}>
+            {/* Use SVG Asset */}
+            <TickIcon width={32} height={32} />
+          </View>
+        )}
+      </View>
 
-                {/* Status Badge - Bottom Right (green check) - ONLY if checked in */}
-                {/* Visual refinement: overlapping bottom-right corner */}
-                {isCheckedIn && (
-                    <View style={styles.statusBadgeBottomRight}>
-                        {/* Use SVG Asset */}
-                        <TickIcon width={32} height={32} />
-                    </View>
-                )}
-            </View>
+      {/* Name */}
+      <Text style={styles.name} numberOfLines={2}>
+        {studentName}
+      </Text>
 
-            {/* Name */}
-            <Text style={styles.name} numberOfLines={2}>
-                {studentName}
-            </Text>
-
-            {/* Attendance - colored based on status */}
-            <Text style={[
-                styles.attendance,
-                isCheckedIn ? styles.attendanceGreen : styles.attendanceRed,
-            ]}>
-                {attendanceText}
-            </Text>
-        </TouchableOpacity>
-    );
+      {/* Attendance - colored based on status */}
+      <Text
+        style={[styles.attendance, isCheckedIn ? styles.attendanceGreen : styles.attendanceRed]}
+      >
+        {attendanceText}
+      </Text>
+    </TouchableOpacity>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        width: 120,
-        alignItems: 'center',
-        padding: 8,
-        marginBottom: 12,
-    },
-    imageWrapper: {
-        position: 'relative',
-        marginBottom: 8,
-    },
-    gradientBorder: {
-        width: 84,
-        height: 84,
-        borderRadius: 24, // Matching Figma rounded corners
-        padding: 3,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    imageContainer: {
-        width: 78,
-        height: 78,
-        borderRadius: 20, // Matching inner radius
-        overflow: 'hidden',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#F3F4F6',
-    },
-    profileImage: {
-        width: 78,
-        height: 78,
-        borderRadius: 20,
-    },
-    avatar: {
-        borderRadius: 20,
-    },
-    avatarLabel: {
-        fontSize: 26,
-        fontWeight: '600',
-        color: '#FFFFFF',
-    },
-    statusBadgeTopLeft: {
-        position: 'absolute',
-        top: -10, // Overlapping
-        left: -10, // Overlapping
-        zIndex: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-    },
-    statusBadgeBottomRight: {
-        position: 'absolute',
-        bottom: -10, // Overlapping
-        right: -10, // Overlapping
-        zIndex: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-    },
-    name: {
-        fontSize: 13,
-        fontWeight: '700',
-        color: '#1F2937',
-        textAlign: 'center',
-        marginBottom: 2,
-        lineHeight: 18,
-    },
-    attendance: {
-        fontSize: 11,
-        textAlign: 'center',
-        fontWeight: '500',
-    },
-    attendanceGreen: {
-        color: '#4B5563', // Grey text for attendance count per design
-    },
-    attendanceRed: {
-        color: '#4B5563', // Grey text for attendance count per design
-    },
+  attendance: {
+    fontSize: 11,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  attendanceGreen: {
+    color: '#4B5563', // Grey text for attendance count per design
+  },
+  attendanceRed: {
+    color: '#4B5563', // Grey text for attendance count per design
+  },
+  avatar: {
+    borderRadius: 20,
+  },
+  avatarLabel: {
+    color: '#FFFFFF',
+    fontSize: 26,
+    fontWeight: '600',
+  },
+  container: {
+    alignItems: 'center',
+    marginBottom: 12,
+    padding: 8,
+    width: 120,
+  },
+  gradientBorder: {
+    width: 84,
+    height: 84,
+    borderRadius: 24, // Matching Figma rounded corners
+    padding: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    width: 78,
+    height: 78,
+    borderRadius: 20, // Matching inner radius
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+  },
+  imageWrapper: {
+    marginBottom: 8,
+    position: 'relative',
+  },
+  name: {
+    color: '#1F2937',
+    fontSize: 13,
+    fontWeight: '700',
+    lineHeight: 18,
+    marginBottom: 2,
+    textAlign: 'center',
+  },
+  profileImage: {
+    borderRadius: 20,
+    height: 78,
+    width: 78,
+  },
+  statusBadgeBottomRight: {
+    position: 'absolute',
+    bottom: -10, // Overlapping
+    right: -10, // Overlapping
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  statusBadgeTopLeft: {
+    position: 'absolute',
+    top: -10, // Overlapping
+    left: -10, // Overlapping
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
 });

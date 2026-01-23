@@ -126,20 +126,20 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: 16,
+    gap: 20, // Increased for airy look per Figma
     justifyContent: 'center',
   },
   input: {
-    backgroundColor: colors.surface,
+    backgroundColor: '#FFFFFF', // White background per Figma
     borderColor: colors.outline,
-    borderRadius: 14,
+    borderRadius: 12, // Square-ish corners per Figma
     borderWidth: 1.5,
     color: colors.onSurface,
     fontSize: 26,
     fontWeight: '600',
-    height: 64, // Increased size
+    height: 64, // Square shape
     textAlign: 'center',
-    width: 64, // Increased size
+    width: 64, // Square shape
   },
   inputDisabled: {
     backgroundColor: customColors.surfaceDisabled, // Gray 100

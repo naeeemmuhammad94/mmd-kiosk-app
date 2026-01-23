@@ -12,9 +12,9 @@ import {
   Alert,
   TouchableOpacity,
   TextInput,
-  Dimensions,
   ActivityIndicator,
   ImageBackground,
+  useWindowDimensions,
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useRouter } from 'expo-router';
@@ -32,10 +32,16 @@ import { lightTheme, customColors } from '@/theme';
 
 const colors = lightTheme.colors;
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
 export default function LoginScreen() {
   const router = useRouter();
+  const { width: screenWidth } = useWindowDimensions();
+  const isTablet = screenWidth >= 768;
+
+  // Calculate Logo Width
+  // Tablet: Match inputs exactly (672 - 48px padding = 624px)
+  // Mobile: Use safer logic (Screen - 112px) to prevent overflow "out of model"
+  const logoWidth = isTablet ? 672 - 48 : Math.min(screenWidth - 112, 400);
+
   const { login } = useAuthStore();
   const { loadPinState } = usePinStore();
 
@@ -106,14 +112,16 @@ export default function LoginScreen() {
             showsVerticalScrollIndicator={false}
           >
             {/* White Card */}
-            <View style={styles.card}>
+            <View
+              style={[
+                styles.card,
+                { width: isTablet ? 672 : '90%', maxWidth: isTablet ? 672 : 400 },
+              ]}
+            >
               {/* MMD Logo */}
               <View style={styles.logoContainer}>
-                {/* Responsive Logo: Max 540px, or Inputs Width (Screen - 112px [64 pad + 48 card pad]) */}
-                <LoginLogo
-                  width={Math.min(540, SCREEN_WIDTH - 112)}
-                  height={Math.min(540, SCREEN_WIDTH - 112) / 3.07}
-                />
+                {/* Responsive Logo: Max 540px, or Inputs Width */}
+                <LoginLogo width={logoWidth} height={logoWidth / 3.07} />
               </View>
 
               {/* Title */}
@@ -196,18 +204,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   card: {
-    alignSelf: 'center', // Center value
+    alignSelf: 'center',
     backgroundColor: colors.background,
     borderRadius: 24,
     elevation: 8,
-    maxWidth: 596, // Rule B: 596px for Content Modals
+    // width and maxWidth set dynamically via inline style
     paddingHorizontal: 24,
     paddingVertical: 32,
     shadowColor: customColors.shadow,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
     shadowRadius: 24,
-    width: '100%', // Take available width up to max
   },
   container: {
     flex: 1,

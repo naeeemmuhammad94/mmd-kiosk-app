@@ -14,6 +14,7 @@ import {
   Switch,
   Alert,
   Image,
+  useWindowDimensions,
 } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -46,17 +47,23 @@ const SettingToggle = memo(function SettingToggle({
   description,
   value,
   onToggle,
+  isTablet = false,
 }: {
   title: string;
   description?: string;
   value: boolean;
   onToggle: () => void;
+  isTablet?: boolean;
 }) {
   return (
     <View style={styles.settingRow}>
       <View style={styles.settingInfo}>
-        <Text style={styles.settingTitle}>{title}</Text>
-        {description && <Text style={styles.settingDescription}>{description}</Text>}
+        <Text style={[styles.settingTitle, isTablet && styles.settingTitleTablet]}>{title}</Text>
+        {description && (
+          <Text style={[styles.settingDescription, isTablet && styles.settingDescriptionTablet]}>
+            {description}
+          </Text>
+        )}
       </View>
       <Switch
         value={value}
@@ -70,6 +77,9 @@ const SettingToggle = memo(function SettingToggle({
 
 export default function KioskSettingsModal() {
   const queryClient = useQueryClient();
+  const { width: screenWidth } = useWindowDimensions();
+  const isTablet = screenWidth >= 768;
+
   const { settings, toggleSettingsModal, setSettings, openPinModal, isPinModalOpen } =
     useKioskStore();
 
@@ -260,7 +270,12 @@ export default function KioskSettingsModal() {
     <>
       <Modal visible={true} animationType="slide" transparent>
         <View style={styles.overlay}>
-          <View style={styles.modalContainer}>
+          <View
+            style={[
+              styles.modalContainer,
+              { width: isTablet ? 672 : '90%', maxWidth: isTablet ? 672 : 400 },
+            ]}
+          >
             {/* Header */}
             <View style={styles.header}>
               <View style={styles.iconContainer}>
@@ -326,6 +341,7 @@ export default function KioskSettingsModal() {
                 description="This option enables the display of student images in the program"
                 value={localSettings.showStudentImages ?? true}
                 onToggle={handleToggleShowImages}
+                isTablet={isTablet}
               />
 
               {/* Power Saving Mode */}
@@ -334,6 +350,7 @@ export default function KioskSettingsModal() {
                 description="This option will dim the display when the app is inactive"
                 value={localSettings.powerSavingMode ?? false}
                 onToggle={handleTogglePowerSaving}
+                isTablet={isTablet}
               />
 
               {/* Allow multiple classes */}
@@ -342,6 +359,7 @@ export default function KioskSettingsModal() {
                 description="This option will allow students to attend multiple classes in one day"
                 value={localSettings.allowMultipleClasses ?? false}
                 onToggle={handleToggleMultipleClasses}
+                isTablet={isTablet}
               />
 
               {/* Allow non-members */}
@@ -350,6 +368,7 @@ export default function KioskSettingsModal() {
                 description="This option will allow contacts to check in without membership"
                 value={localSettings.allowNonMembers ?? false}
                 onToggle={handleToggleNonMembers}
+                isTablet={isTablet}
               />
 
               {/* Change Pin */}
@@ -509,8 +528,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: 16,
     maxHeight: '85%',
-    maxWidth: 400, // Reduced from 500 to 400 as per User Request for Settings Modal
-    width: '90%',
+    // width and maxWidth set dynamically via inline style
   },
   navRow: {
     alignItems: 'center',
@@ -561,8 +579,11 @@ const styles = StyleSheet.create({
   },
   settingDescription: {
     color: COLORS.textSecondary,
-    fontSize: 12,
+    fontSize: 12, // Mobile default
     marginTop: 2,
+  },
+  settingDescriptionTablet: {
+    fontSize: 16, // CRM tablet size
   },
   settingInfo: {
     flex: 1,
@@ -578,8 +599,11 @@ const styles = StyleSheet.create({
   },
   settingTitle: {
     color: COLORS.textPrimary,
-    fontSize: 14,
+    fontSize: 14, // Mobile default
     fontWeight: '600',
+  },
+  settingTitleTablet: {
+    fontSize: 18, // CRM tablet size
   },
   title: {
     color: COLORS.textPrimary,

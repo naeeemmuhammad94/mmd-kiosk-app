@@ -13,9 +13,9 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput as RNTextInput,
-  Dimensions,
   ActivityIndicator,
   ImageBackground,
+  useWindowDimensions,
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useRouter } from 'expo-router';
@@ -35,8 +35,6 @@ import { lightTheme, customColors } from '@/theme';
 
 const colors = lightTheme.colors;
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
 // Forgot password schema with userName (matching CRM)
 const forgotPasswordSchema = z.object({
   userName: z.string().min(1, 'Username is required'),
@@ -46,6 +44,14 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
+  const { width: screenWidth } = useWindowDimensions();
+  const isTablet = screenWidth >= 768;
+
+  // Calculate Logo Width
+  // Tablet: Match inputs exactly (672 - 48px padding = 624px)
+  // Mobile: Use safer logic (Screen - 112px) to prevent overflow
+  const logoWidth = isTablet ? 672 - 48 : Math.min(screenWidth - 112, 400);
+
   const [isSuccess, setIsSuccess] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
   const [resendSuccess, setResendSuccess] = useState(false);
@@ -127,14 +133,16 @@ export default function ForgotPasswordScreen() {
               showsVerticalScrollIndicator={false}
             >
               {/* White Card */}
-              <View style={styles.card}>
+              <View
+                style={[
+                  styles.card,
+                  { width: isTablet ? 672 : '90%', maxWidth: isTablet ? 672 : 400 },
+                ]}
+              >
                 {/* MMD Logo with Blue Gradient Background */}
                 {/* MMD Logo - Clean on White Card */}
                 <View style={styles.logoContainer}>
-                  <LoginLogo
-                    width={Math.min(540, SCREEN_WIDTH - 112)}
-                    height={Math.min(540, SCREEN_WIDTH - 112) / 3.07}
-                  />
+                  <LoginLogo width={logoWidth} height={logoWidth / 3.07} />
                 </View>
 
                 {isSuccess ? (
@@ -279,14 +287,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderRadius: 24,
     elevation: 8,
-    maxWidth: 596, // Match Login Modal rule
+    // width and maxWidth set dynamically via inline style
     paddingHorizontal: 24,
     paddingVertical: 32,
     shadowColor: customColors.shadow,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
     shadowRadius: 24,
-    width: '100%',
   },
   container: {
     flex: 1,

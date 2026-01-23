@@ -17,6 +17,8 @@ import { useOnboardingStore } from '@/store/useOnboardingStore';
 import { usePinStore } from '@/store/usePinStore';
 import PinModal from '@/components/auth/PinModal';
 
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 /**
  * Hook to handle initial route based on auth/onboarding/PIN state
  */
@@ -27,7 +29,8 @@ function useProtectedRoute() {
 
   const { isAuthenticated, isInitialized: authInitialized } = useAuthStore();
   const { isOnboardingComplete } = useOnboardingStore();
-  const { isPinSet, isPinVerified, showPinModal, showVerifyPinModal, showCreatePinModal } = usePinStore();
+  const { isPinSet, isPinVerified, showPinModal, showVerifyPinModal, showCreatePinModal } =
+    usePinStore();
 
   useEffect(() => {
     // Crucial: Wait for both auth to be initialized AND the root navigation to be ready
@@ -81,20 +84,28 @@ function useProtectedRoute() {
       router.replace('/(kiosk)');
       return;
     }
-  }, [authInitialized, navigationState?.key, isAuthenticated, isOnboardingComplete, isPinSet, isPinVerified, showPinModal, segments, router, showVerifyPinModal, showCreatePinModal]);
+  }, [
+    authInitialized,
+    navigationState?.key,
+    isAuthenticated,
+    isOnboardingComplete,
+    isPinSet,
+    isPinVerified,
+    showPinModal,
+    segments,
+    router,
+    showVerifyPinModal,
+    showCreatePinModal,
+  ]);
 }
-
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function RootLayout() {
   const { theme, isDark } = useAppTheme();
   const [isReady, setIsReady] = useState(false);
 
-  const loadStoredAuth = useAuthStore((state) => state.loadStoredAuth);
-  const loadOnboardingState = useOnboardingStore(
-    (state) => state.loadOnboardingState
-  );
-  const loadPinState = usePinStore((state) => state.loadPinState);
+  const loadStoredAuth = useAuthStore(state => state.loadStoredAuth);
+  const loadOnboardingState = useOnboardingStore(state => state.loadOnboardingState);
+  const loadPinState = usePinStore(state => state.loadPinState);
 
   /**
    * Initialize app state on mount
@@ -102,11 +113,7 @@ export default function RootLayout() {
   useEffect(() => {
     async function initializeApp() {
       try {
-        await Promise.all([
-          loadStoredAuth(),
-          loadOnboardingState(),
-          loadPinState(),
-        ]);
+        await Promise.all([loadStoredAuth(), loadOnboardingState(), loadPinState()]);
       } catch (error) {
         console.error('Error initializing app:', error);
       } finally {
