@@ -113,7 +113,21 @@ export default function RootLayout() {
   useEffect(() => {
     async function initializeApp() {
       try {
-        await Promise.all([loadStoredAuth(), loadOnboardingState(), loadPinState()]);
+        // Initialize stores AND wait for a minimum delay (e.g., 2.5s) to prevent flicker/jerks
+        await Promise.all([
+          loadStoredAuth(),
+          loadOnboardingState(),
+          loadPinState(),
+          new Promise(resolve => setTimeout(resolve, 2500)),
+        ]);
+
+        // PRE-CALCULATION: Check if we need to show PIN modal immediately to prevent flicker
+        const authState = useAuthStore.getState();
+        const pinState = usePinStore.getState();
+
+        if (authState.isAuthenticated && pinState.isPinSet && !pinState.isPinVerified) {
+          pinState.showVerifyPinModal();
+        }
       } catch (error) {
         console.error('Error initializing app:', error);
       } finally {
