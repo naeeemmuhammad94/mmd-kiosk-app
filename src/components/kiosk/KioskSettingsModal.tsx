@@ -28,18 +28,9 @@ import SetTimeModal from './SetTimeModal';
 import KioskPinModal from './KioskPinModal';
 import type { KioskSettings } from '@/types/attendance';
 
-const COLORS = {
-  white: '#FFFFFF',
-  whiteOpacity: 'rgba(255, 255, 255, 0.9)',
-  overlay: 'rgba(0, 0, 0, 0.5)',
-  border: '#E5E7EB',
-  borderLight: '#F3F4F6',
-  primary: '#4A7DFF',
-  danger: '#EF4444',
-  textPrimary: '#1F2937',
-  textSecondary: '#6B7280',
-  textHint: '#9CA3AF',
-};
+import { lightTheme as theme, customColors } from '@/theme';
+
+// Removed local COLORS definition in favor of theme references
 
 // Memoized toggle component to prevent re-renders
 const SettingToggle = memo(function SettingToggle({
@@ -68,8 +59,8 @@ const SettingToggle = memo(function SettingToggle({
       <Switch
         value={value}
         onValueChange={onToggle}
-        trackColor={{ false: COLORS.border, true: COLORS.primary }}
-        thumbColor={COLORS.white}
+        trackColor={{ false: theme.colors.outline, true: theme.colors.primary }}
+        thumbColor={theme.colors.surface}
       />
     </View>
   );
@@ -270,19 +261,14 @@ export default function KioskSettingsModal() {
     <>
       <Modal visible={true} animationType="slide" transparent>
         <View style={styles.overlay}>
-          <View
-            style={[
-              styles.modalContainer,
-              { width: isTablet ? 672 : '90%', maxWidth: isTablet ? 672 : 400 },
-            ]}
-          >
+          <View style={[styles.modalContainer, isTablet ? styles.modalTablet : styles.modalMobile]}>
             {/* Header */}
             <View style={styles.header}>
               <View style={styles.iconContainer}>
-                <Ionicons name="settings-outline" size={24} color={COLORS.textSecondary} />
+                <Ionicons name="settings-outline" size={24} color={theme.colors.onSurfaceVariant} />
               </View>
               <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-                <Ionicons name="close" size={24} color={COLORS.textSecondary} />
+                <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
               </TouchableOpacity>
             </View>
 
@@ -308,7 +294,7 @@ export default function KioskSettingsModal() {
                     resizeMode="cover"
                   />
                   <TouchableOpacity style={styles.removeImageButton} onPress={handleRemoveImage}>
-                    <Ionicons name="close-circle" size={28} color={COLORS.danger} />
+                    <Ionicons name="close-circle" size={28} color={theme.colors.error} />
                   </TouchableOpacity>
                 </View>
               ) : (
@@ -320,12 +306,16 @@ export default function KioskSettingsModal() {
                 >
                   {isUploadingImage ? (
                     <>
-                      <ActivityIndicator size="small" color={COLORS.primary} />
+                      <ActivityIndicator size="small" color={theme.colors.primary} />
                       <Text style={styles.uploadText}>Uploading...</Text>
                     </>
                   ) : (
                     <>
-                      <Ionicons name="cloud-upload-outline" size={24} color={COLORS.textHint} />
+                      <Ionicons
+                        name="cloud-upload-outline"
+                        size={24}
+                        color={customColors.onSurfaceDisabled}
+                      />
                       <Text style={styles.uploadText}>
                         <Text style={styles.uploadLink}>Click to Upload</Text>
                       </Text>
@@ -378,7 +368,7 @@ export default function KioskSettingsModal() {
                 activeOpacity={0.7}
               >
                 <Text style={styles.navRowText}>Change Pin</Text>
-                <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+                <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceVariant} />
               </TouchableOpacity>
 
               {/* Sign-in Time */}
@@ -392,7 +382,11 @@ export default function KioskSettingsModal() {
                 </Text>
                 <View style={styles.navRowValue}>
                   <Text style={styles.valueText}>{localSettings.signInTime || 10} min</Text>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={theme.colors.onSurfaceVariant}
+                  />
                 </View>
               </TouchableOpacity>
             </ScrollView>
@@ -400,7 +394,7 @@ export default function KioskSettingsModal() {
             {/* Footer Buttons */}
             <View style={styles.footer}>
               <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                <Ionicons name="log-out-outline" size={18} color={COLORS.danger} />
+                <Ionicons name="log-out-outline" size={18} color={theme.colors.error} />
                 <Text style={styles.logoutText}>Logout</Text>
               </TouchableOpacity>
 
@@ -414,7 +408,7 @@ export default function KioskSettingsModal() {
                   disabled={isSaving}
                 >
                   {isSaving ? (
-                    <ActivityIndicator size="small" color={COLORS.white} />
+                    <ActivityIndicator size="small" color={theme.colors.surface} />
                   ) : (
                     <Text style={styles.saveText}>Save Settings</Text>
                   )}
@@ -452,14 +446,14 @@ export default function KioskSettingsModal() {
 
 const styles = StyleSheet.create({
   cancelButton: {
-    borderColor: COLORS.border,
+    borderColor: theme.colors.outline,
     borderRadius: 8,
     borderWidth: 1,
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
   cancelText: {
-    color: COLORS.textPrimary,
+    color: theme.colors.onSurface,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -471,7 +465,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     alignItems: 'center',
-    borderTopColor: COLORS.borderLight,
+    borderTopColor: customColors.surfaceDisabled,
     borderTopWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -489,7 +483,7 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     alignItems: 'center',
-    borderColor: COLORS.border,
+    borderColor: theme.colors.outline,
     borderRadius: 8,
     borderWidth: 1,
     height: 48,
@@ -509,7 +503,7 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     alignItems: 'center',
-    borderColor: COLORS.danger,
+    borderColor: theme.colors.error,
     borderRadius: 8,
     borderWidth: 1,
     flexDirection: 'row',
@@ -520,26 +514,33 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   logoutText: {
-    color: COLORS.danger,
+    color: theme.colors.error,
     fontSize: 14,
     fontWeight: '500',
   },
   modalContainer: {
-    backgroundColor: COLORS.white,
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     maxHeight: '85%',
-    // width and maxWidth set dynamically via inline style
+  },
+  modalMobile: {
+    maxWidth: 400,
+    width: '90%',
+  },
+  modalTablet: {
+    maxWidth: 672,
+    width: 672,
   },
   navRow: {
     alignItems: 'center',
-    borderBottomColor: COLORS.borderLight,
+    borderBottomColor: customColors.surfaceDisabled,
     borderBottomWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 14,
   },
   navRowText: {
-    color: COLORS.textPrimary,
+    color: theme.colors.onSurface,
     flex: 1,
     fontSize: 14,
     fontWeight: '500',
@@ -553,12 +554,12 @@ const styles = StyleSheet.create({
   },
   overlay: {
     alignItems: 'center',
-    backgroundColor: COLORS.overlay,
+    backgroundColor: customColors.backdropDark,
     flex: 1,
     justifyContent: 'center',
   },
   removeImageButton: {
-    backgroundColor: COLORS.whiteOpacity,
+    backgroundColor: customColors.white, // Approximation for white opacity
     borderRadius: 14,
     position: 'absolute',
     right: 8,
@@ -566,19 +567,19 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     alignItems: 'center',
-    backgroundColor: COLORS.primary,
+    backgroundColor: theme.colors.primary,
     borderRadius: 8,
     minWidth: 100,
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
   saveText: {
-    color: COLORS.white,
+    color: theme.colors.surface,
     fontSize: 14,
     fontWeight: '500',
   },
   settingDescription: {
-    color: COLORS.textSecondary,
+    color: theme.colors.onSurfaceVariant,
     fontSize: 12, // Mobile default
     marginTop: 2,
   },
@@ -591,14 +592,14 @@ const styles = StyleSheet.create({
   },
   settingRow: {
     alignItems: 'center',
-    borderBottomColor: COLORS.borderLight,
+    borderBottomColor: customColors.surfaceDisabled,
     borderBottomWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 14,
   },
   settingTitle: {
-    color: COLORS.textPrimary,
+    color: theme.colors.onSurface,
     fontSize: 14, // Mobile default
     fontWeight: '600',
   },
@@ -606,7 +607,7 @@ const styles = StyleSheet.create({
     fontSize: 18, // CRM tablet size
   },
   title: {
-    color: COLORS.textPrimary,
+    color: theme.colors.onSurface,
     fontSize: 20,
     fontWeight: '700',
     marginBottom: 16,
@@ -614,7 +615,7 @@ const styles = StyleSheet.create({
   },
   uploadArea: {
     alignItems: 'center',
-    borderColor: COLORS.border,
+    borderColor: theme.colors.outline,
     borderRadius: 8,
     borderStyle: 'dashed',
     borderWidth: 1,
@@ -623,20 +624,20 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
   },
   uploadHint: {
-    color: COLORS.textHint,
+    color: customColors.onSurfaceDisabled,
     fontSize: 11,
     marginTop: 4,
   },
   uploadLink: {
-    color: COLORS.primary,
+    color: theme.colors.primary,
   },
   uploadText: {
-    color: COLORS.textSecondary,
+    color: theme.colors.onSurfaceVariant,
     fontSize: 13,
     marginTop: 8,
   },
   valueText: {
-    color: COLORS.textSecondary,
+    color: theme.colors.onSurfaceVariant,
     fontSize: 14,
     minWidth: 50,
     textAlign: 'right',

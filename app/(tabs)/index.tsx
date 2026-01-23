@@ -6,6 +6,7 @@ import { Card, Title, Paragraph, Button, Text, useTheme } from 'react-native-pap
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePinStore } from '@/store/usePinStore';
 import { useRouter } from 'expo-router';
+import { lightTheme as appTheme } from '@/theme';
 
 export default function HomeScreen() {
   const theme = useTheme();
@@ -76,7 +77,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   bulletPoint: {
-    color: '#6B7280',
+    color: appTheme.colors.onSurfaceVariant,
     fontSize: 14,
     marginBottom: 4,
     marginLeft: 8,

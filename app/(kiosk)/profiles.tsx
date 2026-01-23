@@ -16,6 +16,7 @@ import AttendanceModal from '@/components/kiosk/AttendanceModal';
 import KioskPinModal from '@/components/kiosk/KioskPinModal';
 import KioskSettingsModal from '@/components/kiosk/KioskSettingsModal';
 import type { AttendanceContact } from '@/types/attendance';
+import { lightTheme as theme, customColors } from '@/theme';
 
 export default function SelectProfileScreen() {
   const router = useRouter();
@@ -76,11 +77,11 @@ export default function SelectProfileScreen() {
   return (
     <View style={styles.container}>
       {/* Blue Header */}
-      <LinearGradient colors={['#4A7DFF', '#4A7DFF']} style={styles.header}>
+      <LinearGradient colors={[theme.colors.primary, theme.colors.primary]} style={styles.header}>
         <SafeAreaView edges={['top']} style={styles.headerContent}>
           {/* Back Button */}
           <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+            <Ionicons name="chevron-back" size={24} color={theme.colors.onPrimary} />
           </TouchableOpacity>
 
           {/* Title */}
@@ -88,7 +89,7 @@ export default function SelectProfileScreen() {
 
           {/* Settings Button */}
           <TouchableOpacity style={styles.settingsButton} onPress={handleSettingsPress}>
-            <Ionicons name="settings-outline" size={22} color="#FFFFFF" />
+            <Ionicons name="settings-outline" size={22} color={theme.colors.onPrimary} />
           </TouchableOpacity>
         </SafeAreaView>
       </LinearGradient>
@@ -96,11 +97,11 @@ export default function SelectProfileScreen() {
       {/* Search Bar */}
       <View style={styles.searchSection}>
         <View style={styles.searchContainer}>
-          <Ionicons name="search-outline" size={18} color="#9CA3AF" />
+          <Ionicons name="search-outline" size={18} color={customColors.onSurfaceDisabled} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search..."
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={customColors.onSurfaceDisabled}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -124,7 +125,7 @@ export default function SelectProfileScreen() {
                 <Ionicons
                   name={isExpanded ? 'chevron-down' : 'chevron-forward'}
                   size={20}
-                  color="#9CA3AF"
+                  color={theme.colors.onSurfaceVariant}
                 />
               </TouchableOpacity>
 
@@ -147,7 +148,7 @@ export default function SelectProfileScreen() {
 
         {filteredPrograms.length === 0 && (
           <View style={styles.emptyContainer}>
-            <Ionicons name="people-outline" size={48} color="#9CA3AF" />
+            <Ionicons name="people-outline" size={48} color={customColors.onSurfaceDisabled} />
             <Text style={styles.emptyText}>No profiles found</Text>
           </View>
         )}
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
     width: 40,
   },
   container: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     flex: 1,
   },
   emptyContainer: {
@@ -181,7 +182,7 @@ const styles = StyleSheet.create({
     paddingVertical: 48,
   },
   emptyText: {
-    color: '#6B7280',
+    color: theme.colors.onSurfaceVariant,
     fontSize: 16,
     marginTop: 12,
   },
@@ -197,12 +198,12 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 18,
     fontWeight: '600',
   },
   programContainer: {
-    borderColor: '#E5E7EB',
+    borderColor: theme.colors.outline,
     borderRadius: 8,
     borderWidth: 1,
     marginBottom: 8,
@@ -210,14 +211,14 @@ const styles = StyleSheet.create({
   },
   programHeader: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
   programName: {
-    color: '#1F2937',
+    color: theme.colors.onSurface,
     fontSize: 15,
     fontWeight: '500',
   },
@@ -230,8 +231,8 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E5E7EB',
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.outline,
     borderRadius: 8,
     borderWidth: 1,
     flexDirection: 'row',
@@ -240,7 +241,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   searchInput: {
-    color: '#1F2937',
+    color: theme.colors.onSurface,
     flex: 1,
     fontSize: 15,
   },
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
     width: 40,
   },
   studentsGrid: {
-    backgroundColor: '#FAFAFA',
+    backgroundColor: customColors.surfaceDisabled,
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 8,

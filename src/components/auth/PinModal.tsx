@@ -154,12 +154,12 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     alignItems: 'center',
+    alignSelf: 'center',
     backgroundColor: colors.primary,
     borderRadius: 12,
     // height: 56, // Removed in favor of dynamic height
     justifyContent: 'center',
     width: 240, // Constrained width per polish request
-    alignSelf: 'center',
   },
   confirmButtonDisabled: {
     opacity: 0.6,

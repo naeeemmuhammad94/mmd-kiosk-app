@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, TextInput, Card, Title, Paragraph } from 'react-native-paper';
 import { loginSchema, type LoginFormData } from '@/utils/validation';
+import { lightTheme as theme } from '@/theme';
 
 export const ExampleForm: React.FC = () => {
   const {
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
     margin: 16,
   },
   error: {
-    color: 'red',
+    color: theme.colors.error,
     fontSize: 12,
     marginBottom: 8,
   },

@@ -24,6 +24,7 @@ import KioskPinModal from '@/components/kiosk/KioskPinModal';
 import ArrowOutlined from '../../assets/weui_arrow-outlined.svg';
 import type { AttendanceContact, ProgramAttendance } from '@/types/attendance';
 import { getResponsiveDimensions } from '@/theme/dimensions';
+import { lightTheme as theme, customColors } from '@/theme';
 
 // Calculate columns based on screen width for responsive grid
 // Mobile (<768px): 3 columns, Tablet (>=768px): 5, iPad Landscape (>=1024px): 6
@@ -178,15 +179,15 @@ export default function KioskHomeScreen() {
   return (
     <View style={styles.container}>
       {/* Blue Header */}
-      <LinearGradient colors={['#4A7DFF', '#4A7DFF']} style={styles.header}>
+      <LinearGradient colors={[theme.colors.primary, theme.colors.primary]} style={styles.header}>
         <SafeAreaView edges={['top']} style={styles.headerContent}>
           {/* Search Bar */}
           <View style={styles.searchContainer}>
-            <Ionicons name="search-outline" size={18} color="#9CA3AF" />
+            <Ionicons name="search-outline" size={18} color={customColors.onSurfaceDisabled} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search..."
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={customColors.onSurfaceDisabled}
               value={searchQuery}
               onChangeText={setSearchQuery}
               autoCorrect={false}
@@ -199,17 +200,17 @@ export default function KioskHomeScreen() {
             {/* All Programs Button */}
             <TouchableOpacity style={styles.programButton} onPress={handleAllProgramsPress}>
               <Text style={styles.programButtonText}>All Programs</Text>
-              <ArrowOutlined width={18} height={18} color="#4A7DFF" />
+              <ArrowOutlined width={18} height={18} color={theme.colors.primary} />
             </TouchableOpacity>
 
             {/* Refresh Button */}
             <TouchableOpacity style={styles.iconButton} onPress={handleRefresh}>
-              <Ionicons name="refresh-outline" size={22} color="#4A7DFF" />
+              <Ionicons name="refresh-outline" size={22} color={theme.colors.primary} />
             </TouchableOpacity>
 
             {/* Settings Button */}
             <TouchableOpacity style={styles.iconButton} onPress={handleSettingsPress}>
-              <Ionicons name="settings-outline" size={22} color="#4A7DFF" />
+              <Ionicons name="settings-outline" size={22} color={theme.colors.primary} />
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -218,14 +219,12 @@ export default function KioskHomeScreen() {
       {/* Searched Results Label */}
       {isSearching && (
         <View
-          style={[styles.searchResultsLabelContainer, { paddingHorizontal: isTablet ? 48 : 16 }]}
+          style={[
+            styles.searchResultsLabelContainer,
+            isTablet ? styles.paddingTablet : styles.paddingMobile,
+          ]}
         >
-          <View
-            style={[
-              styles.searchResultsLabel,
-              { backgroundColor: '#4A7DFF', flexDirection: 'row', alignItems: 'center' },
-            ]}
-          >
+          <View style={[styles.searchResultsLabel, styles.rowCenter]}>
             <Text style={styles.searchResultsText}>Searched Results</Text>
           </View>
         </View>
@@ -238,7 +237,10 @@ export default function KioskHomeScreen() {
       <View
         style={
           isSearching
-            ? [styles.searchResultsContainer, { paddingHorizontal: isTablet ? 48 : 16 }]
+            ? [
+                styles.searchResultsContainer,
+                isTablet ? styles.paddingTablet : styles.paddingMobile,
+              ]
             : styles.gridWrapper
         }
       >
@@ -249,7 +251,7 @@ export default function KioskHomeScreen() {
                     */}
           {isLoading && (
             <View style={styles.centeredLoaderContainer}>
-              <ActivityIndicator size="large" color="#4A7DFF" />
+              <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
           )}
 
@@ -262,12 +264,12 @@ export default function KioskHomeScreen() {
               key={numColumns}
               contentContainerStyle={[
                 styles.gridContent,
+                styles.gridPadding,
                 {
                   paddingHorizontal: isSearching
                     ? dims.gridPadding
                     : containerPadding + listPadding,
                   paddingTop: dims.gridPadding,
-                  paddingBottom: 100,
                 },
               ]}
               columnWrapperStyle={[
@@ -283,13 +285,17 @@ export default function KioskHomeScreen() {
                 <RefreshControl
                   refreshing={isRefreshing}
                   onRefresh={handleRefresh}
-                  tintColor="#4A7DFF"
+                  tintColor={theme.colors.primary}
                 />
               }
               renderItem={renderItem}
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
-                  <Ionicons name="people-outline" size={48} color="#9CA3AF" />
+                  <Ionicons
+                    name="people-outline"
+                    size={48}
+                    color={customColors.onSurfaceDisabled}
+                  />
                   <Text style={styles.emptyText}>
                     {isSearching
                       ? 'No students found matching your search'
@@ -353,10 +359,6 @@ const getProgramBasedContacts = (
 };
 
 const styles = StyleSheet.create({
-  cardWrapper: {
-    flex: 1,
-    // maxWidth now computed dynamically inline based on screenWidth and numColumns
-  },
   centeredLoaderContainer: {
     alignItems: 'center',
     flex: 1,
@@ -368,7 +370,7 @@ const styles = StyleSheet.create({
     // gap and marginBottom set dynamically inline
   },
   container: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     flex: 1,
   },
   emptyContainer: {
@@ -378,7 +380,7 @@ const styles = StyleSheet.create({
     paddingVertical: 48,
   },
   emptyText: {
-    color: '#6B7280',
+    color: theme.colors.onSurfaceVariant,
     fontSize: 16,
     marginTop: 12,
     textAlign: 'center',
@@ -389,6 +391,9 @@ const styles = StyleSheet.create({
   },
   gridContent: {
     width: '100%',
+  },
+  gridPadding: {
+    paddingBottom: 100,
   },
   gridWrapper: {
     flex: 1,
@@ -411,17 +416,23 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E5E7EB',
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.outline,
     borderRadius: 8,
     borderWidth: 1,
     height: 40,
     justifyContent: 'center',
     width: 40,
   },
+  paddingMobile: {
+    paddingHorizontal: 16,
+  },
+  paddingTablet: {
+    paddingHorizontal: 48,
+  },
   programButton: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 8,
     flexDirection: 'row',
     gap: 6,
@@ -429,13 +440,17 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   programButtonText: {
-    color: '#4A7DFF',
+    color: theme.colors.primary,
     fontSize: 13,
     fontWeight: '700',
   },
+  rowCenter: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
   searchContainer: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 8,
     flex: 1,
     flexDirection: 'row',
@@ -444,37 +459,37 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   searchInput: {
-    color: '#1F2937',
+    color: theme.colors.onSurface,
     flex: 1,
     fontSize: 15,
   },
 
   searchResultsCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
     flex: 1,
     minHeight: 200,
   },
   searchResultsContainer: {
-    backgroundColor: '#E8EFFF',
+    backgroundColor: customColors.surfaceDisabled, // Fallback for light blue bg
     flex: 1,
     paddingHorizontal: 16, // Fix: Match grid padding
   },
   searchResultsLabel: {
-    backgroundColor: '#4A7DFF', // Blue header to match theme
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    backgroundColor: theme.colors.primary, // Blue header to match theme
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
   searchResultsLabelContainer: {
-    backgroundColor: '#E8EFFF',
+    backgroundColor: customColors.surfaceDisabled,
     paddingHorizontal: 16,
     paddingTop: 8, // Fix: Match grid padding
   },
   searchResultsText: {
-    color: '#FFFFFF',
+    color: theme.colors.surface,
     fontSize: 14,
     fontWeight: '600',
   },

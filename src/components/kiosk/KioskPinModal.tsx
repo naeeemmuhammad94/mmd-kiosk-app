@@ -16,6 +16,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { getResponsiveDimensions } from '@/theme/dimensions';
+import { lightTheme as theme, customColors } from '@/theme';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMutation } from '@tanstack/react-query';
@@ -116,10 +117,10 @@ export default function KioskPinModal() {
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
           <View style={styles.iconContainer}>
-            <Ionicons name="lock-closed" size={32} color="#4A7DFF" />
+            <Ionicons name="lock-closed" size={32} color={theme.colors.primary} />
           </View>
           <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-            <Ionicons name="close" size={24} color="#6B7280" />
+            <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
           </TouchableOpacity>
           <Text style={[styles.title, { fontSize: dims.headerFontSize }]}>Confirm PIN</Text>
           <Text style={[styles.subtitle, { fontSize: dims.bodyFontSize }]}>
@@ -141,7 +142,7 @@ export default function KioskPinModal() {
                 secureTextEntry
                 autoFocus={index === 0}
                 placeholder="0"
-                placeholderTextColor="#D1D5DB"
+                placeholderTextColor={customColors.outlineVariant}
                 selectTextOnFocus
               />
             ))}
@@ -164,7 +165,7 @@ export default function KioskPinModal() {
               disabled={isPending}
             >
               {isPending ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
+                <ActivityIndicator size="small" color={theme.colors.onPrimary} />
               ) : (
                 <Text style={[styles.confirmButtonText, { fontSize: dims.buttonFontSize }]}>
                   Confirm
@@ -182,28 +183,28 @@ const styles = StyleSheet.create({
   buttonContainer: { flexDirection: 'row', gap: 12 },
   cancelButton: {
     alignItems: 'center',
-    borderColor: '#E5E7EB',
+    borderColor: theme.colors.outline,
     borderRadius: 8,
     borderWidth: 1,
     flex: 1,
     justifyContent: 'center',
     // paddingVertical removed in favor of dynamic height
   },
-  cancelButtonText: { color: '#6B7280', fontWeight: '500' },
+  cancelButtonText: { color: theme.colors.onSurfaceVariant, fontWeight: '500' },
   closeButton: { position: 'absolute', right: 16, top: 16 },
   confirmButton: {
     alignItems: 'center',
-    backgroundColor: '#4A7DFF',
+    backgroundColor: theme.colors.primary,
     borderRadius: 8,
     flex: 1,
     justifyContent: 'center',
     // paddingVertical removed in favor of dynamic height
   },
-  confirmButtonText: { color: '#FFFFFF', fontWeight: '600' },
-  errorText: { color: '#EF4444', marginBottom: 16, textAlign: 'center' },
+  confirmButtonText: { color: theme.colors.onPrimary, fontWeight: '600' },
+  errorText: { color: theme.colors.error, marginBottom: 16, textAlign: 'center' },
   iconContainer: {
     alignItems: 'center',
-    backgroundColor: '#EFF6FF',
+    backgroundColor: customColors.surfaceDisabled, // Fallback to gray since blue-50 is not in theme
     borderRadius: 8,
     height: 56,
     justifyContent: 'center',
@@ -211,7 +212,7 @@ const styles = StyleSheet.create({
     width: 56,
   },
   modalContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     maxWidth: 448,
     padding: 24,
@@ -220,7 +221,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: customColors.backdropDark,
     flex: 1,
     justifyContent: 'center',
   },
@@ -231,17 +232,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   pinInput: {
-    borderColor: '#E5E7EB',
+    borderColor: theme.colors.outline,
     borderRadius: 12,
     borderWidth: 2,
-    color: '#1F2937',
+    color: theme.colors.onSurface,
     flex: 1,
     fontSize: 24,
     fontWeight: '700',
     height: 64,
     textAlign: 'center',
   },
-  pinInputError: { borderColor: '#EF4444' },
-  subtitle: { color: '#6B7280', marginBottom: 24 },
-  title: { color: '#1F2937', fontWeight: '700', marginBottom: 8 },
+  pinInputError: { borderColor: theme.colors.error },
+  subtitle: { color: theme.colors.onSurfaceVariant, marginBottom: 24 },
+  title: { color: theme.colors.onSurface, fontWeight: '700', marginBottom: 8 },
 });

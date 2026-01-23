@@ -144,6 +144,15 @@ export const customColors = {
   textGray: '#1F2937',
   textLight: '#6B7280',
   primary: '#4A7DFF',
+  primaryContainer: '#EFF6FF',
+  successContainer: '#ECFDF5',
+  success: '#22C55E',
+  onSuccessContainer: '#059669',
+  errorContainer: '#FEF2F2',
+  onErrorContainer: '#EF4444',
+  warn: '#EAB308',
+  whiteOpacity: 'rgba(255, 255, 255, 0.2)',
+  backdropStrong: 'rgba(71, 85, 105, 0.8)',
 };
 
 export type AppTheme = typeof lightTheme;
