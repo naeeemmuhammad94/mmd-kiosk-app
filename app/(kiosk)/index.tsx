@@ -180,7 +180,10 @@ export default function KioskHomeScreen() {
     <View style={styles.container}>
       {/* Blue Header */}
       <LinearGradient colors={[theme.colors.primary, theme.colors.primary]} style={styles.header}>
-        <SafeAreaView edges={['top']} style={styles.headerContent}>
+        <SafeAreaView
+          edges={['top']}
+          style={[styles.headerContent, isTablet && styles.headerContentTablet]}
+        >
           {/* Search Bar */}
           <View style={styles.searchContainer}>
             <Ionicons name="search-outline" size={18} color={customColors.onSurfaceDisabled} />
@@ -412,6 +415,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     paddingHorizontal: 16,
+    // Base padding for mobile, can be overridden
+    paddingTop: 12,
+  },
+  headerContentTablet: {
     paddingTop: 48,
   },
   iconButton: {
@@ -420,7 +427,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.outline,
     borderRadius: 8,
     borderWidth: 1,
-    height: 40,
+    height: 40, // Restoring fixed height for square icons
     justifyContent: 'center',
     width: 40,
   },
@@ -436,8 +443,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     flexDirection: 'row',
     gap: 6,
+    justifyContent: 'center', // Fix: Sorted before padding
+    minHeight: 40, // Ensure visual match with search inputs
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   programButtonText: {
     color: theme.colors.primary,

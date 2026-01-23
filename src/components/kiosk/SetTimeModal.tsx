@@ -184,26 +184,26 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: 16,
     elevation: 5,
-    maxWidth: 596, // Fix: Constraint as requested
-    minHeight: 200, // Fix: Prevent collapse
+    maxWidth: 448, // Fix: Match KioskPinModal
+    minHeight: 200,
     padding: 24,
     position: 'relative',
     shadowColor: customColors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    width: '100%',
-    zIndex: 99999, // Fix: Force to top
+    width: '90%',
+    zIndex: 99999,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    // backgroundColor: 'transparent', // Fix: Remove double dim
-    alignItems: 'center',
+    alignItems: 'center', // Fix: Sorted before backgroundColor
+    backgroundColor: customColors.backdropDark, // Fix: Enable dark overlay
     elevation: 5,
     height: '100%',
     justifyContent: 'center',
     width: '100%',
-    zIndex: 99999, // Fix: Ensure on top
+    zIndex: 99999,
   },
   saveButton: {
     alignItems: 'center',

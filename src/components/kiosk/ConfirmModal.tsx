@@ -160,6 +160,7 @@ const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: customColors.backdropDark, // Darker overlay per Figma
+    zIndex: 1,
   },
   cardContainer: {
     alignItems: 'center',
@@ -175,6 +176,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 12,
     width: '90%', // Responsive width
+    zIndex: 10, // Ensure card is above backdrop
   },
   closeButton: {
     padding: 4,

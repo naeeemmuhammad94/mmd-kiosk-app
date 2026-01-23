@@ -103,7 +103,7 @@ export default function AttendanceModal() {
             {/* Blue Header */}
             <LinearGradient
               colors={[theme.colors.primary, theme.colors.primary]} // Solid Blue as per design
-              style={styles.header}
+              style={[styles.header, isTablet && styles.headerTablet]}
             >
               <Text style={styles.headerTitle}>Attendance</Text>
               <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
@@ -274,8 +274,11 @@ const styles = StyleSheet.create({
     minHeight: 100, // Ensure minimum height
     paddingBottom: 20, // Reduce bottom space
     paddingHorizontal: 16,
-    paddingTop: 48, // Increase top space
+    paddingTop: 20, // Default Mobile
     position: 'relative',
+  },
+  headerTablet: {
+    paddingTop: 48,
   },
   headerTitle: {
     color: theme.colors.onPrimary,
