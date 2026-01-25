@@ -138,17 +138,48 @@ Tests are located in `src/__tests__/` directory.
 
 ## 📱 Building for Production
 
-1. Build for iOS:
+We use **EAS Build** (Expo Application Services) for production-ready binaries.
 
-```bash
-eas build --platform ios
-```
+### iOS Deployment (TestFlight)
 
-2. Build for Android:
+1. **Build for Staging (Preview)**:
 
-```bash
-eas build --platform android
-```
+   ```bash
+   npx eas-cli build --platform ios --profile preview --auto-submit
+   ```
+
+   _Uses bundle identifier: `com.mmd.kioskapp.staging`_
+
+2. **Build for Production**:
+
+   ```bash
+   npx eas-cli build --platform ios --profile production --auto-submit
+   ```
+
+   _Uses bundle identifier: `com.mmd.kioskapp`_
+
+3. **Manual Submission** (if auto-submit is skipped):
+   ```bash
+   npx eas-cli submit --platform ios --latest
+   ```
+
+### Android Deployment
+
+1. **Build APK (For Testing)**:
+
+   ```bash
+   npx eas-cli build --platform android --profile preview
+   ```
+
+2. **Build AAB (For Play Store)**:
+   ```bash
+   npx eas-cli build --platform android --profile production
+   ```
+
+### Prerequisites
+
+- Ensure you are logged into EAS: `npx eas-cli login`
+- For iOS, the App Store Connect API Key and Team IDs are pre-configured in `eas.json` for non-interactive builds.
 
 ## 🤝 Contributing
 
