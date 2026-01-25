@@ -133,7 +133,11 @@ export default function KioskPinModal() {
                 ref={ref => {
                   inputRefs.current[index] = ref;
                 }}
-                style={[styles.pinInput, error && styles.pinInputError]}
+                style={[
+                  styles.pinInput,
+                  error && styles.pinInputError,
+                  { height: isTablet ? 64 : 52, fontSize: isTablet ? 24 : 20 },
+                ]}
                 defaultValue=""
                 onChangeText={value => handlePinChange(value, index)}
                 onKeyPress={e => handleKeyPress(e, index)}
@@ -218,6 +222,7 @@ const styles = StyleSheet.create({
     padding: 24,
     position: 'relative',
     width: '90%',
+    zIndex: 99999,
   },
   overlay: {
     alignItems: 'center',
@@ -244,5 +249,5 @@ const styles = StyleSheet.create({
   },
   pinInputError: { borderColor: theme.colors.error },
   subtitle: { color: theme.colors.onSurfaceVariant, marginBottom: 24 },
-  title: { color: theme.colors.onSurface, fontWeight: '700', marginBottom: 8 },
+  title: { color: theme.colors.onSurface, fontWeight: '700', marginBottom: 8, textAlign: 'center' },
 });

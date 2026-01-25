@@ -184,9 +184,9 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: 16,
     elevation: 5,
-    maxWidth: 448, // Fix: Match KioskPinModal
-    minHeight: 200,
-    padding: 24,
+    maxWidth: 448,
+    minHeight: 180,
+    padding: 20,
     position: 'relative',
     shadowColor: customColors.shadow,
     shadowOffset: { width: 0, height: 2 },
