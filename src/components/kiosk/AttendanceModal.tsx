@@ -177,14 +177,14 @@ export default function AttendanceModal() {
                 )}
               </TouchableOpacity>
             </View>
-
-            {/* 
-                           Confirm Overlay - Embedded absolutely inside the modal container.
-                           This ensures it sits ON TOP of the attendance content but INSIDE the modal.
-                        */}
-            {isConfirmModalOpen && <ConfirmModal />}
           </View>
         </View>
+
+        {/* 
+            Confirm Overlay - Moved to top level overlay to cover entire screen
+            This ensures it sits ON TOP of everything including the attendance modal
+        */}
+        {isConfirmModalOpen && <ConfirmModal />}
       </View>
     </Modal>
   );

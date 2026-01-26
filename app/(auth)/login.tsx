@@ -15,6 +15,8 @@ import {
   ActivityIndicator,
   ImageBackground,
   useWindowDimensions,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useRouter } from 'expo-router';
@@ -112,103 +114,111 @@ export default function LoginScreen() {
         <View style={styles.overlay} />
 
         <SafeAreaView style={styles.safeArea}>
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.keyboardContainer}
           >
-            {/* White Card */}
-            <View style={[styles.card, isTablet ? styles.cardTablet : styles.cardMobile]}>
-              {/* MMD Logo */}
-              <View style={styles.logoContainer}>
-                {/* Responsive Logo: Max 540px, or Inputs Width */}
-                <LoginLogo width={logoWidth} height={logoWidth / 3.07} />
-              </View>
+            <ScrollView
+              contentContainerStyle={styles.scrollContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              {/* White Card */}
+              <View style={[styles.card, isTablet ? styles.cardTablet : styles.cardMobile]}>
+                {/* MMD Logo */}
+                <View style={styles.logoContainer}>
+                  {/* Responsive Logo: Max 540px, or Inputs Width */}
+                  <LoginLogo width={logoWidth} height={logoWidth / 3.07} />
+                </View>
 
-              {/* Title */}
-              <Text style={[styles.title, { fontSize: dims.headerFontSize }]}>
-                Attendance Kiosk
-              </Text>
+                {/* Title */}
+                <Text style={[styles.title, { fontSize: dims.headerFontSize }]}>
+                  Attendance Kiosk
+                </Text>
 
-              {/* Username Input - LOCAL STATE */}
-              <View style={[styles.inputContainer, { width: logoWidth }, styles.centered]}>
-                <TextInput
-                  style={[
-                    styles.input,
-                    { height: dims.inputHeight },
-                    errors.userName && styles.inputError,
-                  ]}
-                  placeholder="Enter your email"
-                  placeholderTextColor="#9CA3AF"
-                  value={userName}
-                  onChangeText={setUserName}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  keyboardType="email-address"
-                  returnKeyType="next"
-                  onSubmitEditing={() => passwordRef.current?.focus()}
-                  editable={!loginMutation.isPending}
-                />
-                {errors.userName && <Text style={styles.errorText}>{errors.userName}</Text>}
-              </View>
+                {/* Username Input - LOCAL STATE */}
+                <View style={[styles.inputContainer, { width: logoWidth }, styles.centered]}>
+                  <TextInput
+                    style={[
+                      styles.input,
+                      { height: dims.inputHeight },
+                      errors.userName && styles.inputError,
+                    ]}
+                    placeholder="Enter your email"
+                    placeholderTextColor="#9CA3AF"
+                    value={userName}
+                    onChangeText={setUserName}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="email-address"
+                    returnKeyType="next"
+                    onSubmitEditing={() => passwordRef.current?.focus()}
+                    editable={!loginMutation.isPending}
+                  />
+                  {errors.userName && <Text style={styles.errorText}>{errors.userName}</Text>}
+                </View>
 
-              {/* Password Input - LOCAL STATE */}
-              <View style={[styles.inputContainer, { width: logoWidth }, styles.centered]}>
-                <TextInput
-                  ref={passwordRef}
-                  style={[
-                    styles.input,
-                    { height: dims.inputHeight },
-                    errors.password && styles.inputError,
-                  ]}
-                  placeholder="Enter your password"
-                  placeholderTextColor="#9CA3AF"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  returnKeyType="done"
-                  onSubmitEditing={handleLogin}
-                  editable={!loginMutation.isPending}
-                />
-                {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-              </View>
+                {/* Password Input - LOCAL STATE */}
+                <View style={[styles.inputContainer, { width: logoWidth }, styles.centered]}>
+                  <TextInput
+                    ref={passwordRef}
+                    style={[
+                      styles.input,
+                      { height: dims.inputHeight },
+                      errors.password && styles.inputError,
+                    ]}
+                    placeholder="Enter your password"
+                    placeholderTextColor="#9CA3AF"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    returnKeyType="done"
+                    onSubmitEditing={handleLogin}
+                    editable={!loginMutation.isPending}
+                  />
+                  {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+                </View>
 
-              {/* Forgot Password Link */}
-              <TouchableOpacity onPress={handleForgotPassword} style={styles.forgotPasswordButton}>
-                <Text style={styles.forgotPasswordText}>Forgot Password</Text>
-              </TouchableOpacity>
-
-              {/* Log In Button */}
-              <TouchableOpacity
-                style={[
-                  styles.loginButton,
-                  { height: dims.buttonHeight, width: logoWidth },
-                  styles.centered,
-                  loginMutation.isPending && styles.loginButtonDisabled,
-                ]}
-                onPress={handleLogin}
-                disabled={loginMutation.isPending}
-                activeOpacity={0.8}
-              >
-                {loginMutation.isPending ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
-                ) : (
-                  <Text style={[styles.loginButtonText, { fontSize: dims.buttonFontSize }]}>
-                    Log In
-                  </Text>
-                )}
-              </TouchableOpacity>
-
-              {/* DEV ONLY: Reset button for testing */}
-              {__DEV__ && (
-                <TouchableOpacity style={styles.devResetButton} onPress={handleResetOnboarding}>
-                  <Text style={styles.devResetText}>🔧 Reset Onboarding (Dev)</Text>
+                {/* Forgot Password Link */}
+                <TouchableOpacity
+                  onPress={handleForgotPassword}
+                  style={styles.forgotPasswordButton}
+                >
+                  <Text style={styles.forgotPasswordText}>Forgot Password</Text>
                 </TouchableOpacity>
-              )}
-            </View>
-          </ScrollView>
+
+                {/* Log In Button */}
+                <TouchableOpacity
+                  style={[
+                    styles.loginButton,
+                    { height: dims.buttonHeight, width: logoWidth },
+                    styles.centered,
+                    loginMutation.isPending && styles.loginButtonDisabled,
+                  ]}
+                  onPress={handleLogin}
+                  disabled={loginMutation.isPending}
+                  activeOpacity={0.8}
+                >
+                  {loginMutation.isPending ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <Text style={[styles.loginButtonText, { fontSize: dims.buttonFontSize }]}>
+                      Log In
+                    </Text>
+                  )}
+                </TouchableOpacity>
+
+                {/* DEV ONLY: Reset button for testing */}
+                {__DEV__ && (
+                  <TouchableOpacity style={styles.devResetButton} onPress={handleResetOnboarding}>
+                    <Text style={styles.devResetText}>🔧 Reset Onboarding (Dev)</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
         </SafeAreaView>
       </ImageBackground>
       {/* PIN Modal */}
@@ -292,6 +302,9 @@ const styles = StyleSheet.create({
 
   inputError: {
     borderColor: colors.error,
+  },
+  keyboardContainer: {
+    flex: 1,
   },
   loginButton: {
     alignItems: 'center',

@@ -13,6 +13,10 @@ import {
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
   useWindowDimensions,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import { getResponsiveDimensions } from '@/theme/dimensions';
 import { Text, ActivityIndicator } from 'react-native-paper';
@@ -94,80 +98,91 @@ export default function ChangePinModal({
   if (!visible) return null;
 
   return (
-    <View style={styles.overlay}>
-      <View style={styles.modalContainer}>
-        <View style={styles.iconContainer}>
-          <Ionicons name="lock-closed" size={32} color={theme.colors.primary} />
-        </View>
-        {!isFirstTime && (
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-            <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
-          </TouchableOpacity>
-        )}
-        <Text style={[styles.title, { fontSize: dims.headerFontSize }]}>
-          {isFirstTime ? 'Set PIN' : 'Set/Change PIN'}
-        </Text>
-        <Text style={[styles.subtitle, { fontSize: dims.bodyFontSize }]}>
-          {isFirstTime
-            ? 'Please set a PIN to secure your kiosk settings.'
-            : 'Set or change your kiosk PIN here.'}
-        </Text>
-        <View style={styles.pinContainer}>
-          {[0, 1, 2, 3].map(index => (
-            <TextInput
-              key={index}
-              ref={ref => {
-                inputRefs.current[index] = ref;
-              }}
-              style={[
-                styles.pinInput,
-                error && styles.pinInputError,
-                // Optional: Adjust PIN font size if needed, e.g. { fontSize: isTablet ? 24 : 20 }
-              ]}
-              defaultValue={currentPin?.[index] || ''}
-              onChangeText={value => handlePinChange(value, index)}
-              onKeyPress={e => handleKeyPress(e, index)}
-              keyboardType="number-pad"
-              maxLength={1}
-              autoFocus={index === 0 && visible}
-              placeholder="0"
-              placeholderTextColor={customColors.onSurfaceDisabled}
-              selectTextOnFocus
-            />
-          ))}
-        </View>
-        {error && <Text style={[styles.errorText, { fontSize: dims.smallFontSize }]}>{error}</Text>}
-        <View style={styles.buttonContainer}>
-          {!isFirstTime && (
-            <TouchableOpacity
-              style={[styles.cancelButton, { height: dims.buttonHeight }]}
-              onPress={handleClose}
-            >
-              <Text style={[styles.cancelButtonText, { fontSize: dims.buttonFontSize }]}>
-                Cancel
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.overlay}>
+          <TouchableWithoutFeedback onPress={e => e.stopPropagation()}>
+            <View style={styles.modalContainer}>
+              <View style={styles.iconContainer}>
+                <Ionicons name="lock-closed" size={32} color={theme.colors.primary} />
+              </View>
+              {!isFirstTime && (
+                <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+                  <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
+                </TouchableOpacity>
+              )}
+              <Text style={[styles.title, { fontSize: dims.headerFontSize }]}>
+                {isFirstTime ? 'Set PIN' : 'Set/Change PIN'}
               </Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity
-            style={[
-              styles.confirmButton,
-              isFirstTime && styles.confirmButtonFull,
-              { height: dims.buttonHeight },
-            ]}
-            onPress={handleConfirm}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator size="small" color={theme.colors.onPrimary} />
-            ) : (
-              <Text style={[styles.confirmButtonText, { fontSize: dims.buttonFontSize }]}>
-                Confirm
+              <Text style={[styles.subtitle, { fontSize: dims.bodyFontSize }]}>
+                {isFirstTime
+                  ? 'Please set a PIN to secure your kiosk settings.'
+                  : 'Set or change your kiosk PIN here.'}
               </Text>
-            )}
-          </TouchableOpacity>
+              <View style={styles.pinContainer}>
+                {[0, 1, 2, 3].map(index => (
+                  <TextInput
+                    key={index}
+                    ref={ref => {
+                      inputRefs.current[index] = ref;
+                    }}
+                    style={[
+                      styles.pinInput,
+                      error && styles.pinInputError,
+                      // Optional: Adjust PIN font size if needed, e.g. { fontSize: isTablet ? 24 : 20 }
+                    ]}
+                    defaultValue={currentPin?.[index] || ''}
+                    onChangeText={value => handlePinChange(value, index)}
+                    onKeyPress={e => handleKeyPress(e, index)}
+                    keyboardType="number-pad"
+                    maxLength={1}
+                    autoFocus={index === 0 && visible}
+                    placeholder="0"
+                    placeholderTextColor={customColors.onSurfaceDisabled}
+                    selectTextOnFocus
+                  />
+                ))}
+              </View>
+              {error && (
+                <Text style={[styles.errorText, { fontSize: dims.smallFontSize }]}>{error}</Text>
+              )}
+              <View style={styles.buttonContainer}>
+                {!isFirstTime && (
+                  <TouchableOpacity
+                    style={[styles.cancelButton, { height: dims.buttonHeight }]}
+                    onPress={handleClose}
+                  >
+                    <Text style={[styles.cancelButtonText, { fontSize: dims.buttonFontSize }]}>
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  style={[
+                    styles.confirmButton,
+                    isFirstTime && styles.confirmButtonFull,
+                    { height: dims.buttonHeight },
+                  ]}
+                  onPress={handleConfirm}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color={theme.colors.onPrimary} />
+                  ) : (
+                    <Text style={[styles.confirmButtonText, { fontSize: dims.buttonFontSize }]}>
+                      Confirm
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </View>
-    </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -194,6 +209,7 @@ const styles = StyleSheet.create({
   },
   confirmButtonFull: { flex: 1 },
   confirmButtonText: { color: theme.colors.onPrimary, fontWeight: '600' },
+  container: { flex: 1 },
   errorText: { color: theme.colors.error, marginBottom: 16, textAlign: 'center' },
   iconContainer: {
     alignItems: 'center',

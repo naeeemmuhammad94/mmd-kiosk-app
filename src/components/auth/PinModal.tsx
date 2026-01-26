@@ -12,6 +12,8 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   useWindowDimensions,
 } from 'react-native';
 import { getResponsiveDimensions } from '@/theme/dimensions';
@@ -83,64 +85,69 @@ export default function PinModal() {
 
   return (
     <Modal visible={showPinModal} transparent animationType="fade" statusBarTranslucent>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.overlay}>
-          <View style={styles.modalContainer}>
-            {/* Lock Icon - No background per Figma */}
-            <View style={styles.iconContainer}>
-              <LockIcon width={36} height={32} />
-            </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.overlay}>
+            <View style={styles.modalContainer}>
+              {/* Lock Icon - No background per Figma */}
+              <View style={styles.iconContainer}>
+                <LockIcon width={36} height={32} />
+              </View>
 
-            {/* Title */}
-            <Text style={[styles.title, { fontSize: dims.headerFontSize }]}>
-              {pinMode === 'create' ? 'Create your PIN' : 'Enter your PIN'}
-            </Text>
+              {/* Title */}
+              <Text style={[styles.title, { fontSize: dims.headerFontSize }]}>
+                {pinMode === 'create' ? 'Create your PIN' : 'Enter your PIN'}
+              </Text>
 
-            {/* Subtitle */}
-            <Text style={[styles.subtitle, { fontSize: dims.bodyFontSize }]}>
-              {pinMode === 'create'
-                ? 'Create your pin to access your kiosk setting easily'
-                : 'Enter your pin to access your kiosk'}
-            </Text>
+              {/* Subtitle */}
+              <Text style={[styles.subtitle, { fontSize: dims.bodyFontSize }]}>
+                {pinMode === 'create'
+                  ? 'Create your pin to access your kiosk setting easily'
+                  : 'Enter your pin to access your kiosk'}
+              </Text>
 
-            {/* PIN Input - Ref-based */}
-            <View style={styles.pinContainer}>
-              <PinInput
-                ref={pinInputRef}
-                onComplete={handlePinComplete}
-                onClear={handlePinClear}
-                error={!!pinError}
-                disabled={isPinLoading}
-              />
-            </View>
+              {/* PIN Input - Ref-based */}
+              <View style={styles.pinContainer}>
+                <PinInput
+                  ref={pinInputRef}
+                  onComplete={handlePinComplete}
+                  onClear={handlePinClear}
+                  error={!!pinError}
+                  disabled={isPinLoading}
+                />
+              </View>
 
-            {/* Error Message */}
-            {pinError && <Text style={styles.errorText}>{pinError}</Text>}
+              {/* Error Message */}
+              {pinError && <Text style={styles.errorText}>{pinError}</Text>}
 
-            {/* Confirm Button */}
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.confirmButton,
-                  isPinLoading && styles.confirmButtonDisabled,
-                  { height: dims.buttonHeight },
-                ]}
-                onPress={handleConfirm}
-                disabled={isPinLoading}
-                activeOpacity={0.8}
-              >
-                {isPinLoading ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Text style={[styles.confirmButtonText, { fontSize: dims.buttonFontSize }]}>
-                    Confirm
-                  </Text>
-                )}
-              </TouchableOpacity>
+              {/* Confirm Button */}
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.confirmButton,
+                    isPinLoading && styles.confirmButtonDisabled,
+                    { height: dims.buttonHeight },
+                  ]}
+                  onPress={handleConfirm}
+                  disabled={isPinLoading}
+                  activeOpacity={0.8}
+                >
+                  {isPinLoading ? (
+                    <ActivityIndicator color="#FFFFFF" size="small" />
+                  ) : (
+                    <Text style={[styles.confirmButtonText, { fontSize: dims.buttonFontSize }]}>
+                      Confirm
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </TouchableWithoutFeedback>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -167,6 +174,9 @@ const styles = StyleSheet.create({
   confirmButtonText: {
     color: colors.onPrimary,
     fontWeight: '600',
+  },
+  container: {
+    flex: 1,
   },
   errorText: {
     color: colors.error,

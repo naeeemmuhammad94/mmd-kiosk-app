@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 50,
+    zIndex: 9999,
   },
   profileImage: {
     borderColor: customColors.warn, // Gold border from screenshot? Or just clean. Let's add the gold border seen in some designs.

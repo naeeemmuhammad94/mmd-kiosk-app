@@ -5,7 +5,18 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+  useWindowDimensions,
+} from 'react-native';
+import { getResponsiveDimensions } from '@/theme/dimensions';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { lightTheme as theme, customColors } from '@/theme';
@@ -25,6 +36,10 @@ export default function SetTimeModal({
   isLoading = false,
   currentTime = 10,
 }: SetTimeModalProps) {
+  const { width: screenWidth } = useWindowDimensions();
+  const isTablet = screenWidth >= 768;
+  const dims = getResponsiveDimensions(isTablet);
+
   const [time, setTime] = useState(String(currentTime));
   const [error, setError] = useState('');
 
@@ -54,59 +69,83 @@ export default function SetTimeModal({
   if (!visible) return null;
 
   return (
-    <View style={styles.overlay}>
-      <View style={styles.modalContainer}>
-        {/* Flag Icon */}
-        <View style={styles.iconContainer}>
-          <Ionicons name="flag" size={32} color={theme.colors.primary} />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.overlay}>
+          <TouchableWithoutFeedback onPress={e => e.stopPropagation()}>
+            <View style={styles.modalContainer}>
+              {/* Flag Icon */}
+              <View style={styles.iconContainer}>
+                <Ionicons name="flag" size={32} color={theme.colors.primary} />
+              </View>
+
+              {/* Close Button */}
+              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
+              </TouchableOpacity>
+
+              {/* Title */}
+              <Text style={[styles.title, { fontSize: dims.headerFontSize }]}>Set Time</Text>
+              <Text style={[styles.subtitle, { fontSize: dims.bodyFontSize }]}>
+                Please enter the desired time (in minutes) between consecutive sign-ins.
+              </Text>
+
+              {/* Time Input */}
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Enter Time</Text>
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    style={[
+                      styles.input,
+                      error && styles.inputError,
+                      { fontSize: dims.bodyFontSize },
+                    ]}
+                    value={time}
+                    onChangeText={handleTimeChange}
+                    keyboardType="number-pad"
+                    placeholder="10"
+                    placeholderTextColor={customColors.outlineVariant}
+                  />
+                  <Text style={[styles.inputSuffix, { fontSize: dims.bodyFontSize }]}>Min</Text>
+                </View>
+              </View>
+
+              {/* Error Message */}
+              {error && <Text style={styles.errorText}>{error}</Text>}
+
+              {/* Buttons */}
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={[styles.cancelButton, { height: dims.buttonHeight }]}
+                  onPress={onClose}
+                >
+                  <Text style={[styles.cancelButtonText, { fontSize: dims.buttonFontSize }]}>
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.saveButton, { height: dims.buttonHeight }]}
+                  onPress={handleConfirm}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color={theme.colors.surface} />
+                  ) : (
+                    <Text style={[styles.saveButtonText, { fontSize: dims.buttonFontSize }]}>
+                      Save
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-
-        {/* Close Button */}
-        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
-        </TouchableOpacity>
-
-        {/* Title */}
-        <Text style={styles.title}>Set Time</Text>
-        <Text style={styles.subtitle}>
-          Please enter the desired time (in minutes) between consecutive sign-ins.
-        </Text>
-
-        {/* Time Input */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Enter Time</Text>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={[styles.input, error && styles.inputError]}
-              value={time}
-              onChangeText={handleTimeChange}
-              keyboardType="number-pad"
-              placeholder="10"
-              placeholderTextColor={customColors.outlineVariant}
-            />
-            <Text style={styles.inputSuffix}>Min</Text>
-          </View>
-        </View>
-
-        {/* Error Message */}
-        {error && <Text style={styles.errorText}>{error}</Text>}
-
-        {/* Buttons */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.saveButton} onPress={handleConfirm} disabled={isLoading}>
-            {isLoading ? (
-              <ActivityIndicator size="small" color={theme.colors.surface} />
-            ) : (
-              <Text style={styles.saveButtonText}>Save</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -132,6 +171,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 16,
     top: 16,
+  },
+  container: {
+    flex: 1,
   },
   errorText: {
     color: theme.colors.error,

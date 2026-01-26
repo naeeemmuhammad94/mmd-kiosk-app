@@ -13,6 +13,10 @@ import {
   TextInput,
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
   useWindowDimensions,
 } from 'react-native';
 import { getResponsiveDimensions } from '@/theme/dimensions';
@@ -114,67 +118,76 @@ export default function KioskPinModal() {
 
   return (
     <Modal visible={true} animationType="fade" transparent>
-      <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
-          <View style={styles.iconContainer}>
-            <Ionicons name="lock-closed" size={32} color={theme.colors.primary} />
-          </View>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-            <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
-          </TouchableOpacity>
-          <Text style={[styles.title, { fontSize: dims.headerFontSize }]}>Confirm PIN</Text>
-          <Text style={[styles.subtitle, { fontSize: dims.bodyFontSize }]}>
-            Enter the PIN code below in order to access settings.
-          </Text>
-          <View style={styles.pinContainer}>
-            {[0, 1, 2, 3].map(index => (
-              <TextInput
-                key={index}
-                ref={ref => {
-                  inputRefs.current[index] = ref;
-                }}
-                style={[styles.pinInput, error && styles.pinInputError]}
-                defaultValue=""
-                onChangeText={value => handlePinChange(value, index)}
-                onKeyPress={e => handleKeyPress(e, index)}
-                keyboardType="number-pad"
-                maxLength={1}
-                secureTextEntry
-                autoFocus={index === 0}
-                placeholder="0"
-                placeholderTextColor={customColors.outlineVariant}
-                selectTextOnFocus
-              />
-            ))}
-          </View>
-          {error && (
-            <Text style={[styles.errorText, { fontSize: dims.smallFontSize }]}>{error}</Text>
-          )}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.cancelButton, { height: dims.buttonHeight }]}
-              onPress={handleClose}
-            >
-              <Text style={[styles.cancelButtonText, { fontSize: dims.buttonFontSize }]}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.confirmButton, { height: dims.buttonHeight }]}
-              onPress={handleConfirm}
-              disabled={isPending}
-            >
-              {isPending ? (
-                <ActivityIndicator size="small" color={theme.colors.onPrimary} />
-              ) : (
-                <Text style={[styles.confirmButtonText, { fontSize: dims.buttonFontSize }]}>
-                  Confirm
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardAvoidingView}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.overlay}>
+            <TouchableWithoutFeedback onPress={e => e.stopPropagation()}>
+              <View style={styles.modalContainer}>
+                <View style={styles.iconContainer}>
+                  <Ionicons name="lock-closed" size={32} color={theme.colors.primary} />
+                </View>
+                <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+                  <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
+                </TouchableOpacity>
+                <Text style={[styles.title, { fontSize: dims.headerFontSize }]}>Confirm PIN</Text>
+                <Text style={[styles.subtitle, { fontSize: dims.bodyFontSize }]}>
+                  Enter the PIN code below in order to access settings.
                 </Text>
-              )}
-            </TouchableOpacity>
+                <View style={styles.pinContainer}>
+                  {[0, 1, 2, 3].map(index => (
+                    <TextInput
+                      key={index}
+                      ref={ref => {
+                        inputRefs.current[index] = ref;
+                      }}
+                      style={[styles.pinInput, error && styles.pinInputError]}
+                      defaultValue=""
+                      onChangeText={value => handlePinChange(value, index)}
+                      onKeyPress={e => handleKeyPress(e, index)}
+                      keyboardType="number-pad"
+                      maxLength={1}
+                      secureTextEntry
+                      autoFocus={index === 0}
+                      placeholder="0"
+                      placeholderTextColor={customColors.outlineVariant}
+                      selectTextOnFocus
+                    />
+                  ))}
+                </View>
+                {error && (
+                  <Text style={[styles.errorText, { fontSize: dims.smallFontSize }]}>{error}</Text>
+                )}
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={[styles.cancelButton, { height: dims.buttonHeight }]}
+                    onPress={handleClose}
+                  >
+                    <Text style={[styles.cancelButtonText, { fontSize: dims.buttonFontSize }]}>
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.confirmButton, { height: dims.buttonHeight }]}
+                    onPress={handleConfirm}
+                    disabled={isPending}
+                  >
+                    {isPending ? (
+                      <ActivityIndicator size="small" color={theme.colors.onPrimary} />
+                    ) : (
+                      <Text style={[styles.confirmButtonText, { fontSize: dims.buttonFontSize }]}>
+                        Confirm
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
           </View>
-        </View>
-      </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -188,7 +201,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flex: 1,
     justifyContent: 'center',
-    // paddingVertical removed in favor of dynamic height
+    // paddingVertical removed for dynamic height
   },
   cancelButtonText: { color: theme.colors.onSurfaceVariant, fontWeight: '500' },
   closeButton: { position: 'absolute', right: 16, top: 16 },
@@ -198,23 +211,26 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     flex: 1,
     justifyContent: 'center',
-    // paddingVertical removed in favor of dynamic height
+    // paddingVertical removed for dynamic height
   },
   confirmButtonText: { color: theme.colors.onPrimary, fontWeight: '600' },
   errorText: { color: theme.colors.error, marginBottom: 16, textAlign: 'center' },
   iconContainer: {
     alignItems: 'center',
-    backgroundColor: customColors.surfaceDisabled, // Fallback to gray since blue-50 is not in theme
+    backgroundColor: customColors.surfaceDisabled,
     borderRadius: 8,
     height: 56,
     justifyContent: 'center',
     marginBottom: 16,
     width: 56,
   },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
   modalContainer: {
     backgroundColor: theme.colors.surface,
     borderRadius: 16,
-    maxWidth: 448,
+    maxWidth: 448, // Reverted to match ChangePinModal
     padding: 24,
     position: 'relative',
     width: '90%',

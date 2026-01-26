@@ -78,6 +78,7 @@ export default function KioskSettingsModal() {
   const [showChangePinModal, setShowChangePinModal] = useState(false);
   const [showSetTimeModal, setShowSetTimeModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  // const hasNestedModal = showChangePinModal || showSetTimeModal || isPinModalOpen;
 
   // Local settings state - initialized once from props
   const [localSettings, setLocalSettings] = useState<Partial<KioskSettings>>(() => ({
@@ -85,7 +86,7 @@ export default function KioskSettingsModal() {
     showStudentImages: settings?.showStudentImages ?? true,
     powerSavingMode: settings?.powerSavingMode ?? false,
     allowMultipleClasses: settings?.allowMultipleClasses ?? false,
-    allowNonMembers: settings?.allowNonMembers ?? false,
+    allowContact: settings?.allowContact ?? false,
     signInTime: settings?.signInTime ?? 10,
     pin: settings?.pin || '',
   }));
@@ -179,15 +180,15 @@ export default function KioskSettingsModal() {
     setLocalSettings(prev => ({ ...prev, allowMultipleClasses: !prev.allowMultipleClasses }));
   }, []);
 
-  const handleToggleNonMembers = useCallback(() => {
-    setLocalSettings(prev => ({ ...prev, allowNonMembers: !prev.allowNonMembers }));
+  const handleToggleAllowContact = useCallback(() => {
+    setLocalSettings(prev => ({ ...prev, allowContact: !prev.allowContact }));
   }, []);
 
   // Save settings (matches CRM onSubmit)
   const handleSaveSettings = useCallback(async () => {
     setIsSaving(true);
     try {
-      const { allowNonMembers, ...settingsData } = localSettings;
+      const { ...settingsData } = localSettings;
 
       // Build payload matching CRM API exactly
       const payload = {
@@ -195,15 +196,19 @@ export default function KioskSettingsModal() {
         showStudentImages: settingsData.showStudentImages ?? true,
         powerSavingMode: settingsData.powerSavingMode ?? false,
         allowMultipleClasses: settingsData.allowMultipleClasses ?? false,
-        allowContact: allowNonMembers ?? false,
+        allowContact: settingsData.allowContact ?? false,
         pin: settingsData.pin || settings?.pin || '',
         signInTime: Number(settingsData.signInTime) || 10,
       };
 
       const response = await updateSettingsAsync(payload);
 
-      if (response?.data) {
-        setSettings(response.data);
+      // Support both response shapes: response.data.data (standard) or response.data (direct)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const responseData = response?.data as any;
+      const updatedSettings = responseData?.data || responseData;
+      if (updatedSettings) {
+        setSettings(updatedSettings);
       }
 
       Alert.alert('Success', 'Kiosk Settings Updated!');
@@ -231,7 +236,7 @@ export default function KioskSettingsModal() {
           showStudentImages: localSettings.showStudentImages ?? true,
           powerSavingMode: localSettings.powerSavingMode ?? false,
           allowMultipleClasses: localSettings.allowMultipleClasses ?? false,
-          allowContact: localSettings.allowNonMembers ?? false,
+          allowContact: localSettings.allowContact ?? false,
           signInTime: Number(localSettings.signInTime) || 10,
           pin: newPin, // Include PIN in this update
         };
@@ -278,6 +283,7 @@ export default function KioskSettingsModal() {
               style={styles.content}
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
+              // scrollEnabled={!hasNestedModal}
             >
               {/* Background Image Section Header */}
               <View style={styles.settingRow}>
@@ -356,8 +362,8 @@ export default function KioskSettingsModal() {
               <SettingToggle
                 title="Allow contacts without a membership to check in"
                 description="This option will allow contacts to check in without membership"
-                value={localSettings.allowNonMembers ?? false}
-                onToggle={handleToggleNonMembers}
+                value={localSettings.allowContact ?? false}
+                onToggle={handleToggleAllowContact}
                 isTablet={isTablet}
               />
 
@@ -417,23 +423,26 @@ export default function KioskSettingsModal() {
             </View>
           </View>
 
-          {/* Sub-modals - Moved INSIDE the Modal to ensure they overlay correctly on iOS */}
           {showChangePinModal && (
-            <ChangePinModal
-              visible={showChangePinModal}
-              onClose={() => setShowChangePinModal(false)}
-              onSubmit={handleChangePinSubmit}
-              currentPin={localSettings.pin}
-            />
+            <View style={styles.overlayWrapper} pointerEvents="box-none">
+              <ChangePinModal
+                visible={showChangePinModal}
+                onClose={() => setShowChangePinModal(false)}
+                onSubmit={handleChangePinSubmit}
+                currentPin={localSettings.pin}
+              />
+            </View>
           )}
 
           {showSetTimeModal && (
-            <SetTimeModal
-              visible={showSetTimeModal}
-              onClose={() => setShowSetTimeModal(false)}
-              onSubmit={handleSetTimeSubmit}
-              currentTime={localSettings.signInTime || 10}
-            />
+            <View style={styles.overlayWrapper} pointerEvents="box-none">
+              <SetTimeModal
+                visible={showSetTimeModal}
+                onClose={() => setShowSetTimeModal(false)}
+                onSubmit={handleSetTimeSubmit}
+                currentTime={localSettings.signInTime || 10}
+              />
+            </View>
           )}
 
           {/* Global PIN Modal rendered nested here for proper layering when Settings is open */}
@@ -557,6 +566,10 @@ const styles = StyleSheet.create({
     backgroundColor: customColors.backdropDark,
     flex: 1,
     justifyContent: 'center',
+  },
+  overlayWrapper: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 99999,
   },
   removeImageButton: {
     backgroundColor: customColors.white, // Approximation for white opacity
