@@ -25,8 +25,6 @@ import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
 import { usePinStore } from '@/store/usePinStore';
-import PinModal from '@/components/auth/PinModal';
-
 // MMD Logo SVG
 import LoginLogo from '../../assets/login.svg';
 import loginBackground from '../../assets/login-background.png';
@@ -51,7 +49,7 @@ export default function LoginScreen() {
   const dims = getResponsiveDimensions(isTablet);
 
   const { login } = useAuthStore();
-  const { loadPinState } = usePinStore();
+  // const { loadPinState } = usePinStore(); // REMOVED
 
   // LOCAL state - no external state updates during typing
   const [userName, setUserName] = useState('');
@@ -76,7 +74,14 @@ export default function LoginScreen() {
       await login(userName.trim(), password);
     },
     onSuccess: async () => {
-      await loadPinState();
+      // Check server for PIN status
+      await usePinStore.getState().checkPinStatus();
+      const { isPinSet, showCreatePinModal } = usePinStore.getState();
+
+      if (!isPinSet) {
+        showCreatePinModal();
+      }
+      // If PIN is set, RootLayout will handle the verification modal and subsequent navigation
     },
     onError: (error: Error & { message?: string }) => {
       if (error.message !== 'Validation failed') {
@@ -221,8 +226,6 @@ export default function LoginScreen() {
           </KeyboardAvoidingView>
         </SafeAreaView>
       </ImageBackground>
-      {/* PIN Modal */}
-      <PinModal />
     </View>
   );
 }

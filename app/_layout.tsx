@@ -105,7 +105,7 @@ export default function RootLayout() {
 
   const loadStoredAuth = useAuthStore(state => state.loadStoredAuth);
   const loadOnboardingState = useOnboardingStore(state => state.loadOnboardingState);
-  const loadPinState = usePinStore(state => state.loadPinState);
+  const { checkPinStatus } = usePinStore();
 
   /**
    * Initialize app state on mount
@@ -114,14 +114,12 @@ export default function RootLayout() {
     async function initializeApp() {
       try {
         // Initialize stores AND wait for a minimum delay (e.g., 2.5s) to prevent flicker/jerks
-        await Promise.all([loadStoredAuth(), loadOnboardingState(), loadPinState()]);
+        await Promise.all([loadStoredAuth(), loadOnboardingState()]);
 
-        // PRE-CALCULATION: Check if we need to show PIN modal immediately to prevent flicker
+        // After auth is loaded, if we are authenticated, check PIN status from server
         const authState = useAuthStore.getState();
-        const pinState = usePinStore.getState();
-
-        if (authState.isAuthenticated && pinState.isPinSet && !pinState.isPinVerified) {
-          pinState.showVerifyPinModal();
+        if (authState.isAuthenticated) {
+          await checkPinStatus();
         }
       } catch (error) {
         console.error('Error initializing app:', error);
@@ -131,7 +129,7 @@ export default function RootLayout() {
     }
 
     initializeApp();
-  }, [loadStoredAuth, loadOnboardingState, loadPinState]);
+  }, [loadStoredAuth, loadOnboardingState, checkPinStatus]);
 
   // Use protected route hook
   useProtectedRoute();
