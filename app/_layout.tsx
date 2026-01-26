@@ -114,12 +114,7 @@ export default function RootLayout() {
     async function initializeApp() {
       try {
         // Initialize stores AND wait for a minimum delay (e.g., 2.5s) to prevent flicker/jerks
-        await Promise.all([
-          loadStoredAuth(),
-          loadOnboardingState(),
-          loadPinState(),
-          new Promise(resolve => setTimeout(resolve, 2500)),
-        ]);
+        await Promise.all([loadStoredAuth(), loadOnboardingState(), loadPinState()]);
 
         // PRE-CALCULATION: Check if we need to show PIN modal immediately to prevent flicker
         const authState = useAuthStore.getState();

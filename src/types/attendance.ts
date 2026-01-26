@@ -5,79 +5,79 @@
 
 // Kiosk Settings
 export interface KioskSettings {
-    _id: string;
-    dojoId: string;
-    imageLink?: string;
-    showStudentImages: boolean;
-    powerSavingMode: boolean;
-    allowMultipleClasses: boolean;
-    allowNonMembers: boolean;
-    signInTime: number;
-    pin?: string;
-    newSetting?: boolean;
+  _id: string;
+  dojoId: string;
+  imageLink?: string;
+  showStudentImages: boolean;
+  powerSavingMode: boolean;
+  allowMultipleClasses: boolean;
+  allowContact: boolean;
+  signInTime: number;
+  pin?: string;
+  newSetting?: boolean;
 }
 
 // Student/Contact for attendance
 export interface AttendanceContact {
-    _id: string;
-    contact: string;
-    name: string;
-    profilePicURL?: string;
-    program: string;
-    programName: string;
-    rank?: string;
-    rankName?: string;
-    rankColor?: string;
-    classSlot?: string;
-    totalClasses: number;
-    totalPresentCount: number;
-    todayPresent: boolean;
-    isPresent: boolean;
-    accountStatus?: boolean;
+  _id: string;
+  contact: string;
+  name: string;
+  profilePicURL?: string;
+  program: string;
+  programName: string;
+  rank?: string;
+  rankName?: string;
+  rankColor?: string;
+  classSlot?: string;
+  totalClasses: number;
+  totalPresentCount: number;
+  todayPresent: boolean;
+  isPresent: boolean;
+  accountStatus?: boolean;
 }
 
 // Program with contacts
 export interface ProgramAttendance {
-    id: string;
-    name: string;
-    contacts: AttendanceContact[];
+  id: string;
+  name: string;
+  contacts: AttendanceContact[];
 }
 
 // Program for selection
 export interface Program {
-    _id: string;
-    name: string;
-    type: string;
+  _id: string;
+  name: string;
+  type: string;
 }
 
 // Mark attendance payload
 export interface MarkAttendancePayload {
-    id: string;
-    contact: string;
-    rank?: string;
-    program: string;
-    classSlot?: string;
-    date: string;
-    present: boolean;
-    startTime?: string;
-    endTime?: string;
-    day?: string;
+  id: string;
+  contact: string;
+  rank?: string;
+  program: string;
+  classSlot?: string;
+  date: string;
+  present: boolean;
+  startTime?: string;
+  endTime?: string;
+  day?: string;
 }
 
 // Confirm PIN payload
 export interface ConfirmPinPayload {
-    pin: string;
+  pin: string;
 }
 
 // API responses
 export interface AttendanceResponse {
-    allAttendance: AttendanceContact[];
+  allAttendance: AttendanceContact[];
 }
 
 export interface KioskSettingsResponse {
-    data: KioskSettings;
+  data: KioskSettings;
 }
 
 export interface ProgramsResponse {
-    items: Program[];
+  items: Program[];
 }
