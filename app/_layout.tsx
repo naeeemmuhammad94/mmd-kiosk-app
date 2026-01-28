@@ -113,13 +113,20 @@ export default function RootLayout() {
   useEffect(() => {
     async function initializeApp() {
       try {
-        // Initialize stores AND wait for a minimum delay (e.g., 2.5s) to prevent flicker/jerks
+        // Initialize stores
         await Promise.all([loadStoredAuth(), loadOnboardingState()]);
 
-        // After auth is loaded, if we are authenticated, check PIN status from server
+        // After auth is loaded, validate token with server
         const authState = useAuthStore.getState();
         if (authState.isAuthenticated) {
-          await checkPinStatus();
+          // Validate token - if invalid, user will be routed to login
+          const isValid = await useAuthStore.getState().validateSession();
+          if (isValid) {
+            // Token valid - check PIN status
+            await checkPinStatus();
+          }
+          // If not valid, validateSession already cleared auth state
+          // and useProtectedRoute will redirect to login
         }
       } catch (error) {
         console.error('Error initializing app:', error);
