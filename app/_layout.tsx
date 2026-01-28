@@ -3,7 +3,7 @@
  * Main app layout with auth routing and PIN verification
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -102,6 +102,7 @@ function useProtectedRoute() {
 export default function RootLayout() {
   const { theme, isDark } = useAppTheme();
   const [isReady, setIsReady] = useState(false);
+  const hasInitialized = useRef(false);
 
   const loadStoredAuth = useAuthStore(state => state.loadStoredAuth);
   const loadOnboardingState = useOnboardingStore(state => state.loadOnboardingState);
@@ -109,24 +110,24 @@ export default function RootLayout() {
 
   /**
    * Initialize app state on mount
+   * Uses ref guard to prevent double-initialization in React StrictMode
    */
   useEffect(() => {
+    // Guard against double-initialization in StrictMode
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
     async function initializeApp() {
       try {
         // Initialize stores
         await Promise.all([loadStoredAuth(), loadOnboardingState()]);
 
-        // After auth is loaded, validate token with server
+        // If authenticated, check PIN status from server
+        // This also implicitly validates the token - if expired,
+        // the API returns 401 and axios interceptor handles logout
         const authState = useAuthStore.getState();
         if (authState.isAuthenticated) {
-          // Validate token - if invalid, user will be routed to login
-          const isValid = await useAuthStore.getState().validateSession();
-          if (isValid) {
-            // Token valid - check PIN status
-            await checkPinStatus();
-          }
-          // If not valid, validateSession already cleared auth state
-          // and useProtectedRoute will redirect to login
+          await checkPinStatus();
         }
       } catch (error) {
         console.error('Error initializing app:', error);

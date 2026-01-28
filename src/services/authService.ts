@@ -71,19 +71,6 @@ export async function sendPasswordResetEmail(
 }
 
 /**
- * Validate if the current token is still valid
- * Returns true if valid, false if expired/invalid
- */
-export async function validateToken(): Promise<boolean> {
-  try {
-    await axiosInstance.get(ApiEndpoints.CurrentUser);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Logout user (optional server-side logout)
  */
 export async function logoutUser(): Promise<void> {
@@ -98,7 +85,6 @@ export async function logoutUser(): Promise<void> {
 export const authService = {
   loginUser,
   getCurrentUser,
-  validateToken,
   sendPasswordResetEmail,
   logoutUser,
 };

@@ -13,7 +13,6 @@ interface AuthActions {
   setUser: (user: CurrentUser | null) => void;
   setToken: (token: string | null) => void;
   loadStoredAuth: () => Promise<void>;
-  validateSession: () => Promise<boolean>;
   reset: () => void;
 }
 
@@ -116,28 +115,6 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
         ...initialState,
         isInitialized: true,
       });
-    }
-  },
-
-  /**
-   * Validate if current token is still valid with the server
-   * Returns true if valid, false if expired/invalid
-   */
-  validateSession: async () => {
-    try {
-      const isValid = await authService.validateToken();
-      if (!isValid) {
-        // Token expired - clear auth state and force re-login
-        await secureStorage.clearAll();
-        set({ ...initialState, isInitialized: true });
-        return false;
-      }
-      return true;
-    } catch (error) {
-      console.error('Session validation failed:', error);
-      await secureStorage.clearAll();
-      set({ ...initialState, isInitialized: true });
-      return false;
     }
   },
 
