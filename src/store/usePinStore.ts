@@ -4,173 +4,176 @@
  */
 
 import { create } from 'zustand';
-import * as SecureStore from 'expo-secure-store';
+import { attendanceService } from '@/services/attendanceService';
 import type { PinState } from '@/types/auth';
 
-// SecureStore keys must only contain alphanumeric characters, ".", "-", and "_"
-const PIN_STORAGE_KEY = 'mmd_kiosk_pin';
-
 interface PinActions {
-    createPin: (pin: string) => Promise<void>;
-    verifyPin: (pin: string) => Promise<boolean>;
-    loadPinState: () => Promise<void>;
-    clearPin: () => Promise<void>;
-    showCreatePinModal: () => void;
-    showVerifyPinModal: () => void;
-    setPinLoading: (loading: boolean) => void;
-    hidePinModal: () => void;
-    clearError: () => void;
-    reset: () => Promise<void>;
+  createPin: (pin: string) => Promise<void>;
+  verifyPin: (pin: string) => Promise<boolean>;
+  checkPinStatus: () => Promise<void>;
+  setPinLoading: (loading: boolean) => void;
+  showCreatePinModal: () => void;
+  showVerifyPinModal: () => void;
+  hidePinModal: () => void;
+  clearError: () => void;
+  reset: () => void;
 }
 
 type PinStore = PinState & PinActions;
 
 const initialState: PinState = {
-    isPinSet: false,
-    isPinVerified: false,
-    showPinModal: false,
-    pinMode: 'create',
-    isPinLoading: false,
-    pinError: null,
+  isPinSet: false,
+  isPinVerified: false,
+  showPinModal: false,
+  pinMode: 'create',
+  isPinLoading: false,
+  pinError: null,
 };
 
-export const usePinStore = create<PinStore>((set, get) => ({
-    ...initialState,
+export const usePinStore = create<PinStore>((set, _get) => ({
+  ...initialState,
 
-    /**
-     * Create and save a new PIN
-     */
-    createPin: async (pin: string) => {
-        set({ isPinLoading: true, pinError: null });
-        try {
-            await SecureStore.setItemAsync(PIN_STORAGE_KEY, pin);
-            set({
-                isPinSet: true,
-                isPinVerified: true, // Auto-verify after creation
-                showPinModal: false,
-                isPinLoading: false,
-            });
-        } catch (error) {
-            console.error('[PinStore] Error saving PIN:', error);
-            set({
-                isPinLoading: false,
-                pinError: 'Failed to save PIN. Please try again.',
-            });
-        }
-    },
+  /**
+   * Check if user has a PIN set by fetching settings from server
+   */
+  checkPinStatus: async () => {
+    set({ isPinLoading: true });
+    try {
+      const response = await attendanceService.getKioskSettingsByDojo();
+      const settings = response.data;
 
-    /**
-     * Verify entered PIN against stored PIN
-     */
-    verifyPin: async (pin: string) => {
-        set({ isPinLoading: true, pinError: null });
-        try {
-            const storedPin = await SecureStore.getItemAsync(PIN_STORAGE_KEY);
+      // Check if pin field exists and is not empty in the settings
+      const hasPin = !!(settings && settings.pin && settings.pin.length > 0);
 
-            if (storedPin === pin) {
-                set({
-                    isPinVerified: true,
-                    showPinModal: false,
-                    isPinLoading: false,
-                    pinError: null,
-                });
-                return true;
-            } else {
-                set({
-                    isPinLoading: false,
-                    pinError: 'Incorrect PIN',
-                });
-                return false;
-            }
-        } catch (error) {
-            console.error('[PinStore] Error verifying PIN:', error);
-            set({
-                isPinLoading: false,
-                pinError: 'Error verifying PIN. Please try again.',
-            });
-            return false;
-        }
-    },
+      set({
+        isPinSet: hasPin,
+        isPinLoading: false,
+      });
+    } catch (error) {
+      console.error('[PinStore] Error checking PIN status:', error);
+      // In case of error, assume no PIN to prevent blocking, or handle error UI
+      set({
+        isPinSet: false,
+        isPinLoading: false,
+      });
+    }
+  },
 
-    /**
-     * Load PIN state from secure storage on app start
-     */
-    loadPinState: async () => {
-        try {
-            const storedPin = await SecureStore.getItemAsync(PIN_STORAGE_KEY);
-            const isPinSet = !!storedPin;
-            set({ isPinSet });
-        } catch (error) {
-            console.error('[PinStore] Error loading PIN state:', error);
-            set({ isPinSet: false });
-        }
-    },
+  /**
+   * Verify PIN against the server
+   */
+  verifyPin: async (pin: string) => {
+    set({ isPinLoading: true, pinError: null });
+    try {
+      const response = await attendanceService.confirmKioskPin({ pin });
 
-    /**
-     * Clear stored PIN (for logout)
-     */
-    clearPin: async () => {
-        try {
-            await SecureStore.deleteItemAsync(PIN_STORAGE_KEY);
-            set({
-                isPinSet: false,
-                isPinVerified: false,
-            });
-        } catch (error) {
-            console.error('[PinStore] Error clearing PIN:', error);
-        }
-    },
-
-    /**
-     * Show PIN creation modal
-     */
-    showCreatePinModal: () => {
+      if (response.success) {
         set({
-            showPinModal: true,
-            pinMode: 'create',
-            pinError: null,
+          isPinVerified: true,
+          showPinModal: false,
+          isPinLoading: false,
+          pinError: null,
         });
-    },
-
-    /**
-     * Show PIN verification modal
-     */
-    showVerifyPinModal: () => {
+        return true;
+      } else {
         set({
-            showPinModal: true,
-            pinMode: 'verify',
-            pinError: null,
+          isPinLoading: false,
+          pinError: 'Incorrect PIN',
         });
-    },
+        return false;
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      // Check if it's an expected 400 error (Wrong PIN)
+      if (error.response && error.response.status === 400) {
+        // Log as info/debug, not error, to avoid LogBox popup
+        console.log('[PinStore] Incorrect PIN attempt');
 
-    /**
-     * Set PIN loading state manually (for auth flow)
-     */
-    setPinLoading: (loading: boolean) => {
-        set({ isPinLoading: loading });
-    },
+        set({
+          isPinLoading: false,
+          pinError: 'Incorrect PIN',
+        });
+      } else {
+        // Genuine error (network, server crash, etc.)
+        console.error('[PinStore] Error verifying PIN:', error);
+        set({
+          isPinLoading: false,
+          pinError: 'Verification failed. Please check connection.',
+        });
+      }
+      return false;
+    }
+  },
 
-    /**
-     * Hide PIN modal
-     */
-    hidePinModal: () => {
-        set({ showPinModal: false, pinError: null });
-    },
+  /**
+   * Create/Update PIN on the server
+   */
+  createPin: async (pin: string) => {
+    set({ isPinLoading: true, pinError: null });
+    try {
+      // First we need the current settings ID to update it
+      // We fetch the latest settings to ensure we have the ID and don't overwrite other fields blindly
+      const settingsResponse = await attendanceService.getKioskSettingsByDojo();
+      const currentSettings = settingsResponse.data;
 
-    /**
-     * Clear PIN error
-     */
-    clearError: () => {
-        set({ pinError: null });
-    },
+      if (!currentSettings || !currentSettings._id) {
+        throw new Error('Could not retrieve kiosk settings');
+      }
 
-    /**
-     * Reset PIN store to initial state
-     */
-    reset: async () => {
-        await get().clearPin();
-        set(initialState);
-    },
+      // Update parameters matching the API structure
+      // We send the PIN update. In a real scenario, we might want to preserve other settings.
+      // Assuming the API handles partial updates or we send back what we received + new PIN.
+      await attendanceService.updateKioskSettings(currentSettings._id, {
+        ...currentSettings,
+        pin: pin,
+      });
+
+      set({
+        isPinSet: true,
+        isPinVerified: true, // Auto-verify after creation
+        showPinModal: false,
+        isPinLoading: false,
+      });
+    } catch (error) {
+      console.error('[PinStore] Error creating PIN:', error);
+      set({
+        isPinLoading: false,
+        pinError: 'Failed to save PIN. Please try again.',
+      });
+    }
+  },
+
+  setPinLoading: (loading: boolean) => {
+    set({ isPinLoading: loading });
+  },
+
+  showCreatePinModal: () => {
+    set({
+      showPinModal: true,
+      pinMode: 'create',
+      pinError: null,
+    });
+  },
+
+  showVerifyPinModal: () => {
+    set({
+      showPinModal: true,
+      pinMode: 'verify',
+      pinError: null,
+    });
+  },
+
+  hidePinModal: () => {
+    set({ showPinModal: false, pinError: null });
+  },
+
+  clearError: () => {
+    set({ pinError: null });
+  },
+
+  reset: () => {
+    set(initialState);
+  },
 }));
 
 export default usePinStore;

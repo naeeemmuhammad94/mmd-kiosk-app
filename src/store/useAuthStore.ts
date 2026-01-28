@@ -105,9 +105,12 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
       await secureStorage.clearEverything();
 
       // Reset PIN store state
-      // Import dynamically to avoid circular dependencies if any
-      const { usePinStore } = await import('./usePinStore');
-      await usePinStore.getState().reset();
+      try {
+        const { usePinStore } = await import('./usePinStore');
+        usePinStore.getState().reset();
+      } catch (error) {
+        console.error('Error resetting PIN store:', error);
+      }
 
       set({
         ...initialState,
