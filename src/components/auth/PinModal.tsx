@@ -20,7 +20,6 @@ import { getResponsiveDimensions } from '@/theme/dimensions';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import PinInput, { PinInputRef } from './PinInput';
 import { usePinStore } from '@/store/usePinStore';
-import { useAuthStore } from '@/store/useAuthStore';
 import { lightTheme, customColors } from '@/theme';
 
 // Lock Icon SVG
@@ -33,17 +32,8 @@ export default function PinModal() {
 
   const pinInputRef = useRef<PinInputRef>(null);
 
-  const { isAuthenticated, loginWithSavedCredentials } = useAuthStore();
-  const {
-    showPinModal,
-    pinMode,
-    isPinLoading,
-    pinError,
-    createPin,
-    verifyPin,
-    setPinLoading,
-    clearError,
-  } = usePinStore();
+  const { showPinModal, pinMode, isPinLoading, pinError, createPin, verifyPin, clearError } =
+    usePinStore();
 
   const handlePinComplete = useCallback(() => {
     // PIN will be used when confirm is pressed
@@ -63,25 +53,14 @@ export default function PinModal() {
       await createPin(pin);
     } else {
       const success = await verifyPin(pin);
-      if (success) {
-        // If this is a returning user (not authenticated yet), trigger login
-        if (!isAuthenticated) {
-          try {
-            setPinLoading(true);
-            await loginWithSavedCredentials();
-          } catch (error) {
-            console.error('Direct login failed:', error);
-            // Pin store handles error visibility usually, but here we might need a custom error
-          } finally {
-            setPinLoading(false);
-          }
-        }
-      } else {
+      if (!success) {
         // Clear the input on failed verification
         pinInputRef.current?.clear();
       }
+      // On success, usePinStore sets isPinVerified = true
+      // and useProtectedRoute in _layout.tsx will navigate to kiosk
     }
-  }, [pinMode, createPin, verifyPin, isAuthenticated, loginWithSavedCredentials, setPinLoading]);
+  }, [pinMode, createPin, verifyPin]);
 
   return (
     <Modal visible={showPinModal} transparent animationType="fade" statusBarTranslucent>

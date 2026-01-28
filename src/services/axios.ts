@@ -15,8 +15,6 @@ export const STORAGE_KEYS = {
   REFRESH_TOKEN: 'refresh_token',
   USER_DATA: 'user_data',
   ONBOARDING_COMPLETE: 'onboarding_complete',
-  SAVED_USERNAME: 'saved_username',
-  SAVED_PASSWORD: 'saved_password',
 } as const;
 
 /**
@@ -46,7 +44,6 @@ axiosInstance.interceptors.request.use(
     }
 
     // Log API request for debugging
-    // Log API request for debugging
     if (__DEV__) {
       console.log(`🌐 API Request: ${config.method?.toUpperCase()} ${config.url}`);
       if (config.data) {
@@ -67,7 +64,6 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   response => {
     // Log successful response
-    // Log successful response
     if (__DEV__) {
       console.log(
         `✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`
@@ -84,57 +80,21 @@ axiosInstance.interceptors.response.use(
       console.log('Error Message:', error.message);
     }
 
+    // On 401 Unauthorized, clear auth state and let app routing handle redirect to login
     if (error.response?.status === 401) {
-      // If we've already retried, give up
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const originalRequest = error.config as any;
-      if (originalRequest._retry) {
-        // Clear all auth data if retry fails
+      try {
         await SecureStore.deleteItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
         await SecureStore.deleteItemAsync(STORAGE_KEYS.REFRESH_TOKEN);
         await SecureStore.deleteItemAsync(STORAGE_KEYS.USER_DATA);
 
-        // Also reset store state if we can import it
-        try {
-          const { useAuthStore } = await import('@/store/useAuthStore');
-          useAuthStore.getState().setUser(null);
-          useAuthStore.getState().setToken(null);
-        } catch (e) {
-          console.error('Failed to reset store logout', e);
-        }
-
-        return Promise.reject(error);
-      }
-
-      originalRequest._retry = true;
-
-      try {
-        // Attempt to refresh token using store action
-        // Dynamic import to avoid circular dependency
+        // Reset auth store state
         const { useAuthStore } = await import('@/store/useAuthStore');
-        const success = await useAuthStore.getState().attemptTokenRefresh();
-
-        if (success) {
-          // Get new token
-          const newToken = await SecureStore.getItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
-          if (newToken) {
-            originalRequest.headers.Authorization = newToken;
-            return axiosInstance(originalRequest);
-          }
-        }
-      } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
-      }
-
-      // If refresh logic failed or threw, fall through to clear auth
-      try {
-        await SecureStore.deleteItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
-        await SecureStore.deleteItemAsync(STORAGE_KEYS.REFRESH_TOKEN);
-        await SecureStore.deleteItemAsync(STORAGE_KEYS.USER_DATA);
-      } catch (storageError) {
-        console.error('Error clearing secure store:', storageError);
+        useAuthStore.getState().reset();
+      } catch (e) {
+        console.error('Failed to clear auth on 401:', e);
       }
     }
+
     return Promise.reject(error);
   }
 );
@@ -185,31 +145,6 @@ export const secureStorage = {
       SecureStore.deleteItemAsync(STORAGE_KEYS.REFRESH_TOKEN),
       SecureStore.deleteItemAsync(STORAGE_KEYS.USER_DATA),
     ]);
-  },
-
-  async clearEverything(): Promise<void> {
-    await Promise.all([
-      SecureStore.deleteItemAsync(STORAGE_KEYS.ACCESS_TOKEN),
-      SecureStore.deleteItemAsync(STORAGE_KEYS.REFRESH_TOKEN),
-      SecureStore.deleteItemAsync(STORAGE_KEYS.USER_DATA),
-      SecureStore.deleteItemAsync(STORAGE_KEYS.SAVED_USERNAME),
-      SecureStore.deleteItemAsync(STORAGE_KEYS.SAVED_PASSWORD),
-    ]);
-  },
-
-  async setSavedCredentials(userName: string, password: string): Promise<void> {
-    await Promise.all([
-      SecureStore.setItemAsync(STORAGE_KEYS.SAVED_USERNAME, userName),
-      SecureStore.setItemAsync(STORAGE_KEYS.SAVED_PASSWORD, password),
-    ]);
-  },
-
-  async getSavedCredentials(): Promise<{ userName: string | null; password: string | null }> {
-    const [userName, password] = await Promise.all([
-      SecureStore.getItemAsync(STORAGE_KEYS.SAVED_USERNAME),
-      SecureStore.getItemAsync(STORAGE_KEYS.SAVED_PASSWORD),
-    ]);
-    return { userName, password };
   },
 };
 

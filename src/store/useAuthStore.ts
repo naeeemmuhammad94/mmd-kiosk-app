@@ -13,9 +13,8 @@ interface AuthActions {
   setUser: (user: CurrentUser | null) => void;
   setToken: (token: string | null) => void;
   loadStoredAuth: () => Promise<void>;
+  validateSession: () => Promise<boolean>;
   reset: () => void;
-  loginWithSavedCredentials: () => Promise<void>;
-  attemptTokenRefresh: () => Promise<boolean>;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -32,7 +31,8 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
   ...initialState,
 
   /**
-   * Login with userName and password (matching CRM pattern)
+   * Login with userName and password
+   * Token is valid for 365 days via rememberMeDays parameter
    */
   login: async (userName: string, password: string) => {
     set({ isLoading: true });
@@ -41,6 +41,7 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
         userName,
         password,
         rememberMe: true,
+        rememberMeDays: 365,
       });
 
       // Check if we have a valid response with data
@@ -73,7 +74,6 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
           fullName: (userInfo as { firstName?: string; lastName?: string }).firstName || '',
         };
         await secureStorage.setUserData(JSON.stringify(essentialUserData));
-        await secureStorage.setSavedCredentials(userName, password);
 
         set({
           user: { ...userData, accessToken: token as string },
@@ -101,8 +101,8 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
     } catch {
       // Continue with local logout even if API fails
     } finally {
-      // Clear ALL stored auth credentials, including saved username/password
-      await secureStorage.clearEverything();
+      // Clear ALL stored auth data
+      await secureStorage.clearAll();
 
       // Reset PIN store state
       try {
@@ -120,63 +120,23 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
   },
 
   /**
-   * Automated login using saved credentials (for PIN-based login)
+   * Validate if current token is still valid with the server
+   * Returns true if valid, false if expired/invalid
    */
-  loginWithSavedCredentials: async () => {
-    const { userName, password } = await secureStorage.getSavedCredentials();
-    if (userName && password) {
-      const useAuthStore = (await import('./useAuthStore')).default;
-      await useAuthStore.getState().login(userName, password);
-    } else {
-      throw new Error('No saved credentials found');
-    }
-  },
-
-  /**
-   * Silent token refresh using saved credentials
-   * Returns true if successful, false otherwise
-   */
-  attemptTokenRefresh: async () => {
+  validateSession: async () => {
     try {
-      const { userName, password } = await secureStorage.getSavedCredentials();
-      if (!userName || !password) return false;
-
-      const response = await authService.loginUser({
-        userName,
-        password,
-        rememberMe: true,
-      });
-
-      if (response && response.data) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const responseAny = response as unknown as {
-          data: { accessToken?: string; token?: string; refreshToken?: string };
-          token?: string;
-        };
-        const token = response.data.accessToken || responseAny.data.token || responseAny.token;
-        const refreshToken = response.data.refreshToken;
-        const userData = response.data;
-
-        if (token && typeof token === 'string') {
-          await secureStorage.setToken(token);
-
-          if (refreshToken && typeof refreshToken === 'string') {
-            await secureStorage.setRefreshToken(refreshToken);
-          }
-
-          // Update store silently (no loading state)
-          set({
-            token,
-            isAuthenticated: true,
-            // Optionally update user data if needed, but token is most important
-            ...(userData ? { user: { ...userData, accessToken: token } } : {}),
-          });
-          return true;
-        }
+      const isValid = await authService.validateToken();
+      if (!isValid) {
+        // Token expired - clear auth state and force re-login
+        await secureStorage.clearAll();
+        set({ ...initialState, isInitialized: true });
+        return false;
       }
-      return false;
+      return true;
     } catch (error) {
-      console.error('Silent refresh failed:', error);
+      console.error('Session validation failed:', error);
+      await secureStorage.clearAll();
+      set({ ...initialState, isInitialized: true });
       return false;
     }
   },
