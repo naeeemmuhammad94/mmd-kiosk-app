@@ -74,6 +74,15 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
         };
         await secureStorage.setUserData(JSON.stringify(essentialUserData));
 
+        // Update PIN status before setting authenticated state
+        // This prevents race conditions in RootLayout where it might see authenticated=true but isPinSet=false
+        try {
+          const { usePinStore } = await import('./usePinStore');
+          await usePinStore.getState().checkPinStatus();
+        } catch (error) {
+          console.error('Error checking PIN status during login:', error);
+        }
+
         set({
           user: { ...userData, accessToken: token as string },
           token: (token as string) || null,
