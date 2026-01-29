@@ -24,7 +24,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
-import { usePinStore } from '@/store/usePinStore';
+
 // MMD Logo SVG
 import LoginLogo from '../../assets/login.svg';
 import loginBackground from '../../assets/login-background.png';
@@ -74,14 +74,9 @@ export default function LoginScreen() {
       await login(userName.trim(), password);
     },
     onSuccess: async () => {
-      // Check server for PIN status
-      await usePinStore.getState().checkPinStatus();
-      const { isPinSet, showCreatePinModal } = usePinStore.getState();
-
-      if (!isPinSet) {
-        showCreatePinModal();
-      }
-      // If PIN is set, RootLayout will handle the verification modal and subsequent navigation
+      // PIN status is now checked inside useAuthStore.login before isAuthenticated is set
+      // RootLayout will automatically handle showing the correct modal (Verify vs Create)
+      // based on the updated store state.
     },
     onError: (error: Error & { message?: string }) => {
       if (error.message !== 'Validation failed') {
