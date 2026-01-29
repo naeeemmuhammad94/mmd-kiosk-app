@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Text, Avatar } from 'react-native-paper';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useKioskStore } from '@/store/useKioskStore';
 import moment from 'moment';
 import { lightTheme as theme, customColors } from '@/theme';
@@ -9,6 +10,7 @@ import { lightTheme as theme, customColors } from '@/theme';
 import CheckCircleIcon from '../../../assets/check-circle.svg';
 import CheckoutCircleIcon from '../../../assets/checkout-circle.svg';
 // TickIcon/CloseIcon removed in favor of new assets
+import { getEffectiveColor, getGradientColors } from './StudentCard';
 
 export default function ConfirmModal() {
   const {
@@ -39,6 +41,7 @@ export default function ConfirmModal() {
   const showStudentImages = settings?.showStudentImages ?? true;
   const isCheckIn = confirmType === 'checkIn';
   const currentTime = moment().format('h:mm A');
+  const effectiveColor = getEffectiveColor(selectedStudent.rankColor);
 
   return (
     <View style={styles.overlayContainer}>
@@ -91,15 +94,30 @@ export default function ConfirmModal() {
             {/* Integrated Badge on Avatar Logic */}
             <View style={styles.imageWrapper}>
               {showStudentImages && selectedStudent.profilePicURL ? (
-                <Image
-                  source={{ uri: selectedStudent.profilePicURL }}
-                  style={styles.profileImage}
-                />
+                <LinearGradient
+                  colors={getGradientColors(effectiveColor)}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.gradientBorder}
+                >
+                  <View style={styles.imageContainer}>
+                    <Image
+                      source={{ uri: selectedStudent.profilePicURL }}
+                      style={styles.profileImage}
+                    />
+                  </View>
+                </LinearGradient>
               ) : (
                 <Avatar.Text
                   size={80}
                   label={studentName.charAt(0).toUpperCase()}
-                  style={styles.avatar}
+                  style={[
+                    styles.avatar,
+                    {
+                      backgroundColor:
+                        effectiveColor === '#E2E8F0' ? theme.colors.primary : effectiveColor,
+                    },
+                  ]}
                 />
               )}
               {/* Status badge floating on bottom right */}
@@ -200,6 +218,20 @@ const styles = StyleSheet.create({
     right: -6,
     zIndex: 10,
   },
+  gradientBorder: {
+    alignItems: 'center',
+    borderRadius: 20, // slightly larger than image radius (16) + padding
+    justifyContent: 'center',
+    padding: 3,
+  },
+  imageContainer: {
+    alignItems: 'center',
+    backgroundColor: customColors.surfaceDisabled,
+    borderRadius: 16,
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+
   imageWrapper: {
     position: 'relative',
   },
@@ -210,9 +242,8 @@ const styles = StyleSheet.create({
     zIndex: 9999,
   },
   profileImage: {
-    borderColor: customColors.warn, // Gold border from screenshot? Or just clean. Let's add the gold border seen in some designs.
-    borderRadius: 16, // Squircle
-    borderWidth: 2,
+    // borderColor removed - handled by gradient
+    // borderRadius handled by container
     height: 80,
     width: 80,
   },

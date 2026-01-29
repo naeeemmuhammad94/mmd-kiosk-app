@@ -16,57 +16,25 @@ interface StudentCardProps {
   width?: number;
 }
 
-// Vibrant fallback colors matching Figma design
-const VIBRANT_COLORS = [
-  '#22C55E', // Green
-  '#84CC16', // Lime/Yellow-green
-  '#F59E0B', // Orange
-  '#EC4899', // Pink
-  '#8B5CF6', // Purple
-  '#3B82F6', // Blue
-  '#14B8A6', // Teal
-  '#EF4444', // Red
-];
-
-// Check if a color is too dark (perceived brightness < threshold)
-const isColorTooDark = (hex: string): boolean => {
-  try {
-    const cleanHex = hex.replace('#', '');
-    const r = parseInt(cleanHex.substring(0, 2), 16);
-    const g = parseInt(cleanHex.substring(2, 4), 16);
-    const b = parseInt(cleanHex.substring(4, 6), 16);
-    // Calculate perceived brightness
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    return brightness < 80; // If too dark, use fallback
-  } catch {
-    return true;
-  }
-};
-
-// Get a vibrant color based on student ID (consistent per student)
-const getVibrantColor = (studentId: string): string => {
-  let hash = 0;
-  for (let i = 0; i < studentId.length; i++) {
-    hash = studentId.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return VIBRANT_COLORS[Math.abs(hash) % VIBRANT_COLORS.length];
-};
-
-// Get the effective color - uses rank color if valid, otherwise uses vibrant fallback
-const getEffectiveColor = (rankColor: string | undefined, studentId: string): string => {
-  // If no rank color, use vibrant fallback
-  if (!rankColor || rankColor === theme.colors.outline || rankColor === '') {
-    return getVibrantColor(studentId);
-  }
-  // If rank color is too dark, use vibrant fallback
-  if (isColorTooDark(rankColor)) {
-    return getVibrantColor(studentId);
+// Feature: Gradient Logic with CRM Colors
+// We use the direct rank color as the base, and generate a gradient from it.
+// Feature: Gradient Logic with CRM Colors
+// We use the direct rank color as the base, and generate a gradient from it.
+export const getEffectiveColor = (rankColor: string | undefined): string => {
+  // If no rank color, OR it's white (invisible on white bg), use a visible gray fallback
+  if (
+    !rankColor ||
+    rankColor === '' ||
+    rankColor === theme.colors.outline ||
+    rankColor.toLowerCase() === '#ffffff'
+  ) {
+    return '#CBD5E1'; // Slate 300 - Visible gray that doesn't wash out to white in gradient
   }
   return rankColor;
 };
 
 // Helper to create gradient colors from base color
-const getGradientColors = (baseColor: string): [string, string, string] => {
+export const getGradientColors = (baseColor: string): [string, string, string] => {
   // Create a gradient that starts and ends with the base color
   // with a slightly lighter middle for visual effect
   return [baseColor, adjustBrightness(baseColor, 20), baseColor];
@@ -99,8 +67,8 @@ export default function StudentCard({ student, showImage, onPress, width }: Stud
   const attendanceText = `Attendance (${student?.totalPresentCount || 0}/${student?.totalClasses || 0})`;
   const isCheckedIn = student?.isPresent;
 
-  // Get effective color - vibrant fallback if rank color is missing or too dark
-  const effectiveColor = getEffectiveColor(student?.rankColor, student?._id || 'default');
+  // Get effective color - direct rank color or gray fallback
+  const effectiveColor = getEffectiveColor(student?.rankColor);
   const gradientColors = getGradientColors(effectiveColor);
 
   return (
@@ -120,27 +88,45 @@ export default function StudentCard({ student, showImage, onPress, width }: Stud
           </View>
         )}
 
-        {/* Gradient Border Container */}
+        {/* Gradient Border Container (Figma Style) */}
         <LinearGradient
           colors={gradientColors}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[styles.gradientBorder, { width: dims.avatarBorder, height: dims.avatarBorder }]}
         >
-          {/* Inner container for image */}
           <View
-            style={[styles.imageContainer, { width: dims.avatarInner, height: dims.avatarInner }]}
+            style={[
+              styles.imageContainer,
+              {
+                width: dims.avatarInner,
+                height: dims.avatarInner,
+                // No solid border here, handled by gradient wrapper
+              },
+            ]}
           >
             {showImage && student?.profilePicURL ? (
               <Image
                 source={{ uri: student.profilePicURL }}
-                style={[styles.profileImage, { width: dims.avatarInner, height: dims.avatarInner }]}
+                style={[
+                  styles.profileImage,
+                  {
+                    width: '100%',
+                    height: '100%',
+                  },
+                ]}
               />
             ) : (
               <Avatar.Text
                 size={dims.avatarSize}
                 label={studentName.charAt(0).toUpperCase()}
-                style={[styles.avatar, { backgroundColor: effectiveColor }]}
+                style={[
+                  styles.avatar,
+                  {
+                    backgroundColor:
+                      effectiveColor === '#E2E8F0' ? theme.colors.primary : effectiveColor,
+                  },
+                ]}
                 labelStyle={[styles.avatarLabel, { fontSize: dims.avatarSize * 0.4 }]}
               />
             )}
@@ -161,7 +147,7 @@ export default function StudentCard({ student, showImage, onPress, width }: Stud
       <View style={styles.nameContainer}>
         <Text
           style={[styles.name, { fontSize: dims.nameFontSize }]}
-          numberOfLines={2}
+          numberOfLines={1}
           ellipsizeMode="tail"
         >
           {studentName}
@@ -233,7 +219,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   nameContainer: {
-    height: 34, // Fixed height for 2 lines (~16px * 2 + padding) to prevent jumping
     justifyContent: 'flex-start',
     marginBottom: 4,
     width: '100%',

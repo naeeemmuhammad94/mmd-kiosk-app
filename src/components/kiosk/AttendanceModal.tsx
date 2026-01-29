@@ -14,6 +14,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useKioskStore } from '@/store/useKioskStore';
 import { attendanceService } from '@/services/attendanceService';
 import ConfirmModal from './ConfirmModal';
+import { getEffectiveColor, getGradientColors } from './StudentCard';
 import moment from 'moment';
 import { lightTheme as theme, customColors } from '@/theme';
 
@@ -91,6 +92,9 @@ export default function AttendanceModal() {
   const showStudentImages = settings?.showStudentImages ?? true;
   const isCheckedIn = selectedStudent.isPresent;
 
+  // Use same effective color logic as StudentCard for consistency
+  const effectiveColor = getEffectiveColor(selectedStudent.rankColor);
+
   return (
     <Modal visible={true} animationType="fade" transparent>
       <View style={styles.overlay}>
@@ -116,17 +120,30 @@ export default function AttendanceModal() {
               {/* Profile Image - Larger and with yellow border treatment if needed, though Figma shows simple square/rounded */}
               <View style={styles.profileSection}>
                 {showStudentImages && selectedStudent.profilePicURL ? (
-                  <View style={styles.imageContainer}>
-                    <Image
-                      source={{ uri: selectedStudent.profilePicURL }}
-                      style={styles.profileImage}
-                    />
-                  </View>
+                  <LinearGradient
+                    colors={getGradientColors(effectiveColor)}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.gradientBorder}
+                  >
+                    <View style={styles.imageContainer}>
+                      <Image
+                        source={{ uri: selectedStudent.profilePicURL }}
+                        style={styles.profileImage}
+                      />
+                    </View>
+                  </LinearGradient>
                 ) : (
                   <Avatar.Text
                     size={100}
                     label={studentName.charAt(0).toUpperCase()}
-                    style={styles.avatar}
+                    style={[
+                      styles.avatar,
+                      {
+                        backgroundColor:
+                          effectiveColor === '#E2E8F0' ? theme.colors.primary : effectiveColor,
+                      },
+                    ]}
                   />
                 )}
                 <Text style={styles.studentName}>{studentName}</Text>
@@ -143,7 +160,7 @@ export default function AttendanceModal() {
                   icon="ribbon-outline"
                   label="Rank"
                   value={selectedStudent.rankName || 'N/A'}
-                  valueColor={selectedStudent.rankColor} // Use rank color only for text if needed
+                  valueColor={effectiveColor} // Use effective rank color (with fallback logic)
                   isRank
                 />
                 <InfoRow
@@ -267,6 +284,14 @@ const styles = StyleSheet.create({
   content: {
     padding: 24,
   },
+  gradientBorder: {
+    alignItems: 'center',
+    borderRadius: 24, // Matches StudentCard
+    justifyContent: 'center',
+    marginBottom: 8,
+    padding: 3,
+  },
+
   header: {
     alignItems: 'flex-end', // Align text to bottom
     flexDirection: 'row',
@@ -286,6 +311,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 4, // Fine tune alignment
   },
+
   iconContainer: {
     alignItems: 'center',
     backgroundColor: customColors.surfaceDisabled, // Light blue bg
@@ -294,12 +320,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 36,
   },
+
   imageContainer: {
-    borderColor: customColors.warn, // Yellow-500
-    borderRadius: 14,
-    borderWidth: 2,
-    marginBottom: 8,
-    padding: 3,
+    alignItems: 'center',
+    backgroundColor: customColors.surfaceDisabled,
+    borderRadius: 20, // Inner radius
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
   infoLabel: {
     color: theme.colors.onSurfaceVariant,
@@ -350,7 +377,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   profileImage: {
-    borderRadius: 10,
+    borderRadius: 20,
     height: 90,
     width: 90,
   },
