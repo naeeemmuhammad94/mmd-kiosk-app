@@ -51,11 +51,13 @@ export const usePinStore = create<PinStore>((set, _get) => ({
       });
     } catch (error) {
       console.error('[PinStore] Error checking PIN status:', error);
-      // In case of error, assume no PIN to prevent blocking, or handle error UI
+      // Ensure state is reset on error
       set({
         isPinSet: false,
         isPinLoading: false,
       });
+      // Re-throw so the caller knows the check failed (e.g., network error)
+      throw error;
     }
   },
 

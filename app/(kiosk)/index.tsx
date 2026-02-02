@@ -9,6 +9,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useQuery } from '@tanstack/react-query';
@@ -24,7 +25,8 @@ import KioskPinModal from '@/components/kiosk/KioskPinModal';
 import ArrowOutlined from '../../assets/weui_arrow-outlined.svg';
 import type { AttendanceContact, ProgramAttendance } from '@/types/attendance';
 import { getResponsiveDimensions } from '@/theme/dimensions';
-import { lightTheme as theme, customColors } from '@/theme';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import type { CustomColors } from '@/theme';
 
 // Calculate columns based on screen width for responsive grid
 // Mobile (<768px): 3 columns, Tablet (>=768px): 5, iPad Landscape (>=1024px): 6
@@ -43,6 +45,9 @@ export default function KioskHomeScreen() {
   const isTablet = screenWidth >= 768;
   const numColumns = getNumColumns(screenWidth);
   const dims = getResponsiveDimensions(isTablet);
+
+  const { theme, customColors } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme, customColors), [theme, customColors]);
 
   // Calculate dynamic card width to fill screen available width
   // This ensures no right-side gap and proper 3-column layout
@@ -361,145 +366,146 @@ const getProgramBasedContacts = (
   return contactsData;
 };
 
-const styles = StyleSheet.create({
-  centeredLoaderContainer: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    minHeight: 200,
-  },
-  columnWrapper: {
-    justifyContent: 'flex-start', // Force left alignment
-    // gap and marginBottom set dynamically inline
-  },
-  container: {
-    backgroundColor: theme.colors.surface,
-    flex: 1,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    paddingVertical: 48,
-  },
-  emptyText: {
-    color: theme.colors.onSurfaceVariant,
-    fontSize: 16,
-    marginTop: 12,
-    textAlign: 'center',
-  },
-  fullWidthGrid: {
-    flex: 1,
-    width: '100%',
-  },
-  gridContent: {
-    width: '100%',
-  },
-  gridPadding: {
-    paddingBottom: 100,
-  },
-  gridWrapper: {
-    flex: 1,
-    width: '100%',
-  },
-  header: {
-    paddingBottom: 16,
-  },
-  headerActions: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 8,
-  },
-  headerContent: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 12,
-    paddingHorizontal: 16,
-    // Base padding for mobile, can be overridden
-    paddingTop: 12,
-  },
-  headerContentTablet: {
-    paddingTop: 48,
-  },
-  iconButton: {
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.outline,
-    borderRadius: 8,
-    borderWidth: 1,
-    height: 40, // Restoring fixed height for square icons
-    justifyContent: 'center',
-    width: 40,
-  },
-  paddingMobile: {
-    paddingHorizontal: 16,
-  },
-  paddingTablet: {
-    paddingHorizontal: 48,
-  },
-  programButton: {
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderRadius: 8,
-    flexDirection: 'row',
-    gap: 6,
-    justifyContent: 'center', // Fix: Sorted before padding
-    minHeight: 40, // Ensure visual match with search inputs
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  programButtonText: {
-    color: theme.colors.primary,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  rowCenter: {
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  searchContainer: {
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderRadius: 8,
-    flex: 1,
-    flexDirection: 'row',
-    gap: 8,
-    height: 40,
-    paddingHorizontal: 12,
-  },
-  searchInput: {
-    color: theme.colors.onSurface,
-    flex: 1,
-    fontSize: 15,
-  },
+const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
+  StyleSheet.create({
+    centeredLoaderContainer: {
+      alignItems: 'center',
+      flex: 1,
+      justifyContent: 'center',
+      minHeight: 200,
+    },
+    columnWrapper: {
+      justifyContent: 'flex-start', // Force left alignment
+      // gap and marginBottom set dynamically inline
+    },
+    container: {
+      backgroundColor: theme.colors.surface,
+      flex: 1,
+    },
+    emptyContainer: {
+      alignItems: 'center',
+      flex: 1,
+      justifyContent: 'center',
+      paddingVertical: 48,
+    },
+    emptyText: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 16,
+      marginTop: 12,
+      textAlign: 'center',
+    },
+    fullWidthGrid: {
+      flex: 1,
+      width: '100%',
+    },
+    gridContent: {
+      width: '100%',
+    },
+    gridPadding: {
+      paddingBottom: 100,
+    },
+    gridWrapper: {
+      flex: 1,
+      width: '100%',
+    },
+    header: {
+      paddingBottom: 16,
+    },
+    headerActions: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 8,
+    },
+    headerContent: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 12,
+      paddingHorizontal: 16,
+      // Base padding for mobile, can be overridden
+      paddingTop: 12,
+    },
+    headerContentTablet: {
+      paddingTop: 48,
+    },
+    iconButton: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.outline,
+      borderRadius: 8,
+      borderWidth: 1,
+      height: 40, // Restoring fixed height for square icons
+      justifyContent: 'center',
+      width: 40,
+    },
+    paddingMobile: {
+      paddingHorizontal: 16,
+    },
+    paddingTablet: {
+      paddingHorizontal: 48,
+    },
+    programButton: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 8,
+      flexDirection: 'row',
+      gap: 6,
+      justifyContent: 'center', // Fix: Sorted before padding
+      minHeight: 40, // Ensure visual match with search inputs
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    },
+    programButtonText: {
+      color: theme.colors.primary,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    rowCenter: {
+      alignItems: 'center',
+      flexDirection: 'row',
+    },
+    searchContainer: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 8,
+      flex: 1,
+      flexDirection: 'row',
+      gap: 8,
+      height: 40,
+      paddingHorizontal: 12,
+    },
+    searchInput: {
+      color: theme.colors.onSurface,
+      flex: 1,
+      fontSize: 15,
+    },
 
-  searchResultsCard: {
-    backgroundColor: theme.colors.surface,
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
-    flex: 1,
-    minHeight: 200,
-  },
-  searchResultsContainer: {
-    backgroundColor: customColors.surfaceDisabled, // Fallback for light blue bg
-    flex: 1,
-    paddingHorizontal: 16, // Fix: Match grid padding
-  },
-  searchResultsLabel: {
-    backgroundColor: theme.colors.primary, // Blue header to match theme
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  searchResultsLabelContainer: {
-    backgroundColor: customColors.surfaceDisabled,
-    paddingHorizontal: 16,
-    paddingTop: 8, // Fix: Match grid padding
-  },
-  searchResultsText: {
-    color: theme.colors.surface,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
+    searchResultsCard: {
+      backgroundColor: theme.colors.surface,
+      borderBottomLeftRadius: 8,
+      borderBottomRightRadius: 8,
+      flex: 1,
+      minHeight: 200,
+    },
+    searchResultsContainer: {
+      backgroundColor: customColors.surfaceDisabled, // Fallback for light blue bg
+      flex: 1,
+      paddingHorizontal: 16, // Fix: Match grid padding
+    },
+    searchResultsLabel: {
+      backgroundColor: theme.colors.primary, // Blue header to match theme
+      borderTopLeftRadius: 8,
+      borderTopRightRadius: 8,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+    },
+    searchResultsLabelContainer: {
+      backgroundColor: customColors.surfaceDisabled,
+      paddingHorizontal: 16,
+      paddingTop: 8, // Fix: Match grid padding
+    },
+    searchResultsText: {
+      color: theme.colors.surface,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+  });

@@ -4,7 +4,7 @@
  * Matches CRM SetTimeModal.tsx
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -19,7 +19,9 @@ import {
 import { getResponsiveDimensions } from '@/theme/dimensions';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { lightTheme as theme, customColors } from '@/theme';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import type { MD3Theme } from 'react-native-paper';
+import type { CustomColors } from '@/theme';
 
 interface SetTimeModalProps {
   visible: boolean;
@@ -39,6 +41,9 @@ export default function SetTimeModal({
   const { width: screenWidth } = useWindowDimensions();
   const isTablet = screenWidth >= 768;
   const dims = getResponsiveDimensions(isTablet);
+
+  const { theme, customColors } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme, customColors), [theme, customColors]);
 
   const [time, setTime] = useState(String(currentTime));
   const [error, setError] = useState('');
@@ -149,125 +154,126 @@ export default function SetTimeModal({
   );
 }
 
-const styles = StyleSheet.create({
-  buttonContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  cancelButton: {
-    alignItems: 'center',
-    borderColor: theme.colors.outline,
-    borderRadius: 8,
-    borderWidth: 1,
-    flex: 1,
-    paddingVertical: 14,
-  },
-  cancelButtonText: {
-    color: theme.colors.onSurfaceVariant,
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  closeButton: {
-    position: 'absolute',
-    right: 16,
-    top: 16,
-  },
-  container: {
-    flex: 1,
-  },
-  errorText: {
-    color: theme.colors.error,
-    fontSize: 14,
-    marginBottom: 16,
-  },
-  iconContainer: {
-    alignItems: 'center',
-    backgroundColor: customColors.surfaceDisabled, // Fallback
-    borderRadius: 8,
-    height: 56,
-    justifyContent: 'center',
-    marginBottom: 16,
-    width: 56,
-  },
-  input: {
-    color: theme.colors.onSurface,
-    flex: 1,
-    fontSize: 16,
-    height: 48,
-    paddingHorizontal: 16,
-  },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  inputError: {
-    borderColor: theme.colors.error,
-  },
-  inputLabel: {
-    color: theme.colors.onSurface,
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  inputSuffix: {
-    backgroundColor: customColors.surfaceDisabled,
-    color: theme.colors.onSurfaceVariant,
-    fontSize: 14,
-    paddingHorizontal: 16,
-  },
-  inputWrapper: {
-    alignItems: 'center',
-    borderColor: theme.colors.outline,
-    borderRadius: 8,
-    borderWidth: 1,
-    flexDirection: 'row',
-    overflow: 'hidden',
-  },
-  modalContainer: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 16,
-    elevation: 5,
-    maxWidth: 448, // Fix: Match KioskPinModal
-    minHeight: 200,
-    padding: 24,
-    position: 'relative',
-    shadowColor: customColors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    width: '90%',
-    zIndex: 99999,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center', // Fix: Sorted before backgroundColor
-    backgroundColor: customColors.backdropDark, // Fix: Enable dark overlay
-    elevation: 5,
-    height: '100%',
-    justifyContent: 'center',
-    width: '100%',
-    zIndex: 99999,
-  },
-  saveButton: {
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    borderRadius: 8,
-    flex: 1,
-    paddingVertical: 14,
-  },
-  saveButtonText: {
-    color: theme.colors.surface,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  subtitle: {
-    color: theme.colors.onSurfaceVariant,
-    fontSize: 15,
-    marginBottom: 24,
-  },
-  title: {
-    color: theme.colors.onSurface,
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-});
+const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
+  StyleSheet.create({
+    buttonContainer: {
+      flexDirection: 'row',
+      gap: 12,
+    },
+    cancelButton: {
+      alignItems: 'center',
+      borderColor: theme.colors.outline,
+      borderRadius: 8,
+      borderWidth: 1,
+      flex: 1,
+      paddingVertical: 14,
+    },
+    cancelButtonText: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 16,
+      fontWeight: '500',
+    },
+    closeButton: {
+      position: 'absolute',
+      right: 16,
+      top: 16,
+    },
+    container: {
+      flex: 1,
+    },
+    errorText: {
+      color: theme.colors.error,
+      fontSize: 14,
+      marginBottom: 16,
+    },
+    iconContainer: {
+      alignItems: 'center',
+      backgroundColor: customColors.surfaceDisabled, // Fallback
+      borderRadius: 8,
+      height: 56,
+      justifyContent: 'center',
+      marginBottom: 16,
+      width: 56,
+    },
+    input: {
+      color: theme.colors.onSurface,
+      flex: 1,
+      fontSize: 16,
+      height: 48,
+      paddingHorizontal: 16,
+    },
+    inputContainer: {
+      marginBottom: 16,
+    },
+    inputError: {
+      borderColor: theme.colors.error,
+    },
+    inputLabel: {
+      color: theme.colors.onSurface,
+      fontSize: 14,
+      fontWeight: '500',
+      marginBottom: 8,
+    },
+    inputSuffix: {
+      backgroundColor: customColors.surfaceDisabled,
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 14,
+      paddingHorizontal: 16,
+    },
+    inputWrapper: {
+      alignItems: 'center',
+      borderColor: theme.colors.outline,
+      borderRadius: 8,
+      borderWidth: 1,
+      flexDirection: 'row',
+      overflow: 'hidden',
+    },
+    modalContainer: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: 16,
+      elevation: 5,
+      maxWidth: 448, // Fix: Match KioskPinModal
+      minHeight: 200,
+      padding: 24,
+      position: 'relative',
+      shadowColor: customColors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      width: '90%',
+      zIndex: 99999,
+    },
+    overlay: {
+      ...StyleSheet.absoluteFillObject,
+      alignItems: 'center', // Fix: Sorted before backgroundColor
+      backgroundColor: customColors.backdropDark, // Fix: Enable dark overlay
+      elevation: 5,
+      height: '100%',
+      justifyContent: 'center',
+      width: '100%',
+      zIndex: 99999,
+    },
+    saveButton: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.primary,
+      borderRadius: 8,
+      flex: 1,
+      paddingVertical: 14,
+    },
+    saveButtonText: {
+      color: theme.colors.surface,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    subtitle: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 15,
+      marginBottom: 24,
+    },
+    title: {
+      color: theme.colors.onSurface,
+      fontSize: 22,
+      fontWeight: '700',
+      marginBottom: 8,
+    },
+  });

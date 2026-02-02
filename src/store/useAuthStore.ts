@@ -81,6 +81,9 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
           await usePinStore.getState().checkPinStatus();
         } catch (error) {
           console.error('Error checking PIN status during login:', error);
+          // If we can't verify Kiosk settings (e.g. network error), fail the login
+          // effectively keeping the user on the login screen with an error.
+          throw new Error('Unable to verify Kiosk settings. Please check your connection.');
         }
 
         set({
@@ -105,9 +108,13 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
   logout: async () => {
     set({ isLoading: true });
     try {
-      await authService.logoutUser();
+      // Fire and forget logout - don't block UI if API is down
+      authService.logoutUser().catch(() => {
+        // Silently ignore all logout errors (API down, 401, etc.)
+        // We are clearing local session anyway.
+      });
     } catch {
-      // Continue with local logout even if API fails
+      // Ignore errors
     } finally {
       // Clear ALL stored auth data
       await secureStorage.clearAll();

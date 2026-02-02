@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image, useWindowDimensions } from 'react-native';
 import { Text, Avatar } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
-import { lightTheme as theme, customColors } from '@/theme';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import type { MD3Theme } from 'react-native-paper';
+import type { CustomColors } from '@/theme';
 // MMD Assets
 import TickIcon from '../../../assets/tick.svg';
 import CloseIcon from '../../../assets/close.svg';
@@ -18,9 +20,7 @@ interface StudentCardProps {
 
 // Feature: Gradient Logic with CRM Colors
 // We use the direct rank color as the base, and generate a gradient from it.
-// Feature: Gradient Logic with CRM Colors
-// We use the direct rank color as the base, and generate a gradient from it.
-export const getEffectiveColor = (rankColor: string | undefined): string => {
+export const getEffectiveColor = (rankColor: string | undefined, theme: MD3Theme): string => {
   // If no rank color, OR it's white (invisible on white bg), use a visible gray fallback
   if (
     !rankColor ||
@@ -59,6 +59,9 @@ export default function StudentCard({ student, showImage, onPress, width }: Stud
   const isTablet = screenWidth >= 768;
   const dims = getResponsiveDimensions(isTablet);
 
+  const { theme, customColors } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme, customColors), [theme, customColors]);
+
   // Use provided width or fallback to responsive default
   const cardWidth = width || dims.cardWidth;
 
@@ -68,7 +71,7 @@ export default function StudentCard({ student, showImage, onPress, width }: Stud
   const isCheckedIn = student?.isPresent;
 
   // Get effective color - direct rank color or gray fallback
-  const effectiveColor = getEffectiveColor(student?.rankColor);
+  const effectiveColor = getEffectiveColor(student?.rankColor, theme);
   const gradientColors = getGradientColors(effectiveColor);
 
   return (
@@ -108,13 +111,7 @@ export default function StudentCard({ student, showImage, onPress, width }: Stud
             {showImage && student?.profilePicURL ? (
               <Image
                 source={{ uri: student.profilePicURL }}
-                style={[
-                  styles.profileImage,
-                  {
-                    width: '100%',
-                    height: '100%',
-                  },
-                ]}
+                style={[styles.profileImage, styles.fullSize]}
               />
             ) : (
               <Avatar.Text
@@ -164,91 +161,96 @@ export default function StudentCard({ student, showImage, onPress, width }: Stud
   );
 }
 
-const styles = StyleSheet.create({
-  attendance: {
-    fontSize: 11,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  attendanceGreen: {
-    color: theme.colors.onSurfaceVariant, // Grey text for attendance count per design
-  },
-  attendanceRed: {
-    color: theme.colors.onSurfaceVariant, // Grey text for attendance count per design
-  },
-  avatar: {
-    borderRadius: 20,
-  },
-  avatarLabel: {
-    color: theme.colors.onPrimary,
-    fontSize: 26,
-    fontWeight: '600',
-  },
-  container: {
-    alignItems: 'center',
-    marginBottom: 12,
-    padding: 8,
-    paddingTop: 12, // Added top padding to accommodate top badge
-    // width set dynamically via inline style
-  },
-  gradientBorder: {
-    alignItems: 'center',
-    borderRadius: 24, // Matching Figma rounded corners
-    justifyContent: 'center',
-    padding: 3,
-    // width and height set dynamically via inline style
-  },
-  imageContainer: {
-    alignItems: 'center',
-    backgroundColor: customColors.surfaceDisabled,
-    borderRadius: 20, // Matching inner radius
-    justifyContent: 'center',
-    overflow: 'hidden',
-    // width and height set dynamically via inline style
-  },
-  imageWrapper: {
-    marginBottom: 12, // Increased from 8 to prevent bottom badge overlap
-    position: 'relative',
-    zIndex: 1, // Ensure badges sit on top
-  },
-  name: {
-    color: theme.colors.onSurface,
-    // fontSize set dynamically via inline style
-    fontWeight: '700',
-    lineHeight: 16, // Tighter line height for better 2-line fit
-    textAlign: 'center',
-  },
-  nameContainer: {
-    justifyContent: 'flex-start',
-    marginBottom: 4,
-    width: '100%',
-  },
-  profileImage: {
-    borderRadius: 20,
-    // width and height set dynamically via inline style
-  },
-  statusBadgeBottomRight: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 999,
-    bottom: -6,
-    position: 'absolute',
-    right: -6,
-    shadowColor: customColors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    zIndex: 10,
-  },
-  statusBadgeTopLeft: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 999,
-    left: -6,
-    position: 'absolute',
-    shadowColor: customColors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    top: -6,
-    zIndex: 10,
-  },
-});
+const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
+  StyleSheet.create({
+    attendance: {
+      fontSize: 11,
+      fontWeight: '500',
+      textAlign: 'center',
+    },
+    attendanceGreen: {
+      color: theme.colors.onSurfaceVariant, // Grey text for attendance count per design
+    },
+    attendanceRed: {
+      color: theme.colors.onSurfaceVariant, // Grey text for attendance count per design
+    },
+    avatar: {
+      borderRadius: 20,
+    },
+    avatarLabel: {
+      color: theme.colors.onPrimary,
+      fontSize: 26,
+      fontWeight: '600',
+    },
+    container: {
+      alignItems: 'center',
+      marginBottom: 12,
+      padding: 8,
+      paddingTop: 12, // Added top padding to accommodate top badge
+      // width set dynamically via inline style
+    },
+    fullSize: {
+      height: '100%',
+      width: '100%',
+    },
+    gradientBorder: {
+      alignItems: 'center',
+      borderRadius: 24, // Matching Figma rounded corners
+      justifyContent: 'center',
+      padding: 3,
+      // width and height set dynamically via inline style
+    },
+    imageContainer: {
+      alignItems: 'center',
+      backgroundColor: customColors.surfaceDisabled,
+      borderRadius: 20, // Matching inner radius
+      justifyContent: 'center',
+      overflow: 'hidden',
+      // width and height set dynamically via inline style
+    },
+    imageWrapper: {
+      marginBottom: 12, // Increased from 8 to prevent bottom badge overlap
+      position: 'relative',
+      zIndex: 1, // Ensure badges sit on top
+    },
+    name: {
+      color: theme.colors.onSurface,
+      // fontSize set dynamically via inline style
+      fontWeight: '700',
+      lineHeight: 16, // Tighter line height for better 2-line fit
+      textAlign: 'center',
+    },
+    nameContainer: {
+      justifyContent: 'flex-start',
+      marginBottom: 4,
+      width: '100%',
+    },
+    profileImage: {
+      borderRadius: 20,
+      // width and height set dynamically via inline style
+    },
+    statusBadgeBottomRight: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: 999,
+      bottom: -6,
+      position: 'absolute',
+      right: -6,
+      shadowColor: customColors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      zIndex: 10,
+    },
+    statusBadgeTopLeft: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: 999,
+      left: -6,
+      position: 'absolute',
+      shadowColor: customColors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      top: -6,
+      zIndex: 10,
+    },
+  });

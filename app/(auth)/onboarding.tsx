@@ -6,7 +6,7 @@
  * Notification permissions will work in development/production builds.
  */
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -19,20 +19,21 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Text } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
-import { lightTheme, customColors } from '@/theme';
+
+import { useAppTheme } from '@/hooks/useAppTheme';
+import type { CustomColors } from '@/theme';
 
 // Import SVG illustrations with updated file names
 import WelcomeIllustration from '../../assets/welcome.svg';
 import AttendanceIllustration from '../../assets/attendee.svg';
 import PictureModeIllustration from '../../assets/picture-mode.svg';
 import NotificationIllustration from '../../assets/notification.svg';
-
-const colors = lightTheme.colors;
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -73,26 +74,13 @@ const ONBOARDING_SLIDES: OnboardingSlideData[] = [
   },
 ];
 
-// Pagination Dots Component - Bold (larger) dot for active slide
-const PaginationDots = ({ totalDots, activeIndex }: { totalDots: number; activeIndex: number }) => {
-  return (
-    <View style={styles.dotsContainer}>
-      {Array.from({ length: totalDots }).map((_, index) => {
-        const isActive = index === activeIndex;
-        return (
-          <View
-            key={index}
-            style={[styles.dot, isActive ? styles.activeDot : styles.inactiveDot]}
-          />
-        );
-      })}
-    </View>
-  );
-};
-
 export default function OnboardingScreen() {
   const router = useRouter();
   const flatListRef = useRef<FlatList>(null);
+
+  const { theme, customColors } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme, customColors), [theme, customColors]);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   // Use useState for Animated value to avoid ref-in-render lint issues
@@ -174,23 +162,26 @@ export default function OnboardingScreen() {
     navigateToLogin();
   }, [completeOnboarding, setNotificationPermission, navigateToLogin]);
 
-  const renderSlide = useCallback(({ item }: { item: OnboardingSlideData }) => {
-    const { Illustration } = item;
-    return (
-      <View style={styles.slide}>
-        {/* Illustration */}
-        <View style={styles.illustrationContainer}>
-          <Illustration width={SCREEN_WIDTH * 0.8} height={SCREEN_HEIGHT * 0.38} />
+  const renderSlide = useCallback(
+    ({ item }: { item: OnboardingSlideData }) => {
+      const { Illustration } = item;
+      return (
+        <View style={styles.slide}>
+          {/* Illustration */}
+          <View style={styles.illustrationContainer}>
+            <Illustration width={SCREEN_WIDTH * 0.8} height={SCREEN_HEIGHT * 0.38} />
+          </View>
+
+          {/* Title */}
+          <Text style={styles.title}>{item.title}</Text>
+
+          {/* Description */}
+          <Text style={styles.description}>{item.description}</Text>
         </View>
-
-        {/* Title */}
-        <Text style={styles.title}>{item.title}</Text>
-
-        {/* Description */}
-        <Text style={styles.description}>{item.description}</Text>
-      </View>
-    );
-  }, []);
+      );
+    },
+    [styles]
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -216,7 +207,12 @@ export default function OnboardingScreen() {
       {/* Bottom Section */}
       <View style={styles.bottomSection}>
         {/* Pagination Dots */}
-        <PaginationDots totalDots={ONBOARDING_SLIDES.length} activeIndex={currentIndex} />
+        <PaginationDots
+          totalDots={ONBOARDING_SLIDES.length}
+          activeIndex={currentIndex}
+          theme={theme}
+          styles={styles}
+        />
 
         {/* Primary Button */}
         <TouchableOpacity
@@ -230,7 +226,7 @@ export default function OnboardingScreen() {
             <Ionicons
               name="arrow-forward"
               size={18}
-              color={customColors.white}
+              color={theme.colors.onPrimary}
               style={styles.arrowIcon}
             />
           )}
@@ -249,121 +245,147 @@ export default function OnboardingScreen() {
       {/* Transition Loader Overlay */}
       {isLoading && (
         <Animated.View style={[styles.loaderOverlay, { opacity: fadeAnim }]}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={theme.colors.primary} />
         </Animated.View>
       )}
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  activeDot: {
-    backgroundColor: customColors.primary,
-    borderRadius: 7,
-    height: 14,
-    width: 14,
-  },
-  arrowIcon: {
-    marginLeft: 8,
-  },
-  bottomSection: {
-    alignItems: 'center',
-    paddingBottom: 40,
-    paddingHorizontal: 40,
-  },
-  container: {
-    backgroundColor: customColors.white,
-    flex: 1,
-  },
-  description: {
-    alignSelf: 'center',
-    color: customColors.textLight,
-    fontSize: 16,
-    fontWeight: '400',
-    lineHeight: 24,
-    marginBottom: 20,
-    maxWidth: 360, // Fix: Force 3-line wrapping on wider screens
-    paddingHorizontal: 20,
-    textAlign: 'center',
-  },
-  dot: {
-    borderRadius: 4,
-    marginHorizontal: 4,
-  },
-  dotsContainer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 24,
-  },
-  flatList: {
-    flex: 1,
-  },
-  illustrationContainer: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    marginTop: 20,
-    maxHeight: SCREEN_HEIGHT * 0.45,
-  },
-  inactiveDot: {
-    backgroundColor: customColors.outlineVariant,
-    borderRadius: 4,
-    height: 8,
-    width: 8,
-  },
+// Pagination Dots Component needs to accept styles/theme
+const PaginationDots = ({
+  totalDots,
+  activeIndex,
+  styles,
+}: {
+  totalDots: number;
+  activeIndex: number;
+  theme: MD3Theme;
+  styles: ReturnType<typeof createStyles>;
+}) => {
+  return (
+    <View style={styles.dotsContainer}>
+      {Array.from({ length: totalDots }).map((_, index) => {
+        const isActive = index === activeIndex;
+        return (
+          <View
+            key={index}
+            style={[styles.dot, isActive ? styles.activeDot : styles.inactiveDot]}
+          />
+        );
+      })}
+    </View>
+  );
+};
 
-  loaderOverlay: {
-    alignItems: 'center',
-    backgroundColor: customColors.backdropLight,
-    bottom: 0,
-    justifyContent: 'center',
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
-  primaryButton: {
-    alignItems: 'center',
-    backgroundColor: customColors.primary,
-    borderRadius: 10,
-    elevation: 4,
-    flexDirection: 'row',
-    height: 52,
-    justifyContent: 'center',
-    shadowColor: customColors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    width: 240,
-  },
-  primaryButtonText: {
-    color: customColors.white,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    marginTop: 16,
-    paddingVertical: 8,
-  },
-  secondaryButtonText: {
-    color: customColors.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  slide: {
-    alignItems: 'center',
-    backgroundColor: customColors.white,
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-    width: SCREEN_WIDTH,
-  },
-  title: {
-    color: customColors.textGray,
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-});
+const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
+  StyleSheet.create({
+    activeDot: {
+      backgroundColor: theme.colors.primary,
+      borderRadius: 7,
+      height: 14,
+      width: 14,
+    },
+    arrowIcon: {
+      marginLeft: 8,
+    },
+    bottomSection: {
+      alignItems: 'center',
+      paddingBottom: 40,
+      paddingHorizontal: 40,
+    },
+    container: {
+      backgroundColor: theme.colors.background,
+      flex: 1,
+    },
+    description: {
+      alignSelf: 'center',
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 16,
+      fontWeight: '400',
+      lineHeight: 24,
+      marginBottom: 20,
+      maxWidth: 360,
+      paddingHorizontal: 20,
+      textAlign: 'center',
+    },
+    dot: {
+      borderRadius: 4,
+      marginHorizontal: 4,
+    },
+    dotsContainer: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      marginBottom: 24,
+    },
+    flatList: {
+      flex: 1,
+    },
+    illustrationContainer: {
+      alignItems: 'center',
+      flex: 1,
+      justifyContent: 'center',
+      marginTop: 20,
+      maxHeight: SCREEN_HEIGHT * 0.45,
+    },
+    inactiveDot: {
+      backgroundColor: theme.colors.outline,
+      borderRadius: 4,
+      height: 8,
+      width: 8,
+    },
+    loaderOverlay: {
+      alignItems: 'center',
+      backgroundColor: customColors.backdropLight,
+      bottom: 0,
+      justifyContent: 'center',
+      left: 0,
+      position: 'absolute',
+      right: 0,
+      top: 0,
+    },
+    primaryButton: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.primary,
+      borderRadius: 10,
+      elevation: 4,
+      flexDirection: 'row',
+      height: 52,
+      justifyContent: 'center',
+      shadowColor: theme.colors.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      width: 240,
+    },
+    primaryButtonText: {
+      color: theme.colors.onPrimary,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    secondaryButton: {
+      marginTop: 16,
+      paddingVertical: 8,
+    },
+    secondaryButtonText: {
+      color: theme.colors.primary,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    slide: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.background,
+      flex: 1,
+      justifyContent: 'center',
+      paddingHorizontal: 32,
+      width: SCREEN_WIDTH,
+    },
+    title: {
+      color: theme.colors.onSurface,
+      fontSize: 28,
+      fontWeight: '700',
+      marginBottom: 12,
+      textAlign: 'center',
+    },
+  });

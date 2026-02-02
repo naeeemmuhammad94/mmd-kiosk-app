@@ -16,7 +16,7 @@ export const useThemeStore = create<ThemeState>((set, _get) => {
   });
 
   return {
-    theme: 'auto',
+    theme: 'dark',
     colorScheme,
     setTheme: theme => set({ theme }),
   };
