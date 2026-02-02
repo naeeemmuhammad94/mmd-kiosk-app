@@ -18,6 +18,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Text } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
@@ -31,10 +32,12 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 // MMD Logo SVG
 import LoginLogo from '../../assets/login.svg';
 import loginBackground from '../../assets/login-background.png';
-import { lightTheme, customColors } from '@/theme';
-import { getResponsiveDimensions } from '@/theme/dimensions';
 
-const colors = lightTheme.colors;
+import { useAppTheme } from '@/hooks/useAppTheme';
+import { getResponsiveDimensions } from '@/theme/dimensions';
+import type { CustomColors } from '@/theme';
+
+// colors constant removed
 
 // Forgot password schema with userName (matching CRM)
 const forgotPasswordSchema = z.object({
@@ -47,6 +50,9 @@ export default function ForgotPasswordScreen() {
   const router = useRouter();
   const { width: screenWidth } = useWindowDimensions();
   const isTablet = screenWidth >= 768;
+
+  const { theme, customColors } = useAppTheme();
+  const styles = React.useMemo(() => createStyles(theme, customColors), [theme, customColors]);
 
   // Calculate Logo Width
   // Tablet: Match inputs exactly (672 - 48px padding = 624px)
@@ -218,7 +224,7 @@ export default function ForgotPasswordScreen() {
                               errors.userName && styles.inputError,
                             ]}
                             placeholder="Enter your email"
-                            placeholderTextColor="#9CA3AF"
+                            placeholderTextColor={theme.colors.onSurfaceVariant}
                             value={value}
                             onChangeText={text => {
                               onChange(text);
@@ -252,7 +258,7 @@ export default function ForgotPasswordScreen() {
                       activeOpacity={0.8}
                     >
                       {forgotPasswordMutation.isPending ? (
-                        <ActivityIndicator size="small" color="#FFFFFF" />
+                        <ActivityIndicator size="small" color={theme.colors.onPrimary} />
                       ) : (
                         <Text style={[styles.primaryButtonText, { fontSize: dims.buttonFontSize }]}>
                           Send Reset Link
@@ -265,7 +271,7 @@ export default function ForgotPasswordScreen() {
                       <Ionicons
                         name="arrow-back"
                         size={16}
-                        color="#4A7DFF"
+                        color={theme.colors.primary}
                         style={styles.backArrow}
                       />
                       <Text style={styles.backToLoginText}>Back to Login</Text>
@@ -281,164 +287,164 @@ export default function ForgotPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  backArrow: {
-    marginRight: 6,
-  },
-  backToLoginButton: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    marginTop: 20,
-    paddingVertical: 8,
-  },
-  backToLoginText: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  background: {
-    flex: 1,
-  },
-  card: {
-    alignItems: 'center',
-    alignSelf: 'center',
-    backgroundColor: colors.background,
-    borderRadius: 24,
-    elevation: 8,
-    // width and maxWidth set dynamically via inline style
-    paddingHorizontal: 24,
-    paddingVertical: 32,
-    shadowColor: customColors.shadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 24,
-  },
-  cardMobile: {
-    maxWidth: 400,
-    width: '90%',
-  },
-  cardTablet: {
-    maxWidth: 672,
-    width: 672,
-  },
-  centered: {
-    alignSelf: 'center',
-  },
-  container: {
-    flex: 1,
-  },
-  description: {
-    color: colors.onSurfaceVariant,
-    fontSize: 14,
-    fontWeight: '400',
-    lineHeight: 20,
-    marginBottom: 24,
-    textAlign: 'center',
-  },
+const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
+  StyleSheet.create({
+    backArrow: {
+      marginRight: 6,
+    },
+    backToLoginButton: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      marginTop: 20,
+      paddingVertical: 8,
+    },
+    backToLoginText: {
+      color: theme.colors.primary,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    background: {
+      flex: 1,
+    },
+    card: {
+      alignItems: 'center',
+      alignSelf: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 24,
+      elevation: 8,
+      // width and maxWidth set dynamically via inline style
+      paddingHorizontal: 24,
+      paddingVertical: 32,
+      shadowColor: customColors.shadow,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.15,
+      shadowRadius: 24,
+    },
+    cardMobile: {
+      maxWidth: 400,
+      width: '90%',
+    },
+    cardTablet: {
+      maxWidth: 672,
+      width: 672,
+    },
+    centered: {
+      alignSelf: 'center',
+    },
+    container: {
+      flex: 1,
+    },
+    description: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 14,
+      fontWeight: '400',
+      lineHeight: 20,
+      marginBottom: 24,
+      textAlign: 'center',
+    },
 
-  errorText: {
-    color: colors.error,
-    fontSize: 12,
-    marginLeft: 4,
-    marginTop: 4,
-  },
-  input: {
-    backgroundColor: colors.surface,
-    borderColor: colors.outline,
-    borderRadius: 8,
-    borderWidth: 1,
-    color: colors.onSurface,
-    fontSize: 16,
-    // height set dynamically via inline style
-    paddingHorizontal: 16,
-    width: '100%',
-  },
-  inputContainer: {
-    marginBottom: 20,
-    width: '100%',
-  },
-  inputError: {
-    borderColor: colors.error,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: 24,
-    width: '100%',
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: customColors.backdrop,
-  },
-  primaryButton: {
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    elevation: 4,
-    // height set dynamically via inline style
-    justifyContent: 'center',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    width: '100%',
-  },
-  primaryButtonDisabled: {
-    opacity: 0.7,
-  },
-  primaryButtonText: {
-    color: colors.onPrimary,
-    // fontSize set dynamically via inline style
-    fontWeight: '600',
-  },
-  resendButton: {
-    marginTop: 16,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-  },
-  resendButtonText: {
-    color: colors.primary,
-    fontSize: 16,
-    fontWeight: '500',
-    // textDecorationLine: 'underline', // Removed per polish request
-  },
+    errorText: {
+      color: theme.colors.error,
+      fontSize: 12,
+      marginLeft: 4,
+      marginTop: 4,
+    },
+    input: {
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.outline,
+      borderRadius: 8,
+      borderWidth: 1,
+      color: theme.colors.onSurface,
+      fontSize: 16,
+      // height set dynamically via inline style
+      paddingHorizontal: 16,
+      width: '100%',
+    },
+    inputContainer: {
+      marginBottom: 20,
+      width: '100%',
+    },
+    inputError: {
+      borderColor: theme.colors.error,
+    },
+    keyboardView: {
+      flex: 1,
+    },
+    logoContainer: {
+      alignItems: 'center',
+      marginBottom: 24,
+      width: '100%',
+    },
+    overlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: customColors.backdrop,
+    },
+    primaryButton: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.primary,
+      borderRadius: 12,
+      elevation: 4,
+      // height set dynamically via inline style
+      justifyContent: 'center',
+      shadowColor: theme.colors.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      width: '100%',
+    },
+    primaryButtonDisabled: {
+      opacity: 0.7,
+    },
+    primaryButtonText: {
+      color: theme.colors.onPrimary,
+      // fontSize set dynamically via inline style
+      fontWeight: '600',
+    },
+    resendButton: {
+      marginTop: 16,
+      paddingHorizontal: 24,
+      paddingVertical: 12,
+    },
+    resendButtonText: {
+      color: theme.colors.primary,
+      fontSize: 16,
+      fontWeight: '500',
+    },
 
-  safeArea: {
-    flex: 1,
-  },
+    safeArea: {
+      flex: 1,
+    },
 
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-    paddingVertical: 24,
-  },
-  successDescription: {
-    color: colors.onSurfaceVariant,
-    fontSize: 14,
-    fontWeight: '400',
-    lineHeight: 20,
-    marginBottom: 24,
-    textAlign: 'center',
-  },
-  successHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 8,
-  },
-  successTitle: {
-    color: colors.onSurface,
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  title: {
-    color: colors.onSurface,
-    // fontSize set dynamically via inline style
-    fontWeight: '700',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-});
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      paddingHorizontal: 32,
+      paddingVertical: 24,
+    },
+    successDescription: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 14,
+      fontWeight: '400',
+      lineHeight: 20,
+      marginBottom: 24,
+      textAlign: 'center',
+    },
+    successHeader: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 8,
+      marginBottom: 8,
+    },
+    successTitle: {
+      color: theme.colors.onSurface,
+      fontSize: 22,
+      fontWeight: '700',
+    },
+    title: {
+      color: theme.colors.onSurface,
+      // fontSize set dynamically via inline style
+      fontWeight: '700',
+      marginBottom: 8,
+      textAlign: 'center',
+    },
+  });

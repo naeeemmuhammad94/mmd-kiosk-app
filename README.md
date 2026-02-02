@@ -159,8 +159,27 @@ We use **EAS Build** (Expo Application Services) for production-ready binaries.
    _Uses bundle identifier: `com.mmd.kioskapp`_
 
 3. **Manual Submission** (if auto-submit is skipped):
+
    ```bash
    npx eas-cli submit --platform ios --latest
+   ```
+
+4. **Local Build & Upload (Skip Queue)**:
+
+   If you want to skip the Expo cloud queue and build on your own machine:
+
+   **Step 1: Run Local Build (Create .ipa)**
+
+   ```bash
+   # Loads env vars and runs local build
+   export $(grep -v '^#' .env | xargs) && npx eas-cli build --platform ios --profile preview --local
+   ```
+
+   **Step 2: Submit to TestFlight**
+
+   ```bash
+   # Uploads the generated .ipa file
+   npx eas-cli submit --platform ios --profile preview --path ./build-*.ipa
    ```
 
 ### Android Deployment

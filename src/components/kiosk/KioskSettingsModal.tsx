@@ -4,7 +4,7 @@
  * Includes sub-modals for Change PIN and Set Time
  */
 
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -20,6 +20,7 @@ import { Text, ActivityIndicator } from 'react-native-paper';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
 import { useKioskStore } from '@/store/useKioskStore';
+import { useThemeStore } from '@/store/useThemeStore';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { attendanceService } from '@/services/attendanceService';
 import { uploadFileToS3, getFileInfo } from '@/services/uploadService';
@@ -27,8 +28,9 @@ import ChangePinModal from './ChangePinModal';
 import SetTimeModal from './SetTimeModal';
 import KioskPinModal from './KioskPinModal';
 import type { KioskSettings } from '@/types/attendance';
-
-import { lightTheme as theme, customColors } from '@/theme';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import type { MD3Theme } from 'react-native-paper';
+import type { CustomColors } from '@/theme';
 
 // Removed local COLORS definition in favor of theme references
 
@@ -39,12 +41,16 @@ const SettingToggle = memo(function SettingToggle({
   value,
   onToggle,
   isTablet = false,
+  theme,
+  styles,
 }: {
   title: string;
   description?: string;
   value: boolean;
   onToggle: () => void;
   isTablet?: boolean;
+  theme: MD3Theme;
+  styles: ReturnType<typeof createStyles>;
 }) {
   return (
     <View style={styles.settingRow}>
@@ -70,6 +76,15 @@ export default function KioskSettingsModal() {
   const queryClient = useQueryClient();
   const { width: screenWidth } = useWindowDimensions();
   const isTablet = screenWidth >= 768;
+
+  const { theme, customColors } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme, customColors), [theme, customColors]);
+
+  const { theme: storedTheme, setTheme } = useThemeStore();
+
+  const handleToggleDarkMode = useCallback(() => {
+    setTheme(storedTheme === 'dark' ? 'light' : 'dark');
+  }, [storedTheme, setTheme]);
 
   const { settings, toggleSettingsModal, setSettings, openPinModal, isPinModalOpen } =
     useKioskStore();
@@ -331,40 +346,59 @@ export default function KioskSettingsModal() {
                 </TouchableOpacity>
               )}
 
+              {/* Dark Mode */}
+              <SettingToggle
+                title="Enable Dark Mode"
+                description="Makes the kiosk darker for low-light lobbies and reduces screen glare."
+                value={storedTheme === 'dark'}
+                onToggle={handleToggleDarkMode}
+                isTablet={isTablet}
+                theme={theme}
+                styles={styles}
+              />
+
               {/* Show Student Images */}
               <SettingToggle
-                title="Show Student Images"
-                description="This option enables the display of student images in the program"
+                title="Show Student Photos"
+                description="Displays profile photos on student tiles during check-in."
                 value={localSettings.showStudentImages ?? true}
                 onToggle={handleToggleShowImages}
                 isTablet={isTablet}
+                theme={theme}
+                styles={styles}
               />
 
               {/* Power Saving Mode */}
               <SettingToggle
-                title="Power Saving Mode"
-                description="This option will dim the display when the app is inactive"
+                title="Idle Screen Saver"
+                description="Dims the kiosk after inactivity to reduce screen burn-in."
                 value={localSettings.powerSavingMode ?? false}
                 onToggle={handleTogglePowerSaving}
                 isTablet={isTablet}
+                theme={theme}
+                styles={styles}
               />
 
               {/* Allow multiple classes */}
               <SettingToggle
-                title="Allow multiple classes on one day"
-                description="This option will allow students to attend multiple classes in one day"
+                title="Allow Multiple Check-Ins Per Day"
+                description="Lets a student check in more than once on the same day."
                 value={localSettings.allowMultipleClasses ?? false}
                 onToggle={handleToggleMultipleClasses}
                 isTablet={isTablet}
+                theme={theme}
+                styles={styles}
               />
 
               {/* Allow non-members */}
               <SettingToggle
-                title="Allow contacts without a membership to check in"
-                description="This option will allow contacts to check in without membership"
+                title="Allow Students to Check In Without Membership"
+                description="If no membership exists students can still use Kiosk."
                 value={localSettings.allowContact ?? false}
                 onToggle={handleToggleAllowContact}
                 isTablet={isTablet}
+                theme={theme}
+                styles={styles}
               />
 
               {/* Change Pin */}
@@ -373,7 +407,16 @@ export default function KioskSettingsModal() {
                 onPress={() => setShowChangePinModal(true)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.navRowText}>Change Pin</Text>
+                <View style={styles.settingInfo}>
+                  <Text style={[styles.settingTitle, isTablet && styles.settingTitleTablet]}>
+                    Change Admin PIN
+                  </Text>
+                  <Text
+                    style={[styles.settingDescription, isTablet && styles.settingDescriptionTablet]}
+                  >
+                    Update the PIN required to access kiosk settings.
+                  </Text>
+                </View>
                 <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceVariant} />
               </TouchableOpacity>
 
@@ -383,9 +426,16 @@ export default function KioskSettingsModal() {
                 onPress={() => setShowSetTimeModal(true)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.navRowText}>
-                  How many minutes after sign in to allow another sign in
-                </Text>
+                <View style={styles.settingInfo}>
+                  <Text style={[styles.settingTitle, isTablet && styles.settingTitleTablet]}>
+                    Re-Check-In Time
+                  </Text>
+                  <Text
+                    style={[styles.settingDescription, isTablet && styles.settingDescriptionTablet]}
+                  >
+                    Set how long before the same student can check in again.
+                  </Text>
+                </View>
                 <View style={styles.navRowValue}>
                   <Text style={styles.valueText}>{localSettings.signInTime || 10} min</Text>
                   <Ionicons
@@ -453,206 +503,207 @@ export default function KioskSettingsModal() {
   );
 }
 
-const styles = StyleSheet.create({
-  cancelButton: {
-    borderColor: theme.colors.outline,
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  cancelText: {
-    color: theme.colors.onSurface,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  closeButton: {
-    padding: 4,
-  },
-  content: {
-    paddingHorizontal: 20,
-  },
-  footer: {
-    alignItems: 'center',
-    borderTopColor: customColors.surfaceDisabled,
-    borderTopWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 20,
-  },
-  footerRight: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  header: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 20,
-  },
-  iconContainer: {
-    alignItems: 'center',
-    borderColor: theme.colors.outline,
-    borderRadius: 8,
-    borderWidth: 1,
-    height: 48,
-    justifyContent: 'center',
-    width: 48,
-  },
-  imagePreview: {
-    borderRadius: 8,
-    height: 120,
-    width: '100%',
-  },
-  imagePreviewContainer: {
-    borderRadius: 8,
-    marginBottom: 16,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  logoutButton: {
-    alignItems: 'center',
-    borderColor: theme.colors.error,
-    borderRadius: 8,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: 6,
-    justifyContent: 'center',
-    minWidth: 90,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  logoutText: {
-    color: theme.colors.error,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  modalContainer: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 16,
-    maxHeight: '85%',
-  },
-  modalMobile: {
-    maxWidth: 400,
-    width: '90%',
-  },
-  modalTablet: {
-    maxWidth: 672,
-    width: 672,
-  },
-  navRow: {
-    alignItems: 'center',
-    borderBottomColor: customColors.surfaceDisabled,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-  },
-  navRowText: {
-    color: theme.colors.onSurface,
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '500',
-    marginRight: 8,
-  },
-  navRowValue: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    flexShrink: 0,
-    gap: 4,
-  },
-  overlay: {
-    alignItems: 'center',
-    backgroundColor: customColors.backdropDark,
-    flex: 1,
-    justifyContent: 'center',
-  },
-  overlayWrapper: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 99999,
-  },
-  removeImageButton: {
-    backgroundColor: customColors.white, // Approximation for white opacity
-    borderRadius: 14,
-    position: 'absolute',
-    right: 8,
-    top: 8,
-  },
-  saveButton: {
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    borderRadius: 8,
-    minWidth: 100,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  saveText: {
-    color: theme.colors.surface,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  settingDescription: {
-    color: theme.colors.onSurfaceVariant,
-    fontSize: 12, // Mobile default
-    marginTop: 2,
-  },
-  settingDescriptionTablet: {
-    fontSize: 16, // CRM tablet size
-  },
-  settingInfo: {
-    flex: 1,
-    marginRight: 16,
-  },
-  settingRow: {
-    alignItems: 'center',
-    borderBottomColor: customColors.surfaceDisabled,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-  },
-  settingTitle: {
-    color: theme.colors.onSurface,
-    fontSize: 14, // Mobile default
-    fontWeight: '600',
-  },
-  settingTitleTablet: {
-    fontSize: 18, // CRM tablet size
-  },
-  title: {
-    color: theme.colors.onSurface,
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 16,
-    paddingHorizontal: 20,
-  },
-  uploadArea: {
-    alignItems: 'center',
-    borderColor: theme.colors.outline,
-    borderRadius: 8,
-    borderStyle: 'dashed',
-    borderWidth: 1,
-    justifyContent: 'center',
-    marginBottom: 16,
-    paddingVertical: 24,
-  },
-  uploadHint: {
-    color: customColors.onSurfaceDisabled,
-    fontSize: 11,
-    marginTop: 4,
-  },
-  uploadLink: {
-    color: theme.colors.primary,
-  },
-  uploadText: {
-    color: theme.colors.onSurfaceVariant,
-    fontSize: 13,
-    marginTop: 8,
-  },
-  valueText: {
-    color: theme.colors.onSurfaceVariant,
-    fontSize: 14,
-    minWidth: 50,
-    textAlign: 'right',
-  },
-});
+const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
+  StyleSheet.create({
+    cancelButton: {
+      borderColor: theme.colors.outline,
+      borderRadius: 8,
+      borderWidth: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+    },
+    cancelText: {
+      color: theme.colors.onSurface,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    closeButton: {
+      padding: 4,
+    },
+    content: {
+      paddingHorizontal: 20,
+    },
+    footer: {
+      alignItems: 'center',
+      borderTopColor: customColors.surfaceDisabled,
+      borderTopWidth: 1,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      padding: 20,
+    },
+    footerRight: {
+      flexDirection: 'row',
+      gap: 12,
+    },
+    header: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      padding: 20,
+    },
+    iconContainer: {
+      alignItems: 'center',
+      borderColor: theme.colors.outline,
+      borderRadius: 8,
+      borderWidth: 1,
+      height: 48,
+      justifyContent: 'center',
+      width: 48,
+    },
+    imagePreview: {
+      borderRadius: 8,
+      height: 120,
+      width: '100%',
+    },
+    imagePreviewContainer: {
+      borderRadius: 8,
+      marginBottom: 16,
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    logoutButton: {
+      alignItems: 'center',
+      borderColor: theme.colors.error,
+      borderRadius: 8,
+      borderWidth: 1,
+      flexDirection: 'row',
+      gap: 6,
+      justifyContent: 'center',
+      minWidth: 90,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+    },
+    logoutText: {
+      color: theme.colors.error,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    modalContainer: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: 16,
+      maxHeight: '85%',
+    },
+    modalMobile: {
+      maxWidth: 400,
+      width: '90%',
+    },
+    modalTablet: {
+      maxWidth: 672,
+      width: 672,
+    },
+    navRow: {
+      alignItems: 'center',
+      borderBottomColor: customColors.surfaceDisabled,
+      borderBottomWidth: 1,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 14,
+    },
+    navRowText: {
+      color: theme.colors.onSurface,
+      flex: 1,
+      fontSize: 14,
+      fontWeight: '500',
+      marginRight: 8,
+    },
+    navRowValue: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      flexShrink: 0,
+      gap: 4,
+    },
+    overlay: {
+      alignItems: 'center',
+      backgroundColor: customColors.backdropDark,
+      flex: 1,
+      justifyContent: 'center',
+    },
+    overlayWrapper: {
+      ...StyleSheet.absoluteFillObject,
+      zIndex: 99999,
+    },
+    removeImageButton: {
+      backgroundColor: customColors.white, // Approximation for white opacity
+      borderRadius: 14,
+      position: 'absolute',
+      right: 8,
+      top: 8,
+    },
+    saveButton: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.primary,
+      borderRadius: 8,
+      minWidth: 100,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+    },
+    saveText: {
+      color: theme.colors.surface,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    settingDescription: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 12, // Mobile default
+      marginTop: 2,
+    },
+    settingDescriptionTablet: {
+      fontSize: 16, // CRM tablet size
+    },
+    settingInfo: {
+      flex: 1,
+      marginRight: 16,
+    },
+    settingRow: {
+      alignItems: 'center',
+      borderBottomColor: customColors.surfaceDisabled,
+      borderBottomWidth: 1,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 14,
+    },
+    settingTitle: {
+      color: theme.colors.onSurface,
+      fontSize: 14, // Mobile default
+      fontWeight: '600',
+    },
+    settingTitleTablet: {
+      fontSize: 18, // CRM tablet size
+    },
+    title: {
+      color: theme.colors.onSurface,
+      fontSize: 20,
+      fontWeight: '700',
+      marginBottom: 16,
+      paddingHorizontal: 20,
+    },
+    uploadArea: {
+      alignItems: 'center',
+      borderColor: theme.colors.outline,
+      borderRadius: 8,
+      borderStyle: 'dashed',
+      borderWidth: 1,
+      justifyContent: 'center',
+      marginBottom: 16,
+      paddingVertical: 24,
+    },
+    uploadHint: {
+      color: customColors.onSurfaceDisabled,
+      fontSize: 11,
+      marginTop: 4,
+    },
+    uploadLink: {
+      color: theme.colors.primary,
+    },
+    uploadText: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 13,
+      marginTop: 8,
+    },
+    valueText: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 14,
+      minWidth: 50,
+      textAlign: 'right',
+    },
+  });

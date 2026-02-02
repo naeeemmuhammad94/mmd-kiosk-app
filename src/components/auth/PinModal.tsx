@@ -4,7 +4,7 @@
  * OPTIMIZED: Uses ref-based PinInput for instant response
  */
 
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -20,7 +20,9 @@ import { getResponsiveDimensions } from '@/theme/dimensions';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import PinInput, { PinInputRef } from './PinInput';
 import { usePinStore } from '@/store/usePinStore';
-import { lightTheme, customColors } from '@/theme';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import type { MD3Theme } from 'react-native-paper';
+import type { CustomColors } from '@/theme';
 
 // Lock Icon SVG
 import LockIcon from '../../../assets/lock.svg';
@@ -29,6 +31,8 @@ export default function PinModal() {
   const { width: screenWidth } = useWindowDimensions();
   const isTablet = screenWidth >= 768;
   const dims = getResponsiveDimensions(isTablet);
+  const { theme, customColors } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme, customColors), [theme, customColors]);
 
   const pinInputRef = useRef<PinInputRef>(null);
 
@@ -73,7 +77,7 @@ export default function PinModal() {
             <View style={styles.modalContainer}>
               {/* Lock Icon - No background per Figma */}
               <View style={styles.iconContainer}>
-                <LockIcon width={36} height={32} />
+                <LockIcon width={36} height={32} color={theme.colors.onSurface} />
               </View>
 
               {/* Title */}
@@ -115,7 +119,7 @@ export default function PinModal() {
                   activeOpacity={0.8}
                 >
                   {isPinLoading ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
+                    <ActivityIndicator color={theme.colors.onPrimary} size="small" />
                   ) : (
                     <Text style={[styles.confirmButtonText, { fontSize: dims.buttonFontSize }]}>
                       Confirm
@@ -131,77 +135,76 @@ export default function PinModal() {
   );
 }
 
-const colors = lightTheme.colors;
-
-const styles = StyleSheet.create({
-  buttonContainer: {
-    marginTop: 24, // Increase top margin for separation
-    width: '100%', // Full width container
-  },
-  confirmButton: {
-    alignItems: 'center',
-    alignSelf: 'center',
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    // height: 56, // Removed in favor of dynamic height
-    justifyContent: 'center',
-    width: 240, // Constrained width per polish request
-  },
-  confirmButtonDisabled: {
-    opacity: 0.6,
-  },
-  confirmButtonText: {
-    color: colors.onPrimary,
-    fontWeight: '600',
-  },
-  container: {
-    flex: 1,
-  },
-  errorText: {
-    color: colors.error,
-    fontWeight: '500',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  iconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  modalContainer: {
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    elevation: 10,
-    maxWidth: 448,
-    paddingHorizontal: 32,
-    paddingVertical: 28,
-    shadowColor: customColors.shadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    width: '90%',
-  },
-  overlay: {
-    alignItems: 'center',
-    backgroundColor: customColors.backdropDark,
-    flex: 1,
-    justifyContent: 'center',
-  },
-  pinContainer: {
-    marginBottom: 16,
-  },
-  subtitle: {
-    color: colors.onSurfaceVariant,
-    fontWeight: '400',
-    marginBottom: 24,
-    paddingHorizontal: 8,
-    textAlign: 'center',
-  },
-  title: {
-    color: colors.primary,
-    fontWeight: '700',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-});
+const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
+  StyleSheet.create({
+    buttonContainer: {
+      marginTop: 24, // Increase top margin for separation
+      width: '100%', // Full width container
+    },
+    confirmButton: {
+      alignItems: 'center',
+      alignSelf: 'center',
+      backgroundColor: theme.colors.primary,
+      borderRadius: 12,
+      // height: 56, // Removed in favor of dynamic height
+      justifyContent: 'center',
+      width: 240, // Constrained width per polish request
+    },
+    confirmButtonDisabled: {
+      opacity: 0.6,
+    },
+    confirmButtonText: {
+      color: theme.colors.onPrimary,
+      fontWeight: '600',
+    },
+    container: {
+      flex: 1,
+    },
+    errorText: {
+      color: theme.colors.error,
+      fontWeight: '500',
+      marginBottom: 16,
+      textAlign: 'center',
+    },
+    iconContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 16,
+    },
+    modalContainer: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 16,
+      elevation: 10,
+      maxWidth: 448,
+      paddingHorizontal: 32,
+      paddingVertical: 28,
+      shadowColor: customColors.shadow,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.2,
+      shadowRadius: 16,
+      width: '90%',
+    },
+    overlay: {
+      alignItems: 'center',
+      backgroundColor: customColors.backdropDark,
+      flex: 1,
+      justifyContent: 'center',
+    },
+    pinContainer: {
+      marginBottom: 16,
+    },
+    subtitle: {
+      color: theme.colors.onSurfaceVariant,
+      fontWeight: '400',
+      marginBottom: 24,
+      paddingHorizontal: 8,
+      textAlign: 'center',
+    },
+    title: {
+      color: theme.colors.primary,
+      fontWeight: '700',
+      marginBottom: 8,
+      textAlign: 'center',
+    },
+  });

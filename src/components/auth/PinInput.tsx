@@ -4,7 +4,14 @@
  * OPTIMIZED: Uses useRef for values - no state updates during typing
  */
 
-import React, { useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
+import React, {
+  useRef,
+  useEffect,
+  useCallback,
+  useImperativeHandle,
+  forwardRef,
+  useMemo,
+} from 'react';
 import {
   View,
   TextInput,
@@ -12,7 +19,9 @@ import {
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
 } from 'react-native';
-import { lightTheme, customColors } from '@/theme';
+import type { MD3Theme } from 'react-native-paper';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import type { CustomColors } from '@/theme';
 
 interface PinInputProps {
   onComplete: (pin: string) => void;
@@ -32,6 +41,9 @@ const PIN_LENGTH = 4;
 
 const PinInput = forwardRef<PinInputRef, PinInputProps>(
   ({ onComplete, onClear, error = false, disabled = false, autoFocus = true }, ref) => {
+    const { theme, customColors } = useAppTheme();
+    const styles = useMemo(() => createStyles(theme, customColors), [theme, customColors]);
+
     // Use REFS for PIN values - no re-renders during typing
     const pinValuesRef = useRef<string[]>(['', '', '', '']);
     const inputRefs = useRef<(TextInput | null)[]>([]);
@@ -109,6 +121,7 @@ const PinInput = forwardRef<PinInputRef, PinInputProps>(
             secureTextEntry
             selectTextOnFocus
             caretHidden
+            placeholderTextColor={theme.colors.onSurfaceVariant}
           />
         ))}
       </View>
@@ -120,35 +133,34 @@ PinInput.displayName = 'PinInput';
 
 export default PinInput;
 
-const colors = lightTheme.colors;
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 12, // Reduced from 20 to match KioskPinModal
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  input: {
-    backgroundColor: colors.surface, // White background per Figma
-    borderColor: colors.outline,
-    borderRadius: 12, // Square-ish corners per Figma
-    borderWidth: 1.5,
-    color: colors.onSurface,
-    flex: 1, // Allow input to shrink/grow
-    fontSize: 26,
-    fontWeight: '600',
-    height: 64, // Square shape
-    textAlign: 'center',
-    // width removed in favor of flex
-  },
-  inputDisabled: {
-    backgroundColor: customColors.surfaceDisabled, // Gray 100
-    opacity: 0.7,
-  },
-  inputError: {
-    borderColor: colors.error,
-    borderWidth: 2,
-  },
-});
+const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
+  StyleSheet.create({
+    container: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 12, // Reduced from 20 to match KioskPinModal
+      justifyContent: 'space-between',
+      width: '100%',
+    },
+    input: {
+      backgroundColor: theme.colors.surface, // White/Surface background per Figma
+      borderColor: theme.colors.outline,
+      borderRadius: 12, // Square-ish corners per Figma
+      borderWidth: 1.5,
+      color: theme.colors.onSurface,
+      flex: 1, // Allow input to shrink/grow
+      fontSize: 26,
+      fontWeight: '600',
+      height: 64, // Square shape
+      textAlign: 'center',
+      // width removed in favor of flex
+    },
+    inputDisabled: {
+      backgroundColor: customColors.surfaceDisabled, // Gray 100
+      opacity: 0.7,
+    },
+    inputError: {
+      borderColor: theme.colors.error,
+      borderWidth: 2,
+    },
+  });

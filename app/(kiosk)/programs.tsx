@@ -15,6 +15,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -29,7 +30,8 @@ import KioskPinModal from '@/components/kiosk/KioskPinModal';
 import KioskSettingsModal from '@/components/kiosk/KioskSettingsModal';
 import type { AttendanceContact, ProgramAttendance } from '@/types/attendance';
 import { getResponsiveDimensions } from '@/theme/dimensions';
-import { lightTheme as theme, customColors } from '@/theme';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import type { CustomColors } from '@/theme';
 
 export default function ProgramsScreen() {
   const router = useRouter();
@@ -46,6 +48,9 @@ export default function ProgramsScreen() {
     setAttendanceData,
     setSettings,
   } = useKioskStore();
+
+  const { theme, customColors } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme, customColors), [theme, customColors]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedPrograms, setExpandedPrograms] = useState<string[]>([]);
@@ -291,127 +296,128 @@ const getProgramBasedContacts = (
   return contactsData;
 };
 
-const styles = StyleSheet.create({
-  accordionContent: {
-    backgroundColor: theme.colors.surface,
-    borderBottomLeftRadius: 6,
-    borderBottomRightRadius: 6,
-    padding: 16,
-  },
-  accordionHeader: {
-    alignItems: 'center',
-    backgroundColor: customColors.surfaceDisabled,
-    borderColor: theme.colors.outline,
-    borderRadius: 8,
-    borderWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  accordionHeaderExpanded: {
-    borderBottomColor: theme.colors.outline,
-    borderBottomWidth: 1,
-    borderRadius: 0,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-    borderWidth: 0,
-  },
-  accordionItem: {
-    marginBottom: 8,
-  },
-  // Expanded state styles
-  accordionItemExpanded: {
-    borderColor: theme.colors.outline,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 12,
-  },
-  accordionTitle: {
-    color: theme.colors.onSurface,
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  container: {
-    backgroundColor: theme.colors.surface,
-    flex: 1,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    paddingVertical: 48,
-  },
-  emptyText: {
-    color: theme.colors.onSurfaceVariant,
-    fontSize: 16,
-    marginTop: 12,
-  },
-  header: {
-    paddingBottom: 20,
-  },
-  headerContent: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingBottom: 12, // More balanced padding
-    paddingHorizontal: 16,
-    paddingTop: 8,
-  },
-  headerLeft: {
-    alignItems: 'flex-start',
-    width: 40,
-  },
-  headerRight: {
-    alignItems: 'flex-end',
-    width: 40,
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    flex: 1,
-    fontSize: 18,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  iconButton: {
-    alignItems: 'center',
-    height: 40,
-    justifyContent: 'center',
-    width: 40,
-    // Visual touch target
-  },
-  listContent: {
-    paddingBottom: 24,
-    paddingHorizontal: 16,
-  },
-  loadingContainer: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-  },
-  searchContainer: {
-    alignItems: 'center',
-    backgroundColor: customColors.surfaceDisabled,
-    borderColor: theme.colors.outline,
-    borderRadius: 8,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: 8,
-    height: 44,
-    paddingHorizontal: 12,
-  },
-  searchInput: {
-    color: theme.colors.onSurface,
-    flex: 1,
-    fontSize: 15,
-  },
-  searchWrapper: {
-    backgroundColor: theme.colors.surface,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  studentGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-});
+const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
+  StyleSheet.create({
+    accordionContent: {
+      backgroundColor: theme.colors.surface,
+      borderBottomLeftRadius: 6,
+      borderBottomRightRadius: 6,
+      padding: 16,
+    },
+    accordionHeader: {
+      alignItems: 'center',
+      backgroundColor: customColors.surfaceDisabled,
+      borderColor: theme.colors.outline,
+      borderRadius: 8,
+      borderWidth: 1,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    accordionHeaderExpanded: {
+      borderBottomColor: theme.colors.outline,
+      borderBottomWidth: 1,
+      borderRadius: 0,
+      borderTopLeftRadius: 8,
+      borderTopRightRadius: 8,
+      borderWidth: 0,
+    },
+    accordionItem: {
+      marginBottom: 8,
+    },
+    // Expanded state styles
+    accordionItemExpanded: {
+      borderColor: theme.colors.outline,
+      borderRadius: 8,
+      borderWidth: 1,
+      marginBottom: 12,
+    },
+    accordionTitle: {
+      color: theme.colors.onSurface,
+      fontSize: 15,
+      fontWeight: '500',
+    },
+    container: {
+      backgroundColor: theme.colors.surface,
+      flex: 1,
+    },
+    emptyContainer: {
+      alignItems: 'center',
+      flex: 1,
+      justifyContent: 'center',
+      paddingVertical: 48,
+    },
+    emptyText: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 16,
+      marginTop: 12,
+    },
+    header: {
+      paddingBottom: 20,
+    },
+    headerContent: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingBottom: 12, // More balanced padding
+      paddingHorizontal: 16,
+      paddingTop: 8,
+    },
+    headerLeft: {
+      alignItems: 'flex-start',
+      width: 40,
+    },
+    headerRight: {
+      alignItems: 'flex-end',
+      width: 40,
+    },
+    headerTitle: {
+      color: theme.colors.onPrimary,
+      flex: 1,
+      fontSize: 18,
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+    iconButton: {
+      alignItems: 'center',
+      height: 40,
+      justifyContent: 'center',
+      width: 40,
+      // Visual touch target
+    },
+    listContent: {
+      paddingBottom: 24,
+      paddingHorizontal: 16,
+    },
+    loadingContainer: {
+      alignItems: 'center',
+      flex: 1,
+      justifyContent: 'center',
+    },
+    searchContainer: {
+      alignItems: 'center',
+      backgroundColor: customColors.surfaceDisabled,
+      borderColor: theme.colors.outline,
+      borderRadius: 8,
+      borderWidth: 1,
+      flexDirection: 'row',
+      gap: 8,
+      height: 44,
+      paddingHorizontal: 12,
+    },
+    searchInput: {
+      color: theme.colors.onSurface,
+      flex: 1,
+      fontSize: 15,
+    },
+    searchWrapper: {
+      backgroundColor: theme.colors.surface,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+    },
+    studentGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+    },
+  });

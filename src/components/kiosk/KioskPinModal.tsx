@@ -4,7 +4,7 @@
  * OPTIMIZED: Uses useRef for PIN values - no state updates during typing
  */
 
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -20,7 +20,9 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { getResponsiveDimensions } from '@/theme/dimensions';
-import { lightTheme as theme, customColors } from '@/theme';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import type { MD3Theme } from 'react-native-paper';
+import type { CustomColors } from '@/theme';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMutation } from '@tanstack/react-query';
@@ -36,6 +38,9 @@ export default function KioskPinModal() {
   const dims = getResponsiveDimensions(isTablet);
   const { closePinModal, pinPurpose, toggleSettingsModal } = useKioskStore();
   const { logout } = useAuthStore();
+
+  const { theme, customColors } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme, customColors), [theme, customColors]);
 
   // Use REFS for PIN values - no re-renders during typing
   const pinValuesRef = useRef(['', '', '', '']);
@@ -192,73 +197,74 @@ export default function KioskPinModal() {
   );
 }
 
-const styles = StyleSheet.create({
-  buttonContainer: { flexDirection: 'row', gap: 12 },
-  cancelButton: {
-    alignItems: 'center',
-    borderColor: theme.colors.outline,
-    borderRadius: 8,
-    borderWidth: 1,
-    flex: 1,
-    justifyContent: 'center',
-    // paddingVertical removed for dynamic height
-  },
-  cancelButtonText: { color: theme.colors.onSurfaceVariant, fontWeight: '500' },
-  closeButton: { position: 'absolute', right: 16, top: 16 },
-  confirmButton: {
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    borderRadius: 8,
-    flex: 1,
-    justifyContent: 'center',
-    // paddingVertical removed for dynamic height
-  },
-  confirmButtonText: { color: theme.colors.onPrimary, fontWeight: '600' },
-  errorText: { color: theme.colors.error, marginBottom: 16, textAlign: 'center' },
-  iconContainer: {
-    alignItems: 'center',
-    backgroundColor: customColors.surfaceDisabled,
-    borderRadius: 8,
-    height: 56,
-    justifyContent: 'center',
-    marginBottom: 16,
-    width: 56,
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-  modalContainer: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 16,
-    maxWidth: 448, // Reverted to match ChangePinModal
-    padding: 24,
-    position: 'relative',
-    width: '90%',
-  },
-  overlay: {
-    alignItems: 'center',
-    backgroundColor: customColors.backdropDark,
-    flex: 1,
-    justifyContent: 'center',
-  },
-  pinContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  pinInput: {
-    borderColor: theme.colors.outline,
-    borderRadius: 12,
-    borderWidth: 2,
-    color: theme.colors.onSurface,
-    flex: 1,
-    fontSize: 24,
-    fontWeight: '700',
-    height: 64,
-    textAlign: 'center',
-  },
-  pinInputError: { borderColor: theme.colors.error },
-  subtitle: { color: theme.colors.onSurfaceVariant, marginBottom: 24 },
-  title: { color: theme.colors.onSurface, fontWeight: '700', marginBottom: 8 },
-});
+const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
+  StyleSheet.create({
+    buttonContainer: { flexDirection: 'row', gap: 12 },
+    cancelButton: {
+      alignItems: 'center',
+      borderColor: theme.colors.outline,
+      borderRadius: 8,
+      borderWidth: 1,
+      flex: 1,
+      justifyContent: 'center',
+      // paddingVertical removed for dynamic height
+    },
+    cancelButtonText: { color: theme.colors.onSurfaceVariant, fontWeight: '500' },
+    closeButton: { position: 'absolute', right: 16, top: 16 },
+    confirmButton: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.primary,
+      borderRadius: 8,
+      flex: 1,
+      justifyContent: 'center',
+      // paddingVertical removed for dynamic height
+    },
+    confirmButtonText: { color: theme.colors.onPrimary, fontWeight: '600' },
+    errorText: { color: theme.colors.error, marginBottom: 16, textAlign: 'center' },
+    iconContainer: {
+      alignItems: 'center',
+      backgroundColor: customColors.surfaceDisabled,
+      borderRadius: 8,
+      height: 56,
+      justifyContent: 'center',
+      marginBottom: 16,
+      width: 56,
+    },
+    keyboardAvoidingView: {
+      flex: 1,
+    },
+    modalContainer: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: 16,
+      maxWidth: 448, // Reverted to match ChangePinModal
+      padding: 24,
+      position: 'relative',
+      width: '90%',
+    },
+    overlay: {
+      alignItems: 'center',
+      backgroundColor: customColors.backdropDark,
+      flex: 1,
+      justifyContent: 'center',
+    },
+    pinContainer: {
+      flexDirection: 'row',
+      gap: 12,
+      justifyContent: 'space-between',
+      marginBottom: 16,
+    },
+    pinInput: {
+      borderColor: theme.colors.outline,
+      borderRadius: 12,
+      borderWidth: 2,
+      color: theme.colors.onSurface,
+      flex: 1,
+      fontSize: 24,
+      fontWeight: '700',
+      height: 64,
+      textAlign: 'center',
+    },
+    pinInputError: { borderColor: theme.colors.error },
+    subtitle: { color: theme.colors.onSurfaceVariant, marginBottom: 24 },
+    title: { color: theme.colors.onSurface, fontWeight: '700', marginBottom: 8 },
+  });

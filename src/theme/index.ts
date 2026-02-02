@@ -1,4 +1,4 @@
-import { MD3LightTheme, configureFonts } from 'react-native-paper';
+import { MD3LightTheme, MD3DarkTheme, configureFonts } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 
 const fontConfig = {
@@ -127,12 +127,25 @@ export const lightTheme: MD3Theme = {
   fonts: configureFonts({ config: fontConfig }),
 };
 
-// Dark theme (mirrors light theme for now - can be customized later)
 export const darkTheme: MD3Theme = {
-  ...lightTheme,
+  ...MD3DarkTheme,
+  colors: {
+    ...MD3DarkTheme.colors,
+    primary: '#608DFF', // Slightly lighter Blue for Dark Mode
+    secondary: '#5EA0E8',
+    tertiary: '#03DAC6',
+    error: '#EF4444', // Red from screenshots (approx)
+    background: '#0F1115', // Dark Slate Black
+    surface: '#1E2229', // Dark Slate Grey (Card/Modal bg)
+    onPrimary: '#FFFFFF',
+    onSurface: '#F3F4F6', // Text Gray 100
+    onSurfaceVariant: '#9CA3AF', // Text Gray 400
+    outline: '#374151', // Border Gray 700
+  },
+  fonts: configureFonts({ config: fontConfig }),
 };
 
-export const customColors = {
+export const lightCustomColors = {
   shadow: '#000000',
   backdrop: 'rgba(107, 114, 128, 0.5)',
   backdropDark: 'rgba(0, 0, 0, 0.5)',
@@ -155,4 +168,31 @@ export const customColors = {
   backdropStrong: 'rgba(71, 85, 105, 0.8)',
 };
 
+export const darkCustomColors = {
+  shadow: '#000000',
+  backdrop: 'rgba(0, 0, 0, 0.7)',
+  backdropDark: 'rgba(0, 0, 0, 0.85)',
+  backdropLight: 'rgba(30, 30, 30, 0.95)',
+  surfaceDisabled: '#374151',
+  onSurfaceDisabled: '#6B7280',
+  outlineVariant: '#4B5563',
+  white: '#FFFFFF',
+  textGray: '#E5E7EB',
+  textLight: '#9CA3AF',
+  primary: '#608DFF',
+  primaryContainer: '#1E3A8A',
+  successContainer: '#064E3B',
+  success: '#4ADE80',
+  onSuccessContainer: '#D1FAE5',
+  errorContainer: '#7F1D1D',
+  onErrorContainer: '#FCA5A5',
+  warn: '#FACC15',
+  whiteOpacity: 'rgba(255, 255, 255, 0.1)',
+  backdropStrong: 'rgba(15, 17, 21, 0.95)', // Match background tone
+};
+
+// Backwards compatibility default - ideally usage should be migrated to hook
+export const customColors = lightCustomColors;
+
 export type AppTheme = typeof lightTheme;
+export type CustomColors = typeof lightCustomColors;

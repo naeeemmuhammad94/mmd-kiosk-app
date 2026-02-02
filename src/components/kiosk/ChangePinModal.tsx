@@ -4,7 +4,7 @@
  * OPTIMIZED: Uses useRef for PIN values - no state updates during typing
  */
 
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -21,7 +21,9 @@ import {
 import { getResponsiveDimensions } from '@/theme/dimensions';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { lightTheme as theme, customColors } from '@/theme';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import type { MD3Theme } from 'react-native-paper';
+import type { CustomColors } from '@/theme';
 
 interface ChangePinModalProps {
   visible: boolean;
@@ -43,6 +45,9 @@ export default function ChangePinModal({
   const { width: screenWidth } = useWindowDimensions();
   const isTablet = screenWidth >= 768;
   const dims = getResponsiveDimensions(isTablet);
+
+  const { theme, customColors } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme, customColors), [theme, customColors]);
 
   const pinValuesRef = useRef(['', '', '', '']);
   const inputRefs = useRef<(TextInput | null)[]>([]);
@@ -186,82 +191,83 @@ export default function ChangePinModal({
   );
 }
 
-const styles = StyleSheet.create({
-  buttonContainer: { flexDirection: 'row', gap: 12 },
-  cancelButton: {
-    alignItems: 'center',
-    borderColor: theme.colors.outline,
-    borderRadius: 8,
-    borderWidth: 1,
-    flex: 1,
-    justifyContent: 'center',
-    // paddingVertical removed
-  },
-  cancelButtonText: { color: theme.colors.onSurfaceVariant, fontWeight: '500' },
-  closeButton: { position: 'absolute', right: 16, top: 16, zIndex: 100000 },
-  confirmButton: {
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    borderRadius: 8,
-    flex: 1,
-    justifyContent: 'center',
-    // paddingVertical removed
-  },
-  confirmButtonFull: { flex: 1 },
-  confirmButtonText: { color: theme.colors.onPrimary, fontWeight: '600' },
-  container: { flex: 1 },
-  errorText: { color: theme.colors.error, marginBottom: 16, textAlign: 'center' },
-  iconContainer: {
-    alignItems: 'center',
-    backgroundColor: customColors.surfaceDisabled,
-    borderRadius: 8,
-    height: 56,
-    justifyContent: 'center',
-    marginBottom: 16,
-    width: 56,
-  },
-  modalContainer: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 16,
-    elevation: 5,
-    maxWidth: 448, // Match KioskPinModal
-    padding: 24,
-    position: 'relative',
-    shadowColor: customColors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    width: '90%',
-    zIndex: 99999, // Fix: Force to top
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    backgroundColor: customColors.backdropDark, // Match KioskPinModal dim
-    elevation: 5,
-    height: '100%',
-    justifyContent: 'center',
-    width: '100%',
-    zIndex: 99999,
-  },
-  pinContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  pinInput: {
-    borderColor: theme.colors.outline,
-    borderRadius: 12,
-    borderWidth: 2,
-    color: theme.colors.onSurface,
-    flex: 1,
-    fontSize: 24,
-    fontWeight: '700',
-    height: 64,
-    textAlign: 'center',
-  },
-  pinInputError: { borderColor: theme.colors.error },
-  subtitle: { color: theme.colors.onSurfaceVariant, marginBottom: 24 },
-  title: { color: theme.colors.onSurface, fontWeight: '700', marginBottom: 8 },
-});
+const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
+  StyleSheet.create({
+    buttonContainer: { flexDirection: 'row', gap: 12 },
+    cancelButton: {
+      alignItems: 'center',
+      borderColor: theme.colors.outline,
+      borderRadius: 8,
+      borderWidth: 1,
+      flex: 1,
+      justifyContent: 'center',
+      // paddingVertical removed
+    },
+    cancelButtonText: { color: theme.colors.onSurfaceVariant, fontWeight: '500' },
+    closeButton: { position: 'absolute', right: 16, top: 16, zIndex: 100000 },
+    confirmButton: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.primary,
+      borderRadius: 8,
+      flex: 1,
+      justifyContent: 'center',
+      // paddingVertical removed
+    },
+    confirmButtonFull: { flex: 1 },
+    confirmButtonText: { color: theme.colors.onPrimary, fontWeight: '600' },
+    container: { flex: 1 },
+    errorText: { color: theme.colors.error, marginBottom: 16, textAlign: 'center' },
+    iconContainer: {
+      alignItems: 'center',
+      backgroundColor: customColors.surfaceDisabled,
+      borderRadius: 8,
+      height: 56,
+      justifyContent: 'center',
+      marginBottom: 16,
+      width: 56,
+    },
+    modalContainer: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: 16,
+      elevation: 5,
+      maxWidth: 448, // Match KioskPinModal
+      padding: 24,
+      position: 'relative',
+      shadowColor: customColors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      width: '90%',
+      zIndex: 99999, // Fix: Force to top
+    },
+    overlay: {
+      ...StyleSheet.absoluteFillObject,
+      alignItems: 'center',
+      backgroundColor: customColors.backdropDark, // Match KioskPinModal dim
+      elevation: 5,
+      height: '100%',
+      justifyContent: 'center',
+      width: '100%',
+      zIndex: 99999,
+    },
+    pinContainer: {
+      flexDirection: 'row',
+      gap: 12,
+      justifyContent: 'space-between',
+      marginBottom: 16,
+    },
+    pinInput: {
+      borderColor: theme.colors.outline,
+      borderRadius: 12,
+      borderWidth: 2,
+      color: theme.colors.onSurface,
+      flex: 1,
+      fontSize: 24,
+      fontWeight: '700',
+      height: 64,
+      textAlign: 'center',
+    },
+    pinInputError: { borderColor: theme.colors.error },
+    subtitle: { color: theme.colors.onSurfaceVariant, marginBottom: 24 },
+    title: { color: theme.colors.onSurface, fontWeight: '700', marginBottom: 8 },
+  });

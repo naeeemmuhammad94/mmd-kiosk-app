@@ -25,7 +25,7 @@ module.exports = {
     // Downgrade cosmetic rules to warnings (don't block commits, but provide feedback)
     'react-native/no-color-literals': 'warn',
     'react-native/sort-styles': 'warn',
-    'react-native/no-unused-styles': 'warn',
+    'react-native/no-unused-styles': 'off', // Disabled to avoid noise from unused helper styles
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
     'react-hooks/set-state-in-effect': 'warn',

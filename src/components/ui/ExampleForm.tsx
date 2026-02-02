@@ -1,13 +1,17 @@
 /* eslint-disable react-native/no-raw-text */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, TextInput, Card, Title, Paragraph } from 'react-native-paper';
 import { loginSchema, type LoginFormData } from '@/utils/validation';
-import { lightTheme as theme } from '@/theme';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import type { MD3Theme } from 'react-native-paper';
 
 export const ExampleForm: React.FC = () => {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const {
     control,
     handleSubmit,
@@ -82,19 +86,20 @@ export const ExampleForm: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  button: {
-    marginTop: 16,
-  },
-  card: {
-    margin: 16,
-  },
-  error: {
-    color: theme.colors.error,
-    fontSize: 12,
-    marginBottom: 8,
-  },
-  input: {
-    marginBottom: 8,
-  },
-});
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    button: {
+      marginTop: 16,
+    },
+    card: {
+      margin: 16,
+    },
+    error: {
+      color: theme.colors.error,
+      fontSize: 12,
+      marginBottom: 8,
+    },
+    input: {
+      marginBottom: 8,
+    },
+  });

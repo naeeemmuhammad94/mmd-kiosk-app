@@ -131,6 +131,14 @@ export default function RootLayout() {
         }
       } catch (error) {
         console.error('Error initializing app:', error);
+        // If initialization fails (e.g. checkPinStatus fails due to 522),
+        // we must not leave the user in a broken authenticated state.
+        // Log them out so they hit the Login screen where errors are handled gracefully.
+        const authState = useAuthStore.getState();
+        if (authState.isAuthenticated) {
+          console.log('Initialization failed while authenticated. Resetting session.');
+          await authState.logout();
+        }
       } finally {
         setIsReady(true);
       }
@@ -156,7 +164,7 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={styles.flex}>
+    <GestureHandlerRootView style={[styles.flex, { backgroundColor: theme.colors.background }]}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <PaperProvider theme={theme}>
@@ -164,6 +172,7 @@ export default function RootLayout() {
             <Stack
               screenOptions={{
                 headerShown: false,
+                contentStyle: { backgroundColor: theme.colors.background },
               }}
             >
               <Stack.Screen name="(auth)" />
