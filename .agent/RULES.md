@@ -303,7 +303,7 @@ All SVG illustrations in `assets/`:
 - `Frame-attendee.svg` - Attendance management onboarding
 - `Frame-picture-mode.svg` - Picture mode onboarding
 - `Frame-notification.svg` - Notification onboarding
-- `Frame-login.svg` - Login screen logo
+- `Frame-logo.svg` - Login screen logo
 
 ### SVG Import Pattern
 

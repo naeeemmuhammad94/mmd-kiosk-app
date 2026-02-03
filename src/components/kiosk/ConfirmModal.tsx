@@ -9,8 +9,8 @@ import { useAppTheme } from '@/hooks/useAppTheme';
 import type { MD3Theme } from 'react-native-paper';
 import type { CustomColors } from '@/theme';
 // Assets
-import CheckCircleIcon from '../../../assets/check-circle.svg';
-import CheckoutCircleIcon from '../../../assets/checkout-circle.svg';
+import CheckCircleIcon from '../../../assets/tick.svg';
+import CheckoutCircleIcon from '../../../assets/cross.svg';
 // TickIcon/CloseIcon removed in favor of new assets
 import { getEffectiveColor, getGradientColors } from './StudentCard';
 
@@ -65,9 +65,7 @@ export default function ConfirmModal() {
           style={[
             styles.statusIconWrapper,
             {
-              backgroundColor: isCheckIn
-                ? customColors.successContainer
-                : customColors.errorContainer,
+              backgroundColor: 'transparent', // Removed background per request
             },
           ]}
         >
@@ -125,14 +123,6 @@ export default function ConfirmModal() {
                   ]}
                 />
               )}
-              {/* Status badge floating on bottom right */}
-              <View style={styles.floatingBadge}>
-                {isCheckIn ? (
-                  <CheckCircleIcon width={24} height={24} />
-                ) : (
-                  <CheckoutCircleIcon width={24} height={24} />
-                )}
-              </View>
             </View>
           </View>
           <Text style={styles.studentName}>{studentName}</Text>
@@ -188,7 +178,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     cardContainer: {
       alignItems: 'center',
-      backgroundColor: theme.colors.surface,
+      backgroundColor: customColors.modalBackground, // Dynamic Modal BG
       borderRadius: 24, // Rounded corners
       elevation: 8,
       maxWidth: 400, // Compact max width

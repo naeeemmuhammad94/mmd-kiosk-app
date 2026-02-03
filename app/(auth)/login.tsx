@@ -27,7 +27,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
 
 // MMD Logo SVG
-import LoginLogo from '../../assets/login.svg';
+import LoginLogo from '../../assets/logo.svg';
 import loginBackground from '../../assets/login-background.png';
 
 import { useAppTheme } from '@/hooks/useAppTheme';
@@ -238,7 +238,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     card: {
       alignSelf: 'center',
-      backgroundColor: theme.colors.surface,
+      backgroundColor: customColors.modalBackground, // Dynamic Modal BG
       borderRadius: 24,
       elevation: 8,
       // width and maxWidth set dynamically via inline style
@@ -246,7 +246,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       paddingVertical: 32,
       shadowColor: customColors.shadow,
       shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.15,
+      shadowOpacity: 0.3, // Stronger shadow for depth
       shadowRadius: 24,
     },
     cardMobile: {
@@ -290,8 +290,8 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       fontWeight: '500',
     },
     input: {
-      backgroundColor: theme.colors.surface, // Use surface for input background
-      borderColor: theme.colors.outline,
+      backgroundColor: customColors.inputBackground, // Dynamic Input BG
+      borderColor: customColors.inputBorder, // Dynamic Input Border
       borderRadius: 8,
       borderWidth: 1,
       color: theme.colors.onSurface,
@@ -339,7 +339,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     overlay: {
       ...StyleSheet.absoluteFillObject,
-      backgroundColor: customColors.backdrop,
+      backgroundColor: customColors.backdropDark, // Use theme backdrop
     },
     safeArea: {
       flex: 1,

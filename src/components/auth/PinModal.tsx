@@ -173,7 +173,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     modalContainer: {
       alignItems: 'center',
-      backgroundColor: theme.colors.surface,
+      backgroundColor: customColors.modalBackground, // Dynamic Modal BG
       borderRadius: 16,
       elevation: 10,
       maxWidth: 448,
@@ -181,13 +181,13 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       paddingVertical: 28,
       shadowColor: customColors.shadow,
       shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.2,
+      shadowOpacity: 0.3,
       shadowRadius: 16,
       width: '90%',
     },
     overlay: {
       alignItems: 'center',
-      backgroundColor: customColors.backdropDark,
+      backgroundColor: customColors.backdropDark, // Dynamic Backdrop
       flex: 1,
       justifyContent: 'center',
     },
@@ -202,7 +202,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       textAlign: 'center',
     },
     title: {
-      color: theme.colors.primary,
+      color: '#4285F4', // Blueish in all modes
       fontWeight: '700',
       marginBottom: 8,
       textAlign: 'center',

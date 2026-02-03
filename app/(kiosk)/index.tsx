@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   useWindowDimensions,
+  Image,
 } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
@@ -14,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useQuery } from '@tanstack/react-query';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
+// useRouter removed (unused)
 import { useAuthStore } from '@/store/useAuthStore';
 import { useKioskStore } from '@/store/useKioskStore';
 import { attendanceService } from '@/services/attendanceService';
@@ -22,17 +23,21 @@ import StudentCard from '@/components/kiosk/StudentCard';
 import AttendanceModal from '@/components/kiosk/AttendanceModal';
 import KioskSettingsModal from '@/components/kiosk/KioskSettingsModal';
 import KioskPinModal from '@/components/kiosk/KioskPinModal';
-import ArrowOutlined from '../../assets/weui_arrow-outlined.svg';
+
+// Assets
+// Unused icons removed
+
+// Removed KioskLogoIcon as per request to use arrow
 import type { AttendanceContact, ProgramAttendance } from '@/types/attendance';
 import { getResponsiveDimensions } from '@/theme/dimensions';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import type { CustomColors } from '@/theme';
 
 // Calculate columns based on screen width for responsive grid
-// Mobile (<768px): 3 columns, Tablet (>=768px): 5, iPad Landscape (>=1024px): 6
+// Mobile (<768px): 3 columns, Tablet (>=768px): 5
+// UPDATED: Max columns is 5 to match Figma
 const getNumColumns = (width: number) => {
-  if (width >= 1024) return 6; // iPad Pro Landscape
-  if (width >= 768) return 5; // iPad Portrait / Tablet
+  if (width >= 768) return 5; // iPad / Tablet
   return 3; // Mobile - user requirement: fit 3 cards per row
 };
 
@@ -40,7 +45,7 @@ const getNumColumns = (width: number) => {
 const MemoizedStudentCard = memo(StudentCard);
 
 export default function KioskHomeScreen() {
-  const router = useRouter();
+  // Router unused
   const { width: screenWidth } = useWindowDimensions();
   const isTablet = screenWidth >= 768;
   const numColumns = getNumColumns(screenWidth);
@@ -57,7 +62,9 @@ export default function KioskHomeScreen() {
   const listPadding = dims.gridPadding;
   const totalHorizontalPadding = containerPadding * 2 + listPadding * 2;
   const totalGap = dims.gridGap * (numColumns - 1);
-  const availableWidth = screenWidth - totalHorizontalPadding;
+  // Subtract extra buffer (4px) to account for Accordion borders (2px) and potential sub-pixel rounding
+  // This ensures 5 columns fit perfectly without wrapping
+  const availableWidth = screenWidth - totalHorizontalPadding - 4;
   const cardWidth = Math.floor((availableWidth - totalGap) / numColumns);
 
   const {
@@ -75,6 +82,8 @@ export default function KioskHomeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isProgramView, setIsProgramView] = useState(false);
+  const [expandedPrograms, setExpandedPrograms] = useState<string[]>([]);
 
   // Debounce search for better performance
   useEffect(() => {
@@ -153,8 +162,33 @@ export default function KioskHomeScreen() {
   );
 
   const handleAllProgramsPress = useCallback(() => {
-    router.push('/(kiosk)/programs');
-  }, [router]);
+    setIsProgramView(prev => !prev);
+  }, []);
+
+  const toggleProgram = useCallback((programId: string) => {
+    setExpandedPrograms(prev =>
+      prev.includes(programId) ? prev.filter(id => id !== programId) : [...prev, programId]
+    );
+  }, []);
+
+  // Filter programs by search query (for Accordion View)
+  const filteredPrograms = useMemo(() => {
+    if (!attendanceData) return [];
+    const programsData = getProgramBasedData(
+      attendanceData.length > 0 ? attendanceData.flatMap(p => p.contacts) : []
+    );
+
+    if (!debouncedSearch.trim()) return programsData;
+
+    return programsData
+      .map(program => ({
+        ...program,
+        contacts: program.contacts.filter(contact =>
+          (contact.name || '').toLowerCase().includes(debouncedSearch.toLowerCase())
+        ),
+      }))
+      .filter(program => program.contacts.length > 0);
+  }, [attendanceData, debouncedSearch]);
 
   const handleSettingsPress = useCallback(() => {
     openPinModal('settings');
@@ -184,41 +218,79 @@ export default function KioskHomeScreen() {
   return (
     <View style={styles.container}>
       {/* Blue Header */}
-      <LinearGradient colors={[theme.colors.primary, theme.colors.primary]} style={styles.header}>
+      {/* Dark Header with Radius */}
+      <LinearGradient
+        colors={theme.dark ? ['#161B26', '#161B26'] : ['#3772FF', '#3772FF']}
+        style={styles.header}
+      >
         <SafeAreaView
           edges={['top']}
-          style={[styles.headerContent, isTablet && styles.headerContentTablet]}
+          style={[
+            styles.headerContent,
+            isTablet && styles.headerContentTablet,
+            // ALIGNMENT FIX: Sync header padding with grid logic
+            // Grid content starts at: containerPadding + listPadding
+            {
+              paddingHorizontal: (isTablet ? 48 : dims.gridPadding) + dims.gridPadding,
+            },
+          ]}
         >
-          {/* Search Bar */}
-          <View style={styles.searchContainer}>
-            <Ionicons name="search-outline" size={18} color={customColors.onSurfaceDisabled} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search..."
-              placeholderTextColor={customColors.onSurfaceDisabled}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoCorrect={false}
-              autoCapitalize="none"
-            />
+          {/* Left: Kiosk Brand Mark */}
+          <View style={styles.brandContainer}>
+            <TouchableOpacity style={styles.brandPill} onPress={handleRefresh} activeOpacity={0.7}>
+              {/* Logo: PNG with TintColor */}
+              <Image
+                source={require('../../assets/logo.png')}
+                style={{
+                  width: 24,
+                  height: 24,
+                  marginRight: 8,
+                  tintColor: theme.dark ? '#FFFFFF' : '#4285F4',
+                }} // Figma Blue in Light Mode
+                resizeMode="contain"
+              />
+              <Text style={styles.brandText}>KIOSK</Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Right Actions */}
-          <View style={styles.headerActions}>
-            {/* All Programs Button */}
-            <TouchableOpacity style={styles.programButton} onPress={handleAllProgramsPress}>
-              <Text style={styles.programButtonText}>All Programs</Text>
-              <ArrowOutlined width={18} height={18} color={theme.colors.primary} />
-            </TouchableOpacity>
+          {/* Center: Search Bar */}
+          <View style={styles.searchWrapper}>
+            <View style={styles.searchContainer}>
+              <Ionicons
+                name="search-outline"
+                size={20}
+                color={theme.dark ? customColors.textLight : theme.colors.onSurfaceVariant}
+              />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search........."
+                placeholderTextColor={customColors.textLight}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoCorrect={false}
+                autoCapitalize="none"
+              />
+            </View>
+          </View>
 
-            {/* Refresh Button */}
-            <TouchableOpacity style={styles.iconButton} onPress={handleRefresh}>
-              <Ionicons name="refresh-outline" size={22} color={theme.colors.primary} />
+          {/* Right Actions: Grid Toggle & Settings */}
+          <View style={styles.headerActions}>
+            {/* Grid Toggle - Navigates to Programs */}
+            <TouchableOpacity style={styles.iconButton} onPress={handleAllProgramsPress}>
+              <Ionicons
+                name="grid-outline"
+                size={22}
+                color={theme.dark ? '#FFFFFF' : theme.colors.primary}
+              />
             </TouchableOpacity>
 
             {/* Settings Button */}
             <TouchableOpacity style={styles.iconButton} onPress={handleSettingsPress}>
-              <Ionicons name="settings-outline" size={22} color={theme.colors.primary} />
+              <Ionicons
+                name="settings-outline"
+                size={22}
+                color={theme.dark ? '#FFFFFF' : theme.colors.primary}
+              />
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -233,7 +305,7 @@ export default function KioskHomeScreen() {
           ]}
         >
           <View style={[styles.searchResultsLabel, styles.rowCenter]}>
-            <Text style={styles.searchResultsText}>Searched Results</Text>
+            <Text style={styles.searchResultsText}>Search Results</Text>
           </View>
         </View>
       )}
@@ -244,7 +316,7 @@ export default function KioskHomeScreen() {
             */}
       <View
         style={
-          isSearching
+          isSearching && !isProgramView
             ? [
                 styles.searchResultsContainer,
                 isTablet ? styles.paddingTablet : styles.paddingMobile,
@@ -252,7 +324,9 @@ export default function KioskHomeScreen() {
             : styles.gridWrapper
         }
       >
-        <View style={isSearching ? styles.searchResultsCard : styles.fullWidthGrid}>
+        <View
+          style={isSearching && !isProgramView ? styles.searchResultsCard : styles.fullWidthGrid}
+        >
           {/* Loader - Centered in remaining space 
                         Only show during initial load (isLoading). 
                         Background fetches (isFetching) should remain silent to avoid UI disruption during check-in.
@@ -263,56 +337,121 @@ export default function KioskHomeScreen() {
             </View>
           )}
 
-          {/* Student Grid */}
-          {!isLoading && (
-            <FlatList
-              data={filteredStudents}
-              keyExtractor={keyExtractor}
-              numColumns={numColumns}
-              key={numColumns}
-              contentContainerStyle={[
-                styles.gridContent,
-                styles.gridPadding,
-                {
-                  paddingHorizontal: isSearching
-                    ? dims.gridPadding
-                    : containerPadding + listPadding,
-                  paddingTop: dims.gridPadding,
-                },
-              ]}
-              columnWrapperStyle={[
-                styles.columnWrapper,
-                { gap: dims.gridGap, marginBottom: dims.gridGap },
-              ]}
-              removeClippedSubviews={true}
-              maxToRenderPerBatch={20}
-              windowSize={10}
-              initialNumToRender={20}
-              getItemLayout={undefined}
-              refreshControl={
-                <RefreshControl
-                  refreshing={isRefreshing}
-                  onRefresh={handleRefresh}
-                  tintColor={theme.colors.primary}
-                />
-              }
-              renderItem={renderItem}
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Ionicons
-                    name="people-outline"
-                    size={48}
-                    color={customColors.onSurfaceDisabled}
+          {/* Student Grid OR Accordion */}
+          {!isLoading &&
+            (isProgramView ? (
+              /* Accordion View (Copied logic from programs.tsx to match exact styling) */
+              <FlatList
+                data={filteredPrograms}
+                keyExtractor={item => item.id}
+                contentContainerStyle={[
+                  styles.listContent,
+                  { paddingHorizontal: isTablet ? 48 : 16, paddingTop: 32 },
+                ]}
+                renderItem={({ item: program }) => {
+                  const isExpanded = expandedPrograms.includes(program.id) || isSearching; // Auto-expand on search
+                  return (
+                    <View
+                      style={[styles.accordionItem, isExpanded && styles.accordionItemExpanded]}
+                    >
+                      {/* Accordion Header */}
+                      <TouchableOpacity
+                        style={[
+                          styles.accordionHeader,
+                          isExpanded && styles.accordionHeaderExpanded,
+                        ]}
+                        onPress={() => toggleProgram(program.id)}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.accordionTitle}>{program.name}</Text>
+                        <Ionicons
+                          name={isExpanded ? 'chevron-down' : 'chevron-forward'}
+                          size={20}
+                          color={theme.colors.onSurfaceVariant}
+                        />
+                      </TouchableOpacity>
+
+                      {/* Accordion Content - Student Grid */}
+                      {isExpanded && (
+                        <View style={styles.accordionContent}>
+                          <View style={[styles.studentGrid, { gap: dims.gridGap }]}>
+                            {program.contacts.map(student => (
+                              <View key={student._id} style={{ width: cardWidth }}>
+                                <MemoizedStudentCard
+                                  student={student}
+                                  showImage={settings?.showStudentImages ?? true}
+                                  onPress={() => handleStudentPress(student)}
+                                  width={cardWidth}
+                                />
+                              </View>
+                            ))}
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  );
+                }}
+                ListEmptyComponent={
+                  <View style={styles.emptyContainer}>
+                    <Ionicons
+                      name="albums-outline"
+                      size={48}
+                      color={customColors.onSurfaceDisabled}
+                    />
+                    <Text style={styles.emptyText}>No programs available</Text>
+                  </View>
+                }
+              />
+            ) : (
+              /* Flat Grid View (Unchanged) */
+              <FlatList
+                data={filteredStudents}
+                keyExtractor={keyExtractor}
+                numColumns={numColumns}
+                key={numColumns} // Force re-render on column change
+                contentContainerStyle={[
+                  styles.gridContent,
+                  styles.gridPadding,
+                  {
+                    paddingHorizontal: isSearching
+                      ? dims.gridPadding
+                      : containerPadding + listPadding,
+                    paddingTop: dims.gridPadding,
+                  },
+                ]}
+                columnWrapperStyle={[
+                  styles.columnWrapper,
+                  { gap: dims.gridGap, marginBottom: dims.gridGap },
+                ]}
+                removeClippedSubviews={true}
+                maxToRenderPerBatch={20}
+                windowSize={10}
+                initialNumToRender={20}
+                getItemLayout={undefined}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={isRefreshing}
+                    onRefresh={handleRefresh}
+                    tintColor={theme.colors.primary}
                   />
-                  <Text style={styles.emptyText}>
-                    {isSearching
-                      ? 'No students found matching your search'
-                      : 'No students to display'}
-                  </Text>
-                </View>
-              }
-            />
-          )}
+                }
+                renderItem={renderItem}
+                ListEmptyComponent={
+                  <View style={styles.emptyContainer}>
+                    <Ionicons
+                      name="people-outline"
+                      size={48}
+                      color={customColors.onSurfaceDisabled}
+                    />
+                    <Text style={styles.emptyText}>
+                      {isSearching
+                        ? 'No students found matching your search'
+                        : 'No students to display'}
+                    </Text>
+                  </View>
+                }
+              />
+            ))}
         </View>
       </View>
 
@@ -379,7 +518,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       // gap and marginBottom set dynamically inline
     },
     container: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: theme.colors.background,
       flex: 1,
     },
     emptyContainer: {
@@ -408,21 +547,47 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       flex: 1,
       width: '100%',
     },
+
+    brandContainer: {
+      // Flex to 0 to take minimum space
+    },
+    brandPill: {
+      alignItems: 'center',
+      backgroundColor: theme.dark ? theme.colors.surface : '#FFFFFF', // Pure White in Light Mode
+      borderRadius: 12,
+      flexDirection: 'row',
+      height: 48,
+      paddingHorizontal: 16,
+      borderWidth: 1,
+      borderColor: theme.dark ? '#3B82F6' : 'transparent', // Blueish border/glow in Dark
+      shadowColor: '#3B82F6', // Blue glow
+      shadowOffset: { width: 0, height: 4 }, // Push shadow down
+      shadowOpacity: theme.dark ? 0.6 : 0.3,
+      shadowRadius: 8,
+      elevation: 5,
+    },
+    brandText: {
+      color: theme.dark ? '#FFFFFF' : '#4285F4', // Figma Blue in Light Mode
+      fontSize: 16,
+      fontWeight: '700',
+      letterSpacing: 0.5,
+    },
     header: {
-      paddingBottom: 16,
+      borderBottomLeftRadius: 24,
+      borderBottomRightRadius: 24,
+      paddingBottom: 24, // More space at bottom
     },
     headerActions: {
       alignItems: 'center',
       flexDirection: 'row',
-      gap: 8,
+      gap: 12, // Increased gap
     },
     headerContent: {
       alignItems: 'center',
       flexDirection: 'row',
-      gap: 12,
-      paddingHorizontal: 16,
-      // Base padding for mobile, can be overridden
+      justifyContent: 'space-between',
       paddingTop: 12,
+      // paddingHorizontal handled via inline style for alignment
     },
     headerContentTablet: {
       paddingTop: 48,
@@ -430,12 +595,17 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     iconButton: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.outline,
-      borderRadius: 8,
+      borderRadius: 12,
       borderWidth: 1,
-      height: 40, // Restoring fixed height for square icons
+      borderColor: theme.dark ? '#334155' : 'transparent',
+      height: 48,
       justifyContent: 'center',
-      width: 40,
+      width: 48,
+      shadowColor: '#3B82F6',
+      shadowOffset: { width: 0, height: 4 }, // Push shadow down
+      shadowOpacity: theme.dark ? 0.4 : 0.3,
+      shadowRadius: 8,
+      elevation: 4,
     },
     paddingMobile: {
       paddingHorizontal: 16,
@@ -449,8 +619,8 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       borderRadius: 8,
       flexDirection: 'row',
       gap: 6,
-      justifyContent: 'center', // Fix: Sorted before padding
-      minHeight: 40, // Ensure visual match with search inputs
+      justifyContent: 'center',
+      minHeight: 40,
       paddingHorizontal: 12,
       paddingVertical: 10,
     },
@@ -463,20 +633,32 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       alignItems: 'center',
       flexDirection: 'row',
     },
+    searchWrapper: {
+      flex: 1,
+      maxWidth: 600,
+      paddingHorizontal: 24,
+    },
     searchContainer: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderRadius: 8,
-      flex: 1,
+      borderRadius: 100,
+      borderWidth: 1,
+      borderColor: theme.dark ? '#334155' : 'transparent',
       flexDirection: 'row',
       gap: 8,
-      height: 40,
-      paddingHorizontal: 12,
+      height: 48,
+      paddingHorizontal: 16,
+      width: '100%',
+      shadowColor: '#3B82F6',
+      shadowOffset: { width: 0, height: 4 }, // Push shadow down
+      shadowOpacity: theme.dark ? 0.4 : 0.3,
+      shadowRadius: 8,
+      elevation: 4,
     },
     searchInput: {
-      color: theme.colors.onSurface,
+      color: theme.colors.onSurface, // Text stays dark (on white bg)
       flex: 1,
-      fontSize: 15,
+      fontSize: 14,
     },
 
     searchResultsCard: {
@@ -507,5 +689,65 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       color: theme.colors.surface,
       fontSize: 14,
       fontWeight: '600',
+    },
+
+    // Accordion Styles (Copied from programs.tsx)
+    listContent: {
+      paddingBottom: 100,
+    },
+    accordionItem: {
+      marginBottom: 16, // Increased spacing between items
+    },
+    accordionItemExpanded: {
+      borderColor: theme.colors.outline,
+      borderRadius: 8,
+      borderWidth: 1,
+      marginBottom: 16, // Match closed spacing
+    },
+    accordionHeader: {
+      alignItems: 'center',
+      backgroundColor: '#F8F9FA', // Lighter grey per request
+      borderColor: theme.colors.outline,
+      borderRadius: 8, // Rounded corners always
+      borderWidth: 1,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: 24, // Increased horizontal padding too for better look
+      paddingVertical: 24, // Increased height (taller)
+    },
+    accordionHeaderExpanded: {
+      backgroundColor: '#F8F9FA',
+      borderBottomColor: theme.colors.outline,
+      borderBottomWidth: 1,
+      // Keep radius on top, and add bottom radius if requested, but usually expanded implies connection.
+      // User asked for "bottom border radius".
+      // If I add it, it detaches from content.
+      // But maybe they want the header to be a standalone pill and content below it?
+      // "according header should have bottom border radius"
+      // I will set it to 8.
+      borderBottomLeftRadius: 8,
+      borderBottomRightRadius: 8,
+      borderTopLeftRadius: 8,
+      borderTopRightRadius: 8,
+      borderWidth: 0, // Reset border since itemExpanded has it?
+      // Wait, itemExpanded has border.
+      // If header has radius, it might look clipped.
+      // Let's trust the user wants it rounded.
+    },
+    accordionTitle: {
+      color: '#000000', // Black text per request
+      fontSize: 15,
+      fontWeight: '600', // Slightly bolder
+    },
+    accordionContent: {
+      backgroundColor: theme.colors.surface,
+      borderBottomLeftRadius: 6, // Match parent minus width
+      borderBottomRightRadius: 6,
+      padding: 16,
+    },
+    studentGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      // gap handled inline
     },
   });

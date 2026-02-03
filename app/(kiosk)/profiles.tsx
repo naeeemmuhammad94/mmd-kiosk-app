@@ -3,7 +3,7 @@
  * Program accordion with student grids - matching Figma "Select Profile"
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { View, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import { Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,7 +16,9 @@ import AttendanceModal from '@/components/kiosk/AttendanceModal';
 import KioskPinModal from '@/components/kiosk/KioskPinModal';
 import KioskSettingsModal from '@/components/kiosk/KioskSettingsModal';
 import type { AttendanceContact } from '@/types/attendance';
-import { lightTheme as theme, customColors } from '@/theme';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import { MD3Theme } from 'react-native-paper';
+import { CustomColors } from '@/theme';
 
 export default function SelectProfileScreen() {
   const router = useRouter();
@@ -31,6 +33,9 @@ export default function SelectProfileScreen() {
     toggleAttendanceModal,
     openPinModal,
   } = useKioskStore();
+
+  const { theme, customColors } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme, customColors), [theme, customColors]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedPrograms, setExpandedPrograms] = useState<string[]>([]);
@@ -162,107 +167,108 @@ export default function SelectProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  backButton: {
-    alignItems: 'center',
-    height: 40,
-    justifyContent: 'center',
-    left: 16,
-    position: 'absolute',
-    top: 12,
-    width: 40,
-  },
-  container: {
-    backgroundColor: theme.colors.surface,
-    flex: 1,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 48,
-  },
-  emptyText: {
-    color: theme.colors.onSurfaceVariant,
-    fontSize: 16,
-    marginTop: 12,
-  },
-  header: {
-    paddingBottom: 20,
-  },
-  headerContent: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    position: 'relative',
-  },
-  headerTitle: {
-    color: theme.colors.onPrimary,
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  programContainer: {
-    borderColor: theme.colors.outline,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 8,
-    overflow: 'hidden',
-  },
-  programHeader: {
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  programName: {
-    color: theme.colors.onSurface,
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  scrollContent: {
-    paddingBottom: 16,
-    paddingHorizontal: 16,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  searchContainer: {
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.outline,
-    borderRadius: 8,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: 8,
-    height: 44,
-    paddingHorizontal: 12,
-  },
-  searchInput: {
-    color: theme.colors.onSurface,
-    flex: 1,
-    fontSize: 15,
-  },
-  searchSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  settingsButton: {
-    alignItems: 'center',
-    height: 40,
-    justifyContent: 'center',
-    position: 'absolute',
-    right: 16,
-    top: 12,
-    width: 40,
-  },
-  studentsGrid: {
-    backgroundColor: customColors.surfaceDisabled,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-  },
-});
+const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
+  StyleSheet.create({
+    backButton: {
+      alignItems: 'center',
+      height: 40,
+      justifyContent: 'center',
+      left: 16,
+      position: 'absolute',
+      top: 12,
+      width: 40,
+    },
+    container: {
+      backgroundColor: theme.colors.surface,
+      flex: 1,
+    },
+    emptyContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 48,
+    },
+    emptyText: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 16,
+      marginTop: 12,
+    },
+    header: {
+      paddingBottom: 20,
+    },
+    headerContent: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      paddingHorizontal: 16,
+      paddingTop: 12,
+      position: 'relative',
+    },
+    headerTitle: {
+      color: theme.colors.onPrimary,
+      fontSize: 18,
+      fontWeight: '600',
+    },
+    programContainer: {
+      borderColor: theme.colors.outline,
+      borderRadius: 8,
+      borderWidth: 1,
+      marginBottom: 8,
+      overflow: 'hidden',
+    },
+    programHeader: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    programName: {
+      color: theme.colors.onSurface,
+      fontSize: 15,
+      fontWeight: '500',
+    },
+    scrollContent: {
+      paddingBottom: 16,
+      paddingHorizontal: 16,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    searchContainer: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.outline,
+      borderRadius: 8,
+      borderWidth: 1,
+      flexDirection: 'row',
+      gap: 8,
+      height: 44,
+      paddingHorizontal: 12,
+    },
+    searchInput: {
+      color: theme.colors.onSurface,
+      flex: 1,
+      fontSize: 15,
+    },
+    searchSection: {
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+    },
+    settingsButton: {
+      alignItems: 'center',
+      height: 40,
+      justifyContent: 'center',
+      position: 'absolute',
+      right: 16,
+      top: 12,
+      width: 40,
+    },
+    studentsGrid: {
+      backgroundColor: customColors.surfaceDisabled,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      paddingHorizontal: 8,
+      paddingVertical: 8,
+    },
+  });

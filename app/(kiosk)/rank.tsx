@@ -3,7 +3,7 @@
  * Select rank dropdown with student list - matching Figma Rank design
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { Text, Avatar } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,7 +15,9 @@ import AttendanceModal from '@/components/kiosk/AttendanceModal';
 import KioskPinModal from '@/components/kiosk/KioskPinModal';
 import KioskSettingsModal from '@/components/kiosk/KioskSettingsModal';
 import type { AttendanceContact } from '@/types/attendance';
-import { lightTheme as theme, customColors } from '@/theme';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import { MD3Theme } from 'react-native-paper';
+import { CustomColors } from '@/theme';
 
 export default function RankScreen() {
   const router = useRouter();
@@ -29,6 +31,9 @@ export default function RankScreen() {
     toggleAttendanceModal,
     openPinModal,
   } = useKioskStore();
+
+  const { theme, customColors } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme, customColors), [theme, customColors]);
 
   const [selectedRank, setSelectedRank] = useState<string | null>(null);
   const [showRankDropdown, setShowRankDropdown] = useState(false);
@@ -192,149 +197,150 @@ export default function RankScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  avatar: {
-    backgroundColor: theme.colors.primary,
-  },
-  backButton: {
-    alignItems: 'center',
-    height: 40,
-    justifyContent: 'center',
-    left: 16,
-    position: 'absolute',
-    top: 12,
-    width: 40,
-  },
-  container: {
-    backgroundColor: theme.colors.surface,
-    flex: 1,
-  },
-  dropdownContainer: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    maxHeight: '60%',
-    maxWidth: 360,
-    width: '80%',
-  },
-  dropdownHeader: {
-    alignItems: 'center',
-    borderBottomColor: theme.colors.outline,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 16,
-  },
-  dropdownItem: {
-    alignItems: 'center',
-    borderBottomColor: customColors.surfaceDisabled,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  dropdownItemSelected: {
-    backgroundColor: customColors.primaryContainer, // Use primary container for selection if available or light blue
-  },
-  dropdownItemText: {
-    color: theme.colors.onSurface,
-    fontSize: 15,
-  },
-  dropdownOverlay: {
-    alignItems: 'center',
-    backgroundColor: customColors.backdropDark,
-    flex: 1,
-    justifyContent: 'center',
-  },
-  dropdownTitle: {
-    color: theme.colors.onSurface,
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 48,
-  },
-  emptyText: {
-    color: theme.colors.onSurfaceVariant,
-    fontSize: 16,
-    marginTop: 12,
-  },
-  header: {
-    paddingBottom: 20,
-  },
-  headerCenter: {
-    alignItems: 'center',
-  },
-  headerContent: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    position: 'relative',
-  },
-  headerSubtitle: {
-    color: customColors.whiteOpacity,
-    fontSize: 12,
-  },
-  listContent: {
-    padding: 16,
-  },
-  rankDropdown: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 4,
-  },
-  rankText: {
-    color: theme.colors.onPrimary,
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  settingsButton: {
-    alignItems: 'center',
-    height: 40,
-    justifyContent: 'center',
-    position: 'absolute',
-    right: 16,
-    top: 12,
-    width: 40,
-  },
-  statusGreen: {
-    backgroundColor: customColors.success,
-  },
-  statusIcon: {
-    alignItems: 'center',
-    borderRadius: 14,
-    height: 28,
-    justifyContent: 'center',
-    width: 28,
-  },
-  statusRed: {
-    backgroundColor: theme.colors.error,
-  },
-  studentInfo: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  studentName: {
-    color: theme.colors.onSurface,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  studentProgram: {
-    color: theme.colors.onSurfaceVariant,
-    fontSize: 13,
-  },
-  studentRow: {
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.outline,
-    borderRadius: 8,
-    borderWidth: 1,
-    flexDirection: 'row',
-    marginBottom: 8,
-    padding: 12,
-  },
-});
+const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
+  StyleSheet.create({
+    avatar: {
+      backgroundColor: theme.colors.primary,
+    },
+    backButton: {
+      alignItems: 'center',
+      height: 40,
+      justifyContent: 'center',
+      left: 16,
+      position: 'absolute',
+      top: 12,
+      width: 40,
+    },
+    container: {
+      backgroundColor: theme.colors.surface,
+      flex: 1,
+    },
+    dropdownContainer: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: 12,
+      maxHeight: '60%',
+      maxWidth: 360,
+      width: '80%',
+    },
+    dropdownHeader: {
+      alignItems: 'center',
+      borderBottomColor: theme.colors.outline,
+      borderBottomWidth: 1,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      padding: 16,
+    },
+    dropdownItem: {
+      alignItems: 'center',
+      borderBottomColor: customColors.surfaceDisabled,
+      borderBottomWidth: 1,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    dropdownItemSelected: {
+      backgroundColor: customColors.primaryContainer, // Use primary container for selection if available or light blue
+    },
+    dropdownItemText: {
+      color: theme.colors.onSurface,
+      fontSize: 15,
+    },
+    dropdownOverlay: {
+      alignItems: 'center',
+      backgroundColor: customColors.backdropDark,
+      flex: 1,
+      justifyContent: 'center',
+    },
+    dropdownTitle: {
+      color: theme.colors.onSurface,
+      fontSize: 18,
+      fontWeight: '600',
+    },
+    emptyContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 48,
+    },
+    emptyText: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 16,
+      marginTop: 12,
+    },
+    header: {
+      paddingBottom: 20,
+    },
+    headerCenter: {
+      alignItems: 'center',
+    },
+    headerContent: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      paddingHorizontal: 16,
+      paddingTop: 12,
+      position: 'relative',
+    },
+    headerSubtitle: {
+      color: customColors.whiteOpacity,
+      fontSize: 12,
+    },
+    listContent: {
+      padding: 16,
+    },
+    rankDropdown: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 4,
+    },
+    rankText: {
+      color: theme.colors.onPrimary,
+      fontSize: 18,
+      fontWeight: '600',
+    },
+    settingsButton: {
+      alignItems: 'center',
+      height: 40,
+      justifyContent: 'center',
+      position: 'absolute',
+      right: 16,
+      top: 12,
+      width: 40,
+    },
+    statusGreen: {
+      backgroundColor: customColors.success,
+    },
+    statusIcon: {
+      alignItems: 'center',
+      borderRadius: 14,
+      height: 28,
+      justifyContent: 'center',
+      width: 28,
+    },
+    statusRed: {
+      backgroundColor: theme.colors.error,
+    },
+    studentInfo: {
+      flex: 1,
+      marginLeft: 12,
+    },
+    studentName: {
+      color: theme.colors.onSurface,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    studentProgram: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 13,
+    },
+    studentRow: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.outline,
+      borderRadius: 8,
+      borderWidth: 1,
+      flexDirection: 'row',
+      marginBottom: 8,
+      padding: 12,
+    },
+  });

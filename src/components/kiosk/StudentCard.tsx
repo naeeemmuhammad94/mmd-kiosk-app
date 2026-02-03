@@ -7,9 +7,11 @@ import type { MD3Theme } from 'react-native-paper';
 import type { CustomColors } from '@/theme';
 // MMD Assets
 import TickIcon from '../../../assets/tick.svg';
-import CloseIcon from '../../../assets/close.svg';
+
 import type { AttendanceContact } from '@/types/attendance';
 import { getResponsiveDimensions } from '@/theme/dimensions';
+
+import { useLocalSettingsStore } from '@/store/useLocalSettingsStore';
 
 interface StudentCardProps {
   student: AttendanceContact;
@@ -74,89 +76,97 @@ export default function StudentCard({ student, showImage, onPress, width }: Stud
   const effectiveColor = getEffectiveColor(student?.rankColor, theme);
   const gradientColors = getGradientColors(effectiveColor);
 
+  const { showAttendanceBar } = useLocalSettingsStore();
+
+  const totalClasses = student?.totalClasses || 0;
+  const presentCount = student?.totalPresentCount || 0;
+  const progressPercent = totalClasses > 0 ? (presentCount / totalClasses) * 100 : 0;
+
   return (
     <TouchableOpacity
-      style={[styles.container, { width: cardWidth }]}
+      style={[styles.cardContainer, { width: cardWidth }]}
       onPress={onPress}
       activeOpacity={0.7}
     >
-      {/* Profile Image Container */}
-      <View style={styles.imageWrapper}>
-        {/* Status Badge - Top Left (red cross) - ONLY if NOT checked in */}
-        {/* Visual refinement: overlapping top-left corner */}
-        {!isCheckedIn && (
-          <View style={styles.statusBadgeTopLeft}>
-            {/* Use SVG Asset */}
-            <CloseIcon width={dims.badgeSize} height={dims.badgeSize} />
-          </View>
-        )}
-
-        {/* Gradient Border Container (Figma Style) */}
-        <LinearGradient
-          colors={gradientColors}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.gradientBorder, { width: dims.avatarBorder, height: dims.avatarBorder }]}
-        >
-          <View
+      <View style={styles.contentContainer}>
+        {/* Profile Image Container */}
+        <View style={styles.imageWrapper}>
+          {/* Main Content: Gradient Border + Image */}
+          <LinearGradient
+            colors={gradientColors}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={[
-              styles.imageContainer,
-              {
-                width: dims.avatarInner,
-                height: dims.avatarInner,
-                // No solid border here, handled by gradient wrapper
-              },
+              styles.gradientBorder,
+              { width: dims.avatarBorder * 1.5, height: dims.avatarBorder * 1.5 },
             ]}
           >
-            {showImage && student?.profilePicURL ? (
-              <Image
-                source={{ uri: student.profilePicURL }}
-                style={[styles.profileImage, styles.fullSize]}
-              />
-            ) : (
-              <Avatar.Text
-                size={dims.avatarSize}
-                label={studentName.charAt(0).toUpperCase()}
-                style={[
-                  styles.avatar,
-                  {
-                    backgroundColor:
-                      effectiveColor === '#E2E8F0' ? theme.colors.primary : effectiveColor,
-                  },
-                ]}
-                labelStyle={[styles.avatarLabel, { fontSize: dims.avatarSize * 0.4 }]}
-              />
-            )}
-          </View>
-        </LinearGradient>
+            <View
+              style={[
+                styles.imageContainer,
+                {
+                  width: dims.avatarInner * 1.5, // Increase size significantly
+                  height: dims.avatarInner * 1.5,
+                },
+              ]}
+            >
+              {showImage && student?.profilePicURL ? (
+                <Image
+                  source={{ uri: student.profilePicURL }}
+                  style={[styles.profileImage, styles.fullSize]}
+                />
+              ) : (
+                <Avatar.Text
+                  size={dims.avatarSize * 1.5}
+                  label={studentName.charAt(0).toUpperCase()}
+                  style={[
+                    styles.avatar,
+                    {
+                      backgroundColor:
+                        effectiveColor === '#E2E8F0' ? theme.colors.primary : effectiveColor,
+                    },
+                  ]}
+                  labelStyle={[styles.avatarLabel, { fontSize: dims.avatarSize * 0.4 }]}
+                />
+              )}
+            </View>
+          </LinearGradient>
 
-        {/* Status Badge - Bottom Right (green check) - ONLY if checked in */}
-        {/* Visual refinement: overlapping bottom-right corner */}
-        {isCheckedIn && (
-          <View style={styles.statusBadgeBottomRight}>
-            {/* Use SVG Asset */}
-            <TickIcon width={dims.badgeSize} height={dims.badgeSize} />
+          {/* Status Badge - Bottom Right (green check) - ONLY if checked in */}
+          {isCheckedIn && (
+            <View style={styles.statusBadgeBottomRight}>
+              {/* Use SVG Asset - Scaled Up */}
+              <TickIcon width={dims.badgeSize * 1.5} height={dims.badgeSize * 1.5} />
+            </View>
+          )}
+        </View>
+
+        {/* Name */}
+        <View style={styles.nameContainer}>
+          <Text
+            style={[styles.name, { fontSize: dims.nameFontSize }]}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {studentName}
+          </Text>
+        </View>
+
+        {/* Attendance - Bar or Text */}
+        {showAttendanceBar ? (
+          <View style={styles.progressBarContainer}>
+            <View
+              style={[styles.progressBarFill, { width: `${Math.min(100, progressPercent)}%` }]}
+            />
           </View>
+        ) : (
+          <Text
+            style={[styles.attendance, isCheckedIn ? styles.attendanceGreen : styles.attendanceRed]}
+          >
+            {attendanceText}
+          </Text>
         )}
       </View>
-
-      {/* Name */}
-      <View style={styles.nameContainer}>
-        <Text
-          style={[styles.name, { fontSize: dims.nameFontSize }]}
-          numberOfLines={1}
-          ellipsizeMode="tail"
-        >
-          {studentName}
-        </Text>
-      </View>
-
-      {/* Attendance - colored based on status */}
-      <Text
-        style={[styles.attendance, isCheckedIn ? styles.attendanceGreen : styles.attendanceRed]}
-      >
-        {attendanceText}
-      </Text>
     </TouchableOpacity>
   );
 }
@@ -166,13 +176,14 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     attendance: {
       fontSize: 11,
       fontWeight: '500',
+      marginTop: 4,
       textAlign: 'center',
     },
     attendanceGreen: {
-      color: theme.colors.onSurfaceVariant, // Grey text for attendance count per design
+      color: theme.colors.onSurfaceVariant, // Grey text
     },
     attendanceRed: {
-      color: theme.colors.onSurfaceVariant, // Grey text for attendance count per design
+      color: theme.colors.onSurfaceVariant, // Grey text
     },
     avatar: {
       borderRadius: 20,
@@ -182,12 +193,21 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       fontSize: 26,
       fontWeight: '600',
     },
-    container: {
+    cardContainer: {
+      padding: 6, // Outer padding for shadow/spacing
+    },
+    contentContainer: {
       alignItems: 'center',
-      marginBottom: 12,
-      padding: 8,
-      paddingTop: 12, // Added top padding to accommodate top badge
-      // width set dynamically via inline style
+      backgroundColor: theme.colors.surface, // Dark surface color
+      borderRadius: 16,
+      elevation: 5, // Match Figma shadow
+      padding: 12,
+      paddingBottom: 16,
+      shadowColor: customColors.shadow,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15, // Soft shadow
+      shadowRadius: 12,
+      width: '100%',
     },
     fullSize: {
       height: '100%',
@@ -198,7 +218,6 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       borderRadius: 24, // Matching Figma rounded corners
       justifyContent: 'center',
       padding: 3,
-      // width and height set dynamically via inline style
     },
     imageContainer: {
       alignItems: 'center',
@@ -206,51 +225,50 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       borderRadius: 20, // Matching inner radius
       justifyContent: 'center',
       overflow: 'hidden',
-      // width and height set dynamically via inline style
     },
     imageWrapper: {
-      marginBottom: 12, // Increased from 8 to prevent bottom badge overlap
+      marginBottom: 12,
       position: 'relative',
       zIndex: 1, // Ensure badges sit on top
     },
     name: {
       color: theme.colors.onSurface,
-      // fontSize set dynamically via inline style
       fontWeight: '700',
-      lineHeight: 16, // Tighter line height for better 2-line fit
+      lineHeight: 20,
       textAlign: 'center',
     },
     nameContainer: {
-      justifyContent: 'flex-start',
+      alignItems: 'center',
+      justifyContent: 'center',
       marginBottom: 4,
       width: '100%',
     },
     profileImage: {
       borderRadius: 20,
-      // width and height set dynamically via inline style
+    },
+    progressBarContainer: {
+      backgroundColor: theme.colors.outline, // Light grey background
+      borderRadius: 4,
+      height: 4, // Thinner
+      marginTop: 8,
+      overflow: 'hidden',
+      width: '90%', // Wider
+    },
+    progressBarFill: {
+      backgroundColor: theme.colors.primary, // Blue
+      borderRadius: 4,
+      height: '100%',
     },
     statusBadgeBottomRight: {
-      backgroundColor: theme.colors.surface,
+      // Background removed as per request (Figma shows standalone shield icon)
       borderRadius: 999,
-      bottom: -6,
+      bottom: -8, // Adjusted for larger size
       position: 'absolute',
-      right: -6,
+      right: -8, // Adjusted for larger size
       shadowColor: customColors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
       shadowRadius: 4,
-      zIndex: 10,
-    },
-    statusBadgeTopLeft: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: 999,
-      left: -6,
-      position: 'absolute',
-      shadowColor: customColors.shadow,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
-      top: -6,
       zIndex: 10,
     },
   });
