@@ -131,14 +131,14 @@ export const darkTheme: MD3Theme = {
   ...MD3DarkTheme,
   colors: {
     ...MD3DarkTheme.colors,
-    primary: '#608DFF', // Slightly lighter Blue for Dark Mode
+    primary: '#4A7DFF', // Matching Figma Blue (was #608DFF)
     secondary: '#5EA0E8',
     tertiary: '#03DAC6',
-    error: '#EF4444', // Red from screenshots (approx)
-    background: '#0F1115', // Dark Slate Black
-    surface: '#1E2229', // Dark Slate Grey (Card/Modal bg)
+    error: '#EF4444',
+    background: '#0C111D', // Figma Background
+    surface: '#161B26', // Figma Surface (Card/Modal bg)
     onPrimary: '#FFFFFF',
-    onSurface: '#F3F4F6', // Text Gray 100
+    onSurface: '#FFFFFF', // Text White
     onSurfaceVariant: '#9CA3AF', // Text Gray 400
     outline: '#374151', // Border Gray 700
   },
@@ -166,6 +166,9 @@ export const lightCustomColors = {
   warn: '#EAB308',
   whiteOpacity: 'rgba(255, 255, 255, 0.2)',
   backdropStrong: 'rgba(71, 85, 105, 0.8)',
+  inputBackground: '#FFFFFF', // Request: #FFFFFF
+  inputBorder: '#979797', // Request: #979797
+  modalBackground: '#FFFFFF',
 };
 
 export const darkCustomColors = {
@@ -173,13 +176,13 @@ export const darkCustomColors = {
   backdrop: 'rgba(0, 0, 0, 0.7)',
   backdropDark: 'rgba(0, 0, 0, 0.85)',
   backdropLight: 'rgba(30, 30, 30, 0.95)',
-  surfaceDisabled: '#374151',
+  surfaceDisabled: '#161B26', // Match card surface
   onSurfaceDisabled: '#6B7280',
   outlineVariant: '#4B5563',
   white: '#FFFFFF',
   textGray: '#E5E7EB',
   textLight: '#9CA3AF',
-  primary: '#608DFF',
+  primary: '#4A7DFF',
   primaryContainer: '#1E3A8A',
   successContainer: '#064E3B',
   success: '#4ADE80',
@@ -188,7 +191,10 @@ export const darkCustomColors = {
   onErrorContainer: '#FCA5A5',
   warn: '#FACC15',
   whiteOpacity: 'rgba(255, 255, 255, 0.1)',
-  backdropStrong: 'rgba(15, 17, 21, 0.95)', // Match background tone
+  backdropStrong: 'rgba(12, 17, 29, 0.95)', // Match background tone #0C111D
+  inputBackground: '#161B26', // Request: #161B26
+  inputBorder: '#979797', // Request: #979797
+  modalBackground: '#0C111D', // Request: #0C111D
 };
 
 // Backwards compatibility default - ideally usage should be migrated to hook

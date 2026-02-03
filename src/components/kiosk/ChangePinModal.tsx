@@ -227,7 +227,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       width: 56,
     },
     modalContainer: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: customColors.modalBackground, // Dynamic Modal BG
       borderRadius: 16,
       elevation: 5,
       maxWidth: 448, // Match KioskPinModal
@@ -257,7 +257,8 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       marginBottom: 16,
     },
     pinInput: {
-      borderColor: theme.colors.outline,
+      backgroundColor: customColors.inputBackground, // Dynamic Input BG
+      borderColor: customColors.inputBorder,
       borderRadius: 12,
       borderWidth: 2,
       color: theme.colors.onSurface,
@@ -269,5 +270,9 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     pinInputError: { borderColor: theme.colors.error },
     subtitle: { color: theme.colors.onSurfaceVariant, marginBottom: 24 },
-    title: { color: theme.colors.onSurface, fontWeight: '700', marginBottom: 8 },
+    title: {
+      color: '#4285F4', // Blueish in both modes per request
+      fontWeight: '700',
+      marginBottom: 8,
+    },
   });

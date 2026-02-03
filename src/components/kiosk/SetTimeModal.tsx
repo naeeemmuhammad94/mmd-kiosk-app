@@ -222,14 +222,15 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     inputWrapper: {
       alignItems: 'center',
-      borderColor: theme.colors.outline,
+      backgroundColor: customColors.inputBackground, // Dynamic Input BG
+      borderColor: customColors.inputBorder, // Dynamic Border
       borderRadius: 8,
       borderWidth: 1,
       flexDirection: 'row',
       overflow: 'hidden',
     },
     modalContainer: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: customColors.modalBackground, // Dynamic Modal BG
       borderRadius: 16,
       elevation: 5,
       maxWidth: 448, // Fix: Match KioskPinModal
@@ -271,7 +272,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       marginBottom: 24,
     },
     title: {
-      color: theme.colors.onSurface,
+      color: '#4285F4', // Blueish in all modes
       fontSize: 22,
       fontWeight: '700',
       marginBottom: 8,

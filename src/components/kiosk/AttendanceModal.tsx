@@ -112,11 +112,27 @@ export default function AttendanceModal() {
             {/* Blue Header */}
             <LinearGradient
               colors={[theme.colors.primary, theme.colors.primary]} // Solid Blue as per design
-              style={[styles.header, isTablet && styles.headerTablet]}
+              style={[
+                styles.header,
+                isTablet && styles.headerTablet,
+                { borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }, // Added bottom radius
+              ]}
             >
               <Text style={styles.headerTitle}>Attendance</Text>
-              <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-                <Ionicons name="close" size={20} color={theme.colors.onPrimary} />
+              <TouchableOpacity
+                style={[
+                  styles.closeButton,
+                  {
+                    backgroundColor: theme.dark ? customColors.whiteOpacity : theme.colors.surface, // White in light mode
+                  },
+                ]}
+                onPress={handleClose}
+              >
+                <Ionicons
+                  name="close"
+                  size={20}
+                  color={theme.dark ? theme.colors.onPrimary : theme.colors.primary} // Blue in light mode
+                />
               </TouchableOpacity>
             </LinearGradient>
 
@@ -378,7 +394,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       fontWeight: '600',
     },
     modalContainer: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: customColors.modalBackground, // Dynamic Modal BG
       borderRadius: 12,
       overflow: 'hidden',
       position: 'relative',

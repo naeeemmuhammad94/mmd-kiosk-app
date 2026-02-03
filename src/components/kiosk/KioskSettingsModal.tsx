@@ -18,6 +18,7 @@ import { Text, ActivityIndicator } from 'react-native-paper';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useKioskStore } from '@/store/useKioskStore';
 import { useThemeStore } from '@/store/useThemeStore';
+import { useLocalSettingsStore } from '@/store/useLocalSettingsStore';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { attendanceService } from '@/services/attendanceService';
 import ChangePinModal from './ChangePinModal';
@@ -40,6 +41,7 @@ const SettingItem = memo(function SettingItem({
   rightContent,
   onPress,
   styles,
+  theme,
 }: {
   title: string;
   description?: string;
@@ -56,7 +58,7 @@ const SettingItem = memo(function SettingItem({
 
   return (
     <Container
-      style={styles.itemBox}
+      style={[styles.itemBox, { backgroundColor: theme.colors.surface }]}
       onPress={onPress}
       activeOpacity={onPress ? 0.7 : 1}
       disabled={!onPress}
@@ -144,18 +146,22 @@ export default function KioskSettingsModal() {
   const isTablet = screenWidth >= 768;
 
   const { theme } = useAppTheme(); // Removed unused customColors
-  const BRAND_BLUE = '#4285F4';
+  const BRAND_BLUE = '#3772FF'; // Match Kiosk Home Header
 
   const styles = useMemo(() => createStyles(theme, isTablet, BRAND_BLUE), [theme, isTablet]);
 
-  const { theme: storedTheme, setTheme } = useThemeStore();
+  const { setTheme } = useThemeStore();
 
   const handleToggleDarkMode = useCallback(() => {
-    setTheme(storedTheme === 'dark' ? 'light' : 'dark');
-  }, [storedTheme, setTheme]);
+    // Toggle based on current EFFECTIVE theme
+    // If currently dark (whether auto or manual), switch to light
+    // If currently light, switch to dark
+    setTheme(theme.dark ? 'light' : 'dark');
+  }, [theme.dark, setTheme]);
 
   const { settings, toggleSettingsModal, setSettings, openPinModal, isPinModalOpen } =
     useKioskStore();
+  const { showAttendanceBar, setShowAttendanceBar } = useLocalSettingsStore();
 
   // Sub-modal states
   const [showChangePinModal, setShowChangePinModal] = useState(false);
@@ -173,7 +179,7 @@ export default function KioskSettingsModal() {
     pin: settings?.pin || '',
     // New fields
     sortByRank: settings?.sortByRank ?? false,
-    showAttendanceBar: settings?.showAttendanceBar ?? false,
+    showAttendanceBar: showAttendanceBar, // Use local store value
   }));
 
   const { mutateAsync: updateSettingsAsync } = useMutation({
@@ -217,6 +223,9 @@ export default function KioskSettingsModal() {
         setSettings(updatedSettings);
       }
 
+      // Persist local-only settings
+      setShowAttendanceBar(settingsData.showAttendanceBar ?? false);
+
       Alert.alert('Success', 'Kiosk Settings Updated!');
       toggleSettingsModal();
     } catch (error) {
@@ -224,7 +233,14 @@ export default function KioskSettingsModal() {
     } finally {
       setIsSaving(false);
     }
-  }, [localSettings, updateSettingsAsync, setSettings, toggleSettingsModal, settings?.pin]);
+  }, [
+    localSettings,
+    updateSettingsAsync,
+    setSettings,
+    toggleSettingsModal,
+    settings?.pin,
+    setShowAttendanceBar,
+  ]);
 
   const handleLogout = useCallback(() => {
     openPinModal('logout');
@@ -329,7 +345,7 @@ export default function KioskSettingsModal() {
                   iconSymbolColor="#FFFFFF"
                   rightContent={
                     <Switch
-                      value={storedTheme === 'dark'}
+                      value={theme.dark} // Reflect effective theme (works for auto)
                       onValueChange={handleToggleDarkMode}
                       trackColor={{ false: theme.colors.outline, true: BRAND_BLUE }}
                       thumbColor="#FFF"
@@ -526,25 +542,29 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
       flexDirection: 'row',
     },
     modalContainer: {
-      backgroundColor: theme.dark ? '#121212' : '#F5F7FA', // Dark: Pure Black/Dark Grey, Light: Figma Grey
-      width: isTablet ? '80%' : '100%',
-      maxWidth: 900,
-      height: isTablet ? '90%' : '100%',
-      borderRadius: isTablet ? 12 : 0,
+      backgroundColor: theme.dark ? '#0C111D' : '#F5F7FA', // Figma Dark Background
+      width: '100%', // Full screen
+      height: '100%', // Full screen
+      borderRadius: 0, // No radius for full screen
       overflow: 'hidden',
     },
     header: {
       alignItems: 'center',
-      backgroundColor: brandBlue,
+      backgroundColor: theme.dark ? '#0C111D' : brandBlue, // Match background in dark mode
       flexDirection: 'row',
-      height: 80,
+      // height: 80, // Dynamic height
       justifyContent: 'space-between',
-      paddingHorizontal: 24,
-      paddingVertical: 20,
+      paddingHorizontal: isTablet ? 64 : 32,
+      paddingTop: isTablet ? 60 : 40, // Match Homepage header
+      paddingBottom: 24,
+      borderBottomLeftRadius: 24, // Rounded bottom corners
+      borderBottomRightRadius: 24,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.dark ? '#334155' : 'transparent',
     },
     headerTitle: {
       color: '#FFFFFF',
-      fontSize: 24,
+      fontSize: isTablet ? 34 : 24, // Match Homepage Title Size
       fontWeight: 'bold',
     },
     headerButtons: {
@@ -569,7 +589,7 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
       paddingVertical: 8,
     },
     headerButtonSaveText: {
-      color: brandBlue,
+      color: theme.dark ? '#4285F4' : brandBlue,
       fontSize: 14,
       fontWeight: '600',
     },
@@ -577,8 +597,12 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
       flex: 1,
     },
     contentContainer: {
-      padding: 24,
-      paddingBottom: 40,
+      paddingHorizontal: isTablet ? 64 : 32,
+      paddingTop: 24,
+      paddingBottom: 120,
+      width: '100%',
+      maxWidth: 1000, // Center alignment constraint
+      alignSelf: 'center',
     },
     topDescription: {
       fontSize: 14,
@@ -588,18 +612,19 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
 
     // Shadow Card for Sections
     sectionCard: {
-      backgroundColor: theme.dark ? '#1E1E1E' : '#FFFFFF', // Dark: Neutral Dark Grey, Light: White
+      backgroundColor: theme.dark ? 'transparent' : '#FFFFFF', // Transparent in Figma, just lines or subtle bg
+      // Actually Figma shows "Attendance Rules" in a box with border
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: theme.dark ? '#333' : '#E0E0E0',
-      marginBottom: 24,
-      padding: 16,
+      borderColor: theme.dark ? '#334155' : '#E0E0E0',
+      marginBottom: 16, // Reduced height/spacing
+      padding: 12, // Reduced padding
       // Shadow properties
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
-      elevation: 4,
+      elevation: 0, // No elevation in dark mode
     },
     sectionHeader: {
       marginBottom: 12,
@@ -621,14 +646,14 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
 
     // Boxed Item Style (SettingItem / CheckboxItem)
     itemBox: {
-      backgroundColor: theme.dark ? '#2C2C2C' : '#FFFFFF', // Dark: Lighter Grey Box
-      borderRadius: 8,
+      backgroundColor: theme.dark ? '#1E293B' : '#FFFFFF', // Use Surface color
+      borderRadius: 12, // Increased radius for larger box
       borderWidth: 1,
-      borderColor: theme.dark ? '#444' : '#E0E0E0',
+      borderColor: theme.dark ? '#334155' : '#E0E0E0',
       flexDirection: 'row',
       alignItems: 'center',
-      padding: 12,
-      marginBottom: 12,
+      padding: 16, // Reduced padding (was 20)
+      marginBottom: 12, // Reduced from 16 to save space
     },
     leftContent: {
       alignItems: 'center',
@@ -637,11 +662,11 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
     },
     iconBox: {
       alignItems: 'center',
-      borderRadius: 8,
-      height: 40,
+      borderRadius: 10, // Adjusted radius
+      height: 48, // Larger icon box (was 40)
       justifyContent: 'center',
-      marginRight: 12,
-      width: 40,
+      marginRight: 16, // More spacing (was 12)
+      width: 48, // Larger icon box (was 40)
     },
     textContent: {
       flex: 1,

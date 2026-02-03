@@ -42,7 +42,6 @@ interface OnboardingSlideData {
   title: string;
   description: string;
   Illustration: React.FC<{ width: number; height: number }>;
-  isNotification?: boolean;
 }
 
 const ONBOARDING_SLIDES: OnboardingSlideData[] = [
@@ -61,16 +60,15 @@ const ONBOARDING_SLIDES: OnboardingSlideData[] = [
   {
     id: 'picture',
     title: 'Picture Mode',
-    description: "It's easier to check-in with picture\nStudents can easily find themselves",
+    description: "It's easier to check-in with pictures\nStudents can easily find themselves",
     Illustration: PictureModeIllustration,
   },
   {
     id: 'notification',
     title: 'Notification',
     description:
-      'Please click on the "Allow" Button below to receive Notification. This can be changed at any time through your device setting',
+      'Please click on the "Allow" Button below to receive Notification. This can be changed at any time through your device settings',
     Illustration: NotificationIllustration,
-    isNotification: true,
   },
 ];
 
@@ -79,7 +77,12 @@ export default function OnboardingScreen() {
   const flatListRef = useRef<FlatList>(null);
 
   const { theme, customColors } = useAppTheme();
-  const styles = useMemo(() => createStyles(theme, customColors), [theme, customColors]);
+  // Simple check for tablet
+  const isTablet = SCREEN_WIDTH >= 768;
+  const styles = useMemo(
+    () => createStyles(theme, customColors, isTablet),
+    [theme, customColors, isTablet]
+  );
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -165,11 +168,15 @@ export default function OnboardingScreen() {
   const renderSlide = useCallback(
     ({ item }: { item: OnboardingSlideData }) => {
       const { Illustration } = item;
+      // Notification slide needs to be larger to match design
+      const width = SCREEN_WIDTH * 0.8;
+      const height = SCREEN_HEIGHT * 0.38;
+
       return (
         <View style={styles.slide}>
           {/* Illustration */}
           <View style={styles.illustrationContainer}>
-            <Illustration width={SCREEN_WIDTH * 0.8} height={SCREEN_HEIGHT * 0.38} />
+            <Illustration width={width} height={height} />
           </View>
 
           {/* Title */}
@@ -278,7 +285,7 @@ const PaginationDots = ({
   );
 };
 
-const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
+const createStyles = (theme: MD3Theme, customColors: CustomColors, isTablet: boolean) =>
   StyleSheet.create({
     activeDot: {
       backgroundColor: theme.colors.primary,
@@ -291,21 +298,23 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     bottomSection: {
       alignItems: 'center',
-      paddingBottom: 40,
+      marginBottom: 20,
+      marginTop: 20,
       paddingHorizontal: 40,
     },
     container: {
       backgroundColor: theme.colors.background,
       flex: 1,
+      justifyContent: 'center',
     },
     description: {
       alignSelf: 'center',
       color: theme.colors.onSurfaceVariant,
-      fontSize: 16,
+      fontSize: isTablet ? 20 : 16,
       fontWeight: '400',
-      lineHeight: 24,
-      marginBottom: 20,
-      maxWidth: 360,
+      lineHeight: isTablet ? 28 : 24,
+      marginBottom: 0,
+      maxWidth: isTablet ? 600 : 360,
       paddingHorizontal: 20,
       textAlign: 'center',
     },
@@ -317,17 +326,15 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       alignItems: 'center',
       flexDirection: 'row',
       justifyContent: 'center',
-      marginBottom: 24,
+      marginBottom: isTablet ? 32 : 24,
     },
     flatList: {
-      flex: 1,
+      flexGrow: 0,
     },
     illustrationContainer: {
       alignItems: 'center',
-      flex: 1,
       justifyContent: 'center',
-      marginTop: 20,
-      maxHeight: SCREEN_HEIGHT * 0.45,
+      marginBottom: isTablet ? 40 : 20,
     },
     inactiveDot: {
       backgroundColor: theme.colors.outline,
@@ -348,44 +355,43 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     primaryButton: {
       alignItems: 'center',
       backgroundColor: theme.colors.primary,
-      borderRadius: 10,
+      borderRadius: 12,
       elevation: 4,
       flexDirection: 'row',
-      height: 52,
+      height: isTablet ? 56 : 52,
       justifyContent: 'center',
       shadowColor: theme.colors.primary,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.3,
       shadowRadius: 8,
-      width: 240,
+      width: isTablet ? 280 : 240,
     },
     primaryButtonText: {
       color: theme.colors.onPrimary,
-      fontSize: 16,
+      fontSize: isTablet ? 18 : 16,
       fontWeight: '600',
     },
     secondaryButton: {
-      marginTop: 16,
+      marginTop: isTablet ? 24 : 16,
       paddingVertical: 8,
     },
     secondaryButtonText: {
       color: theme.colors.primary,
-      fontSize: 14,
+      fontSize: isTablet ? 16 : 14,
       fontWeight: '500',
     },
     slide: {
       alignItems: 'center',
       backgroundColor: theme.colors.background,
-      flex: 1,
       justifyContent: 'center',
       paddingHorizontal: 32,
       width: SCREEN_WIDTH,
     },
     title: {
       color: theme.colors.onSurface,
-      fontSize: 28,
+      fontSize: isTablet ? 36 : 28,
       fontWeight: '700',
-      marginBottom: 12,
+      marginBottom: isTablet ? 16 : 12,
       textAlign: 'center',
     },
   });

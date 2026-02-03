@@ -143,8 +143,8 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       width: '100%',
     },
     input: {
-      backgroundColor: theme.colors.surface, // White/Surface background per Figma
-      borderColor: theme.colors.outline,
+      backgroundColor: customColors.inputBackground, // Dynamic Input BG
+      borderColor: customColors.inputBorder, // Dynamic Input Border
       borderRadius: 12, // Square-ish corners per Figma
       borderWidth: 1.5,
       color: theme.colors.onSurface,
@@ -156,7 +156,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       // width removed in favor of flex
     },
     inputDisabled: {
-      backgroundColor: customColors.surfaceDisabled, // Gray 100
+      backgroundColor: theme.colors.surfaceDisabled,
       opacity: 0.7,
     },
     inputError: {

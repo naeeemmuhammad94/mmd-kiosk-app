@@ -30,7 +30,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 // MMD Logo SVG
 // MMD Logo SVG
-import LoginLogo from '../../assets/login.svg';
+import LoginLogo from '../../assets/logo.svg';
 import loginBackground from '../../assets/login-background.png';
 
 import { useAppTheme } from '@/hooks/useAppTheme';
@@ -309,7 +309,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     card: {
       alignItems: 'center',
       alignSelf: 'center',
-      backgroundColor: theme.colors.surface,
+      backgroundColor: customColors.modalBackground, // Dynamic Modal BG
       borderRadius: 24,
       elevation: 8,
       // width and maxWidth set dynamically via inline style
@@ -350,8 +350,8 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       marginTop: 4,
     },
     input: {
-      backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.outline,
+      backgroundColor: customColors.inputBackground, // Dynamic Input BG
+      borderColor: customColors.inputBorder, // Dynamic Input Border
       borderRadius: 8,
       borderWidth: 1,
       color: theme.colors.onSurface,

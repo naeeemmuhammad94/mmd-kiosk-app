@@ -132,7 +132,7 @@ export default function KioskPinModal() {
             <TouchableWithoutFeedback onPress={e => e.stopPropagation()}>
               <View style={styles.modalContainer}>
                 <View style={styles.iconContainer}>
-                  <Ionicons name="lock-closed" size={32} color={theme.colors.primary} />
+                  <Ionicons name="lock-closed" size={32} color="#4285F4" />
                 </View>
                 <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
                   <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
@@ -223,7 +223,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     errorText: { color: theme.colors.error, marginBottom: 16, textAlign: 'center' },
     iconContainer: {
       alignItems: 'center',
-      backgroundColor: customColors.surfaceDisabled,
+      backgroundColor: 'transparent',
       borderRadius: 8,
       height: 56,
       justifyContent: 'center',
@@ -234,16 +234,16 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       flex: 1,
     },
     modalContainer: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: 16,
-      maxWidth: 448, // Reverted to match ChangePinModal
-      padding: 24,
+      backgroundColor: customColors.modalBackground, // Dynamic Modal BG
+      borderRadius: 24, // More rounded
+      maxWidth: 448,
+      padding: 32,
       position: 'relative',
       width: '90%',
     },
     overlay: {
       alignItems: 'center',
-      backgroundColor: customColors.backdropDark,
+      backgroundColor: customColors.backdropDark, // Dynamic Backdrop
       flex: 1,
       justifyContent: 'center',
     },
@@ -254,9 +254,10 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       marginBottom: 16,
     },
     pinInput: {
-      borderColor: theme.colors.outline,
+      backgroundColor: customColors.inputBackground, // Dynamic Input BG
+      borderColor: customColors.inputBorder, // Dynamic Input Border
       borderRadius: 12,
-      borderWidth: 2,
+      borderWidth: 1,
       color: theme.colors.onSurface,
       flex: 1,
       fontSize: 24,
@@ -266,5 +267,9 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     pinInputError: { borderColor: theme.colors.error },
     subtitle: { color: theme.colors.onSurfaceVariant, marginBottom: 24 },
-    title: { color: theme.colors.onSurface, fontWeight: '700', marginBottom: 8 },
+    title: {
+      color: '#4285F4', // Blueish in both modes per request
+      fontWeight: '700',
+      marginBottom: 8,
+    },
   });

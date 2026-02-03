@@ -31,6 +31,6 @@ export const getResponsiveDimensions = (isTablet: boolean) => ({
   badgeSize: isTablet ? 32 : 22,
 
   // Grid
-  gridGap: isTablet ? 20 : 8,
+  gridGap: isTablet ? 16 : 8,
   gridPadding: isTablet ? 16 : 10,
 });
