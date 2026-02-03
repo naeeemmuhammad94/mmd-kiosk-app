@@ -14,6 +14,8 @@ export interface KioskSettings {
   allowContact: boolean;
   signInTime: number;
   pin?: string;
+  sortByRank?: boolean;
+  showAttendanceBar?: boolean;
   newSetting?: boolean;
 }
 

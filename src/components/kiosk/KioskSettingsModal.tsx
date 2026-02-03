@@ -1,84 +1,152 @@
 /**
  * Kiosk Settings Modal
- * Settings form matching CRM KioskSettingsModal
- * Includes sub-modals for Change PIN and Set Time
+ * Redesigned to match new Figma specs (Blue Header, Card Layout)
  */
 
 import React, { useState, useCallback, memo, useMemo } from 'react';
 import {
   View,
   StyleSheet,
-  Modal,
+  Modal, // kept for Modal component usage
   TouchableOpacity,
   ScrollView,
   Switch,
   Alert,
-  Image,
   useWindowDimensions,
 } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as ImagePicker from 'expo-image-picker';
 import { useKioskStore } from '@/store/useKioskStore';
 import { useThemeStore } from '@/store/useThemeStore';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { attendanceService } from '@/services/attendanceService';
-import { uploadFileToS3, getFileInfo } from '@/services/uploadService';
 import ChangePinModal from './ChangePinModal';
 import SetTimeModal from './SetTimeModal';
 import KioskPinModal from './KioskPinModal';
 import type { KioskSettings } from '@/types/attendance';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import type { MD3Theme } from 'react-native-paper';
-import type { CustomColors } from '@/theme';
 
-// Removed local COLORS definition in favor of theme references
+// Define styles type for better typing than 'any'
+type ComponentStyles = ReturnType<typeof createStyles>;
 
-// Memoized toggle component to prevent re-renders
-const SettingToggle = memo(function SettingToggle({
+// Reusable Setting Row Component (Boxed Style)
+const SettingItem = memo(function SettingItem({
+  title,
+  description,
+  icon,
+  iconColor = '#F1F3F4', // Default greyish for box
+  iconSymbolColor = '#4285F4', // Default blue for icon
+  rightContent,
+  onPress,
+  styles,
+}: {
+  title: string;
+  description?: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  iconColor?: string;
+  iconSymbolColor?: string;
+  rightContent: React.ReactNode;
+  onPress?: () => void;
+  // removed isLast as it was unused and optional
+  theme: MD3Theme; // keeping theme if needed for sub-components, though unused in top level render logic of item, might be useful later. Actually linter said it was unused.
+  styles: ComponentStyles;
+}) {
+  const Container = onPress ? TouchableOpacity : View;
+
+  return (
+    <Container
+      style={styles.itemBox}
+      onPress={onPress}
+      activeOpacity={onPress ? 0.7 : 1}
+      disabled={!onPress}
+    >
+      <View style={styles.leftContent}>
+        <View style={[styles.iconBox, { backgroundColor: iconColor }]}>
+          <Ionicons name={icon} size={24} color={iconSymbolColor} />
+        </View>
+        <View style={styles.textContent}>
+          <Text style={styles.settingTitle}>{title}</Text>
+          {description && <Text style={styles.settingDescription}>{description}</Text>}
+        </View>
+      </View>
+      <View style={styles.rightContent}>{rightContent}</View>
+    </Container>
+  );
+});
+
+// Checkbox Card Component (Boxed Style)
+const CheckboxItem = memo(function CheckboxItem({
   title,
   description,
   value,
   onToggle,
-  isTablet = false,
+  onPress,
   theme,
   styles,
 }: {
   title: string;
   description?: string;
   value: boolean;
-  onToggle: () => void;
-  isTablet?: boolean;
+  onToggle?: () => void;
+  onPress?: () => void;
   theme: MD3Theme;
-  styles: ReturnType<typeof createStyles>;
+  styles: ComponentStyles;
 }) {
+  const handlePress = onPress || onToggle;
+
   return (
-    <View style={styles.settingRow}>
-      <View style={styles.settingInfo}>
-        <Text style={[styles.settingTitle, isTablet && styles.settingTitleTablet]}>{title}</Text>
-        {description && (
-          <Text style={[styles.settingDescription, isTablet && styles.settingDescriptionTablet]}>
-            {description}
-          </Text>
-        )}
+    <TouchableOpacity style={styles.itemBox} onPress={handlePress} activeOpacity={0.7}>
+      <View style={styles.checkboxContainer}>
+        <View style={[styles.checkboxIcon, value && styles.checkboxIconChecked]}>
+          {value && <Ionicons name="checkmark-sharp" size={20} color="#FFFFFF" />}
+        </View>
       </View>
-      <Switch
-        value={value}
-        onValueChange={onToggle}
-        trackColor={{ false: theme.colors.outline, true: theme.colors.primary }}
-        thumbColor={theme.colors.surface}
-      />
-    </View>
+
+      <View style={styles.textContent}>
+        <Text style={styles.settingTitle}>{title}</Text>
+        {description && <Text style={styles.settingDescription}>{description}</Text>}
+      </View>
+
+      {onPress && !onToggle && (
+        <View style={styles.rightContent}>
+          <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceVariant} />
+        </View>
+      )}
+    </TouchableOpacity>
   );
 });
+
+// Setting Section Card Component (Wraps content in a Shadow Card)
+const SettingSection = ({
+  title,
+  description,
+  children,
+  styles,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+  styles: ComponentStyles;
+}) => (
+  <View style={styles.sectionCard}>
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {description && <Text style={styles.sectionSubtitle}>{description}</Text>}
+    </View>
+    <View style={styles.sectionContent}>{children}</View>
+  </View>
+);
 
 export default function KioskSettingsModal() {
   const queryClient = useQueryClient();
   const { width: screenWidth } = useWindowDimensions();
   const isTablet = screenWidth >= 768;
 
-  const { theme, customColors } = useAppTheme();
-  const styles = useMemo(() => createStyles(theme, customColors), [theme, customColors]);
+  const { theme } = useAppTheme(); // Removed unused customColors
+  const BRAND_BLUE = '#4285F4';
+
+  const styles = useMemo(() => createStyles(theme, isTablet, BRAND_BLUE), [theme, isTablet]);
 
   const { theme: storedTheme, setTheme } = useThemeStore();
 
@@ -93,9 +161,8 @@ export default function KioskSettingsModal() {
   const [showChangePinModal, setShowChangePinModal] = useState(false);
   const [showSetTimeModal, setShowSetTimeModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  // const hasNestedModal = showChangePinModal || showSetTimeModal || isPinModalOpen;
 
-  // Local settings state - initialized once from props
+  // Local settings state
   const [localSettings, setLocalSettings] = useState<Partial<KioskSettings>>(() => ({
     imageLink: settings?.imageLink || '',
     showStudentImages: settings?.showStudentImages ?? true,
@@ -104,9 +171,11 @@ export default function KioskSettingsModal() {
     allowContact: settings?.allowContact ?? false,
     signInTime: settings?.signInTime ?? 10,
     pin: settings?.pin || '',
+    // New fields
+    sortByRank: settings?.sortByRank ?? false,
+    showAttendanceBar: settings?.showAttendanceBar ?? false,
   }));
 
-  // Update settings mutation (matches CRM updateKioskSettingsMutate)
   const { mutateAsync: updateSettingsAsync } = useMutation({
     mutationKey: ['updateKioskAttendanceSetting'],
     mutationFn: (data: Partial<KioskSettings>) =>
@@ -117,95 +186,16 @@ export default function KioskSettingsModal() {
     },
   });
 
-  // Image upload state
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-
-  // Handle image upload - matches CRM CommonFileInput pattern
-  const handleImageUpload = useCallback(async () => {
-    try {
-      // Request permission
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permissionResult.granted) {
-        Alert.alert(
-          'Permission Required',
-          'Please allow access to your photo library to upload images.'
-        );
-        return;
-      }
-
-      // Open image picker
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        aspect: [2, 1], // 800x400px aspect ratio
-        quality: 0.8,
-      });
-
-      if (result.canceled || !result.assets?.[0]) {
-        return;
-      }
-
-      const asset = result.assets[0];
-
-      // Validate file type
-      const fileInfo = getFileInfo(asset.uri);
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-      if (!allowedTypes.includes(fileInfo.type)) {
-        Alert.alert('Invalid File Type', 'Please select a PNG or JPG image.');
-        return;
-      }
-
-      setIsUploadingImage(true);
-
-      // Upload to S3
-      const uploadResponse = await uploadFileToS3([
-        {
-          uri: asset.uri,
-          name: fileInfo.name,
-          type: fileInfo.type,
-        },
-      ]);
-
-      if (uploadResponse?.data?.[0]) {
-        setLocalSettings(prev => ({ ...prev, imageLink: uploadResponse.data[0] }));
-      }
-    } catch (error) {
-      console.error('Image upload error:', error);
-      Alert.alert('Upload Failed', 'Failed to upload image. Please try again.');
-    } finally {
-      setIsUploadingImage(false);
-    }
+  // Toggles
+  const toggleSetting = useCallback((key: keyof KioskSettings) => {
+    setLocalSettings(prev => ({ ...prev, [key]: !prev[key] }));
   }, []);
 
-  // Remove uploaded image
-  const handleRemoveImage = useCallback(() => {
-    setLocalSettings(prev => ({ ...prev, imageLink: '' }));
-  }, []);
-
-  // Stable toggle handlers using useCallback
-  const handleToggleShowImages = useCallback(() => {
-    setLocalSettings(prev => ({ ...prev, showStudentImages: !prev.showStudentImages }));
-  }, []);
-
-  const handleTogglePowerSaving = useCallback(() => {
-    setLocalSettings(prev => ({ ...prev, powerSavingMode: !prev.powerSavingMode }));
-  }, []);
-
-  const handleToggleMultipleClasses = useCallback(() => {
-    setLocalSettings(prev => ({ ...prev, allowMultipleClasses: !prev.allowMultipleClasses }));
-  }, []);
-
-  const handleToggleAllowContact = useCallback(() => {
-    setLocalSettings(prev => ({ ...prev, allowContact: !prev.allowContact }));
-  }, []);
-
-  // Save settings (matches CRM onSubmit)
   const handleSaveSettings = useCallback(async () => {
     setIsSaving(true);
     try {
       const { ...settingsData } = localSettings;
 
-      // Build payload matching CRM API exactly
       const payload = {
         imageLink: settingsData.imageLink ?? '',
         showStudentImages: settingsData.showStudentImages ?? true,
@@ -214,14 +204,15 @@ export default function KioskSettingsModal() {
         allowContact: settingsData.allowContact ?? false,
         pin: settingsData.pin || settings?.pin || '',
         signInTime: Number(settingsData.signInTime) || 10,
+        // Include new fields even if backend ignores them for now (frontend state won't persist without backend support)
+        sortByRank: settingsData.sortByRank ?? false,
+        showAttendanceBar: settingsData.showAttendanceBar ?? false,
       };
 
       const response = await updateSettingsAsync(payload);
-
-      // Support both response shapes: response.data.data (standard) or response.data (direct)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const responseData = response?.data as any;
-      const updatedSettings = responseData?.data || responseData;
+      // Fix 'any' type
+      const responseData = response?.data as { data?: KioskSettings };
+      const updatedSettings = responseData?.data || (responseData as unknown as KioskSettings);
       if (updatedSettings) {
         setSettings(updatedSettings);
       }
@@ -235,27 +226,14 @@ export default function KioskSettingsModal() {
     }
   }, [localSettings, updateSettingsAsync, setSettings, toggleSettingsModal, settings?.pin]);
 
-  // Logout handler - Open PIN modal for confirmation
   const handleLogout = useCallback(() => {
     openPinModal('logout');
   }, [openPinModal]);
 
-  // Change PIN submit (matches CRM handleSetNewPin)
-  // Must call API immediately with full settings data including PIN
   const handleChangePinSubmit = useCallback(
     async (newPin: string) => {
       try {
-        // CRM pattern: send full settings data with new PIN
-        const payload = {
-          imageLink: localSettings.imageLink ?? '',
-          showStudentImages: localSettings.showStudentImages ?? true,
-          powerSavingMode: localSettings.powerSavingMode ?? false,
-          allowMultipleClasses: localSettings.allowMultipleClasses ?? false,
-          allowContact: localSettings.allowContact ?? false,
-          signInTime: Number(localSettings.signInTime) || 10,
-          pin: newPin, // Include PIN in this update
-        };
-
+        const payload = { ...localSettings, pin: newPin };
         await updateSettingsAsync(payload);
         setLocalSettings(prev => ({ ...prev, pin: newPin }));
         setShowChangePinModal(false);
@@ -267,7 +245,6 @@ export default function KioskSettingsModal() {
     [localSettings, updateSettingsAsync]
   );
 
-  // Set Time submit (matches CRM handleChangeTime)
   const handleSetTimeSubmit = useCallback((time: number) => {
     setLocalSettings(prev => ({ ...prev, signInTime: time }));
     setShowSetTimeModal(false);
@@ -279,200 +256,231 @@ export default function KioskSettingsModal() {
 
   return (
     <>
-      <Modal visible={true} animationType="slide" transparent>
+      <Modal visible={true} animationType="fade" transparent>
         <View style={styles.overlay}>
-          <View style={[styles.modalContainer, isTablet ? styles.modalTablet : styles.modalMobile]}>
+          <View style={styles.modalContainer}>
             {/* Header */}
             <View style={styles.header}>
-              <View style={styles.iconContainer}>
-                <Ionicons name="settings-outline" size={24} color={theme.colors.onSurfaceVariant} />
-              </View>
-              <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-                <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
-              </TouchableOpacity>
-            </View>
-
-            <Text style={styles.title}>Kiosk Settings</Text>
-
-            <ScrollView
-              style={styles.content}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              // scrollEnabled={!hasNestedModal}
-            >
-              {/* Background Image Section Header */}
-              <View style={styles.settingRow}>
-                <Text style={styles.settingTitle}>Background Image</Text>
-              </View>
-
-              {/* Upload Area - Always Visible */}
-              {localSettings.imageLink ? (
-                // Show uploaded image preview
-                <View style={styles.imagePreviewContainer}>
-                  <Image
-                    source={{ uri: localSettings.imageLink }}
-                    style={styles.imagePreview}
-                    resizeMode="cover"
-                  />
-                  <TouchableOpacity style={styles.removeImageButton} onPress={handleRemoveImage}>
-                    <Ionicons name="close-circle" size={28} color={theme.colors.error} />
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                // Show upload area
-                <TouchableOpacity
-                  style={styles.uploadArea}
-                  onPress={handleImageUpload}
-                  disabled={isUploadingImage}
-                >
-                  {isUploadingImage ? (
-                    <>
-                      <ActivityIndicator size="small" color={theme.colors.primary} />
-                      <Text style={styles.uploadText}>Uploading...</Text>
-                    </>
-                  ) : (
-                    <>
-                      <Ionicons
-                        name="cloud-upload-outline"
-                        size={24}
-                        color={customColors.onSurfaceDisabled}
-                      />
-                      <Text style={styles.uploadText}>
-                        <Text style={styles.uploadLink}>Click to Upload</Text>
-                      </Text>
-                      <Text style={styles.uploadHint}>PNG or JPG (max. 800×400px)</Text>
-                    </>
-                  )}
+              <Text style={styles.headerTitle}>Kiosk Settings</Text>
+              <View style={styles.headerButtons}>
+                <TouchableOpacity style={styles.headerButtonCancel} onPress={handleClose}>
+                  <Text style={styles.headerButtonCancelText}>Cancel</Text>
                 </TouchableOpacity>
-              )}
 
-              {/* Dark Mode */}
-              <SettingToggle
-                title="Enable Dark Mode"
-                description="Makes the kiosk darker for low-light lobbies and reduces screen glare."
-                value={storedTheme === 'dark'}
-                onToggle={handleToggleDarkMode}
-                isTablet={isTablet}
-                theme={theme}
-                styles={styles}
-              />
-
-              {/* Show Student Images */}
-              <SettingToggle
-                title="Show Student Photos"
-                description="Displays profile photos on student tiles during check-in."
-                value={localSettings.showStudentImages ?? true}
-                onToggle={handleToggleShowImages}
-                isTablet={isTablet}
-                theme={theme}
-                styles={styles}
-              />
-
-              {/* Power Saving Mode */}
-              <SettingToggle
-                title="Idle Screen Saver"
-                description="Dims the kiosk after inactivity to reduce screen burn-in."
-                value={localSettings.powerSavingMode ?? false}
-                onToggle={handleTogglePowerSaving}
-                isTablet={isTablet}
-                theme={theme}
-                styles={styles}
-              />
-
-              {/* Allow multiple classes */}
-              <SettingToggle
-                title="Allow Multiple Check-Ins Per Day"
-                description="Lets a student check in more than once on the same day."
-                value={localSettings.allowMultipleClasses ?? false}
-                onToggle={handleToggleMultipleClasses}
-                isTablet={isTablet}
-                theme={theme}
-                styles={styles}
-              />
-
-              {/* Allow non-members */}
-              <SettingToggle
-                title="Allow Students to Check In Without Membership"
-                description="If no membership exists students can still use Kiosk."
-                value={localSettings.allowContact ?? false}
-                onToggle={handleToggleAllowContact}
-                isTablet={isTablet}
-                theme={theme}
-                styles={styles}
-              />
-
-              {/* Change Pin */}
-              <TouchableOpacity
-                style={styles.navRow}
-                onPress={() => setShowChangePinModal(true)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.settingInfo}>
-                  <Text style={[styles.settingTitle, isTablet && styles.settingTitleTablet]}>
-                    Change Admin PIN
-                  </Text>
-                  <Text
-                    style={[styles.settingDescription, isTablet && styles.settingDescriptionTablet]}
-                  >
-                    Update the PIN required to access kiosk settings.
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceVariant} />
-              </TouchableOpacity>
-
-              {/* Sign-in Time */}
-              <TouchableOpacity
-                style={styles.navRow}
-                onPress={() => setShowSetTimeModal(true)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.settingInfo}>
-                  <Text style={[styles.settingTitle, isTablet && styles.settingTitleTablet]}>
-                    Re-Check-In Time
-                  </Text>
-                  <Text
-                    style={[styles.settingDescription, isTablet && styles.settingDescriptionTablet]}
-                  >
-                    Set how long before the same student can check in again.
-                  </Text>
-                </View>
-                <View style={styles.navRowValue}>
-                  <Text style={styles.valueText}>{localSettings.signInTime || 10} min</Text>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={20}
-                    color={theme.colors.onSurfaceVariant}
-                  />
-                </View>
-              </TouchableOpacity>
-            </ScrollView>
-
-            {/* Footer Buttons */}
-            <View style={styles.footer}>
-              <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                <Ionicons name="log-out-outline" size={18} color={theme.colors.error} />
-                <Text style={styles.logoutText}>Logout</Text>
-              </TouchableOpacity>
-
-              <View style={styles.footerRight}>
-                <TouchableOpacity style={styles.cancelButton} onPress={handleClose}>
-                  <Text style={styles.cancelText}>Cancel</Text>
-                </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.saveButton}
+                  style={[styles.headerButtonSave, isSaving && { opacity: 0.7 }]}
                   onPress={handleSaveSettings}
                   disabled={isSaving}
                 >
                   {isSaving ? (
-                    <ActivityIndicator size="small" color={theme.colors.surface} />
+                    <ActivityIndicator size={16} color={BRAND_BLUE} />
                   ) : (
-                    <Text style={styles.saveText}>Save Settings</Text>
+                    <Text style={styles.headerButtonSaveText}>Save Settings</Text>
                   )}
                 </TouchableOpacity>
               </View>
             </View>
+
+            <ScrollView
+              style={styles.content}
+              contentContainerStyle={styles.contentContainer}
+              showsVerticalScrollIndicator={false}
+            >
+              <Text style={styles.topDescription}>
+                Configure how your kiosk behaves for students
+              </Text>
+
+              {/* Display Behavior Section */}
+              <SettingSection
+                title="Display Behavior"
+                description="Control what students see during check-in"
+                styles={styles}
+              >
+                <SettingItem
+                  title="Show Student Photos"
+                  description="Displays profile photos on student tiles during check-in."
+                  icon="person"
+                  iconColor="#4285F4" // Blue background as per previous? verify
+                  // Actually earlier user said "make display behaviour toggles small".
+                  // And "use lock icon from create pin model" (which is grey box, blue icon).
+                  // But previously I had blue box white icon for Display Behavior.
+                  // Let's stick to Blue Box White Icon for Display Behavior as that seems unchanged in feedback,
+                  // UNLESS `uploaded_media_0` shows otherwise.
+                  // `uploaded_media_0` (Display Behavior) shows Blue Box with White Person Icon. Correct.
+                  iconSymbolColor="#FFFFFF"
+                  rightContent={
+                    <Switch
+                      value={localSettings.showStudentImages ?? true}
+                      onValueChange={() => toggleSetting('showStudentImages')}
+                      trackColor={{ false: theme.colors.outline, true: BRAND_BLUE }}
+                      thumbColor="#FFF"
+                      style={styles.smallSwitch}
+                    />
+                  }
+                  theme={theme}
+                  styles={styles}
+                />
+
+                <SettingItem
+                  title="Enable Dark Mode"
+                  description="Makes the kiosk darker for low-light lobbies and reduces screen glare."
+                  icon="moon"
+                  iconColor="#4285F4"
+                  iconSymbolColor="#FFFFFF"
+                  rightContent={
+                    <Switch
+                      value={storedTheme === 'dark'}
+                      onValueChange={handleToggleDarkMode}
+                      trackColor={{ false: theme.colors.outline, true: BRAND_BLUE }}
+                      thumbColor="#FFF"
+                      style={styles.smallSwitch}
+                    />
+                  }
+                  theme={theme}
+                  styles={styles}
+                />
+
+                <SettingItem
+                  title="Idle Screen Saver"
+                  description="Dims the kiosk after inactivity to reduce screen burn-in."
+                  icon="moon-outline"
+                  iconColor="#4285F4"
+                  iconSymbolColor="#FFFFFF"
+                  rightContent={
+                    <Switch
+                      value={localSettings.powerSavingMode ?? false}
+                      onValueChange={() => toggleSetting('powerSavingMode')}
+                      trackColor={{ false: theme.colors.outline, true: BRAND_BLUE }}
+                      thumbColor="#FFF"
+                      style={styles.smallSwitch}
+                    />
+                  }
+                  theme={theme}
+                  styles={styles}
+                />
+
+                <SettingItem
+                  title="Sort Order"
+                  description="Student will display by Rank if enabled and alphabetical if off."
+                  icon="swap-vertical"
+                  iconColor="#4285F4"
+                  iconSymbolColor="#FFFFFF"
+                  rightContent={
+                    <Switch
+                      value={localSettings.sortByRank ?? false}
+                      onValueChange={() => toggleSetting('sortByRank')}
+                      trackColor={{ false: theme.colors.outline, true: BRAND_BLUE }}
+                      thumbColor="#FFF"
+                      style={styles.smallSwitch}
+                    />
+                  }
+                  theme={theme}
+                  styles={styles}
+                />
+              </SettingSection>
+
+              {/* Attendance Rules Section */}
+              <SettingSection
+                title="Attendance Rules"
+                description="Manage how students can check in"
+                styles={styles}
+              >
+                <CheckboxItem
+                  title="Allow Multiple Check-Ins Per Day"
+                  description="Lets a student check in more than once on the same day"
+                  value={localSettings.allowMultipleClasses ?? false}
+                  onToggle={() => toggleSetting('allowMultipleClasses')}
+                  theme={theme}
+                  styles={styles}
+                />
+
+                <CheckboxItem
+                  title="Allow Students to Check In Without Membership"
+                  description="If no membership exists students can still use Kiosk."
+                  value={localSettings.allowContact ?? false}
+                  onToggle={() => toggleSetting('allowContact')}
+                  theme={theme}
+                  styles={styles}
+                />
+
+                <CheckboxItem
+                  title="Show Attendance Bar"
+                  description="Displays a blue bar of attendance on under the student picture."
+                  value={localSettings.showAttendanceBar ?? false}
+                  onToggle={() => toggleSetting('showAttendanceBar')}
+                  theme={theme}
+                  styles={styles}
+                />
+
+                <SettingItem
+                  title="Re-Check-In Time"
+                  description="Set how long before the same student can check in again."
+                  icon="time-outline"
+                  iconColor="#4285F4"
+                  iconSymbolColor="#FFFFFF"
+                  rightContent={
+                    <View style={styles.smallRow}>
+                      <Text style={{ marginRight: 8, color: theme.colors.onSurfaceVariant }}>
+                        {localSettings.signInTime ? `${localSettings.signInTime} min` : '10 min'}
+                      </Text>
+                      <Ionicons
+                        name="chevron-forward"
+                        size={20}
+                        color={theme.colors.onSurfaceVariant}
+                      />
+                    </View>
+                  }
+                  onPress={() => setShowSetTimeModal(true)}
+                  theme={theme}
+                  styles={styles}
+                />
+              </SettingSection>
+
+              {/* Security Section */}
+              <SettingSection
+                title="Security"
+                description="Protect kiosk access and prevent misuse"
+                styles={styles}
+              >
+                <SettingItem
+                  title="Change Kiosk PIN"
+                  description="Update the PIN used to access kiosk settings"
+                  icon="lock-closed-outline"
+                  // Lock icon matched to Figma: Blue Outline, Transparent Box
+                  iconColor="transparent"
+                  iconSymbolColor={theme.colors.primary}
+                  rightContent={
+                    <Ionicons
+                      name="chevron-forward"
+                      size={20}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                  }
+                  onPress={() => setShowChangePinModal(true)}
+                  theme={theme}
+                  styles={styles}
+                />
+              </SettingSection>
+
+              {/* Logout Footer - Wrapper has shadow now via styles.logoutContainer */}
+              <View style={styles.logoutContainer}>
+                <View style={styles.logoutTextContainer}>
+                  <Text style={styles.logoutTitle}>Logout of Kiosk</Text>
+                  <Text style={styles.logoutDesc}>
+                    Ends the current kiosk session and returns to login
+                  </Text>
+                </View>
+                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                  <Ionicons name="log-out-outline" size={18} color="#D93025" />
+                  <Text style={styles.logoutButtonText}>Logout</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.spacer} />
+            </ScrollView>
           </View>
 
+          {/* Modals */}
           {showChangePinModal && (
             <View style={styles.overlayWrapper} pointerEvents="box-none">
               <ChangePinModal
@@ -495,7 +503,6 @@ export default function KioskSettingsModal() {
             </View>
           )}
 
-          {/* Global PIN Modal rendered nested here for proper layering when Settings is open */}
           {isPinModalOpen && <KioskPinModal />}
         </View>
       </Modal>
@@ -503,207 +510,227 @@ export default function KioskSettingsModal() {
   );
 }
 
-const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
+const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
   StyleSheet.create({
-    cancelButton: {
-      borderColor: theme.colors.outline,
-      borderRadius: 8,
-      borderWidth: 1,
-      paddingHorizontal: 14,
-      paddingVertical: 10,
-    },
-    cancelText: {
-      color: theme.colors.onSurface,
-      fontSize: 14,
-      fontWeight: '500',
-    },
-    closeButton: {
-      padding: 4,
-    },
-    content: {
-      paddingHorizontal: 20,
-    },
-    footer: {
+    overlay: {
       alignItems: 'center',
-      borderTopColor: customColors.surfaceDisabled,
-      borderTopWidth: 1,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      padding: 20,
+      backgroundColor: 'rgba(0,0,0,0.4)',
+      flex: 1,
+      justifyContent: 'center',
     },
-    footerRight: {
+    spacer: {
+      height: 40,
+    },
+    smallRow: {
+      alignItems: 'center',
       flexDirection: 'row',
-      gap: 12,
+    },
+    modalContainer: {
+      backgroundColor: theme.dark ? '#121212' : '#F5F7FA', // Dark: Pure Black/Dark Grey, Light: Figma Grey
+      width: isTablet ? '80%' : '100%',
+      maxWidth: 900,
+      height: isTablet ? '90%' : '100%',
+      borderRadius: isTablet ? 12 : 0,
+      overflow: 'hidden',
     },
     header: {
       alignItems: 'center',
+      backgroundColor: brandBlue,
       flexDirection: 'row',
+      height: 80,
       justifyContent: 'space-between',
-      padding: 20,
+      paddingHorizontal: 24,
+      paddingVertical: 20,
     },
-    iconContainer: {
-      alignItems: 'center',
-      borderColor: theme.colors.outline,
-      borderRadius: 8,
-      borderWidth: 1,
-      height: 48,
-      justifyContent: 'center',
-      width: 48,
+    headerTitle: {
+      color: '#FFFFFF',
+      fontSize: 24,
+      fontWeight: 'bold',
     },
-    imagePreview: {
-      borderRadius: 8,
-      height: 120,
-      width: '100%',
-    },
-    imagePreviewContainer: {
-      borderRadius: 8,
-      marginBottom: 16,
-      overflow: 'hidden',
-      position: 'relative',
-    },
-    logoutButton: {
-      alignItems: 'center',
-      borderColor: theme.colors.error,
-      borderRadius: 8,
-      borderWidth: 1,
+    headerButtons: {
       flexDirection: 'row',
-      gap: 6,
-      justifyContent: 'center',
-      minWidth: 90,
-      paddingHorizontal: 14,
-      paddingVertical: 10,
+      gap: 12,
     },
-    logoutText: {
-      color: theme.colors.error,
-      fontSize: 14,
-      fontWeight: '500',
+    headerButtonCancel: {
+      backgroundColor: theme.dark ? '#2C2C2C' : '#FFFFFF',
+      borderRadius: 6,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
     },
-    modalContainer: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: 16,
-      maxHeight: '85%',
-    },
-    modalMobile: {
-      maxWidth: 400,
-      width: '90%',
-    },
-    modalTablet: {
-      maxWidth: 672,
-      width: 672,
-    },
-    navRow: {
-      alignItems: 'center',
-      borderBottomColor: customColors.surfaceDisabled,
-      borderBottomWidth: 1,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      paddingVertical: 14,
-    },
-    navRowText: {
+    headerButtonCancelText: {
       color: theme.colors.onSurface,
-      flex: 1,
       fontSize: 14,
-      fontWeight: '500',
-      marginRight: 8,
+      fontWeight: '600',
     },
-    navRowValue: {
-      alignItems: 'center',
+    headerButtonSave: {
+      backgroundColor: theme.dark ? '#2C2C2C' : '#FFFFFF',
+      borderRadius: 6,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+    },
+    headerButtonSaveText: {
+      color: brandBlue,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    content: {
+      flex: 1,
+    },
+    contentContainer: {
+      padding: 24,
+      paddingBottom: 40,
+    },
+    topDescription: {
+      fontSize: 14,
+      color: theme.colors.onSurfaceVariant, // Dynamic descriptive text
+      marginBottom: 16,
+    },
+
+    // Shadow Card for Sections
+    sectionCard: {
+      backgroundColor: theme.dark ? '#1E1E1E' : '#FFFFFF', // Dark: Neutral Dark Grey, Light: White
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.dark ? '#333' : '#E0E0E0',
+      marginBottom: 24,
+      padding: 16,
+      // Shadow properties
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 4,
+    },
+    sectionHeader: {
+      marginBottom: 12,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: theme.colors.onSurface, // Dynamic title
+      marginBottom: 4,
+    },
+    sectionSubtitle: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 13,
+      fontWeight: '400',
+    },
+    sectionContent: {
+      // Content wrapper inside the card
+    },
+
+    // Boxed Item Style (SettingItem / CheckboxItem)
+    itemBox: {
+      backgroundColor: theme.dark ? '#2C2C2C' : '#FFFFFF', // Dark: Lighter Grey Box
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.dark ? '#444' : '#E0E0E0',
       flexDirection: 'row',
-      flexShrink: 0,
-      gap: 4,
-    },
-    overlay: {
       alignItems: 'center',
-      backgroundColor: customColors.backdropDark,
+      padding: 12,
+      marginBottom: 12,
+    },
+    leftContent: {
+      alignItems: 'center',
+      flex: 1,
+      flexDirection: 'row',
+    },
+    iconBox: {
+      alignItems: 'center',
+      borderRadius: 8,
+      height: 40,
+      justifyContent: 'center',
+      marginRight: 12,
+      width: 40,
+    },
+    textContent: {
       flex: 1,
       justifyContent: 'center',
+    },
+    settingTitle: {
+      color: theme.colors.onSurface,
+      fontSize: 15,
+      fontWeight: '500',
+      marginBottom: 2,
+    },
+    settingDescription: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 12,
+      lineHeight: 16,
+    },
+    rightContent: {
+      marginLeft: 12,
+    },
+
+    // Checkbox Specifics
+    checkboxContainer: {
+      marginRight: 12,
+    },
+    checkboxIcon: {
+      alignItems: 'center',
+      backgroundColor: 'transparent',
+      borderColor: brandBlue,
+      borderRadius: 4,
+      borderWidth: 2,
+      height: 24,
+      justifyContent: 'center',
+      width: 24,
+    },
+    checkboxIconChecked: {
+      backgroundColor: brandBlue,
+      borderColor: brandBlue,
+    },
+    smallSwitch: {
+      transform: [{ scale: 0.8 }],
+    },
+
+    // Logout Section (Boxed + Shadow)
+    logoutContainer: {
+      backgroundColor: theme.dark ? '#1E1E1E' : '#FFFFFF', // Dark: Tinted Surface, Light: White
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.dark ? '#333' : '#E0E0E0',
+      padding: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 4,
+    },
+    logoutTextContainer: {
+      flex: 1,
+    },
+    logoutTitle: {
+      color: '#D93025',
+      fontSize: 15,
+      fontWeight: '700',
+      marginBottom: 2,
+    },
+    logoutDesc: {
+      color: '#D93025',
+      fontSize: 12,
+    },
+    // Updated to Outline Style
+    logoutButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: 'transparent', // Transparent BG
+      borderWidth: 1, // Border
+      borderColor: '#D93025', // Red Border
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: 8,
+    },
+    logoutButtonText: {
+      color: '#D93025',
+      fontWeight: '600',
+      marginLeft: 6,
     },
     overlayWrapper: {
       ...StyleSheet.absoluteFillObject,
       zIndex: 99999,
-    },
-    removeImageButton: {
-      backgroundColor: customColors.white, // Approximation for white opacity
-      borderRadius: 14,
-      position: 'absolute',
-      right: 8,
-      top: 8,
-    },
-    saveButton: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.primary,
-      borderRadius: 8,
-      minWidth: 100,
-      paddingHorizontal: 14,
-      paddingVertical: 10,
-    },
-    saveText: {
-      color: theme.colors.surface,
-      fontSize: 14,
-      fontWeight: '500',
-    },
-    settingDescription: {
-      color: theme.colors.onSurfaceVariant,
-      fontSize: 12, // Mobile default
-      marginTop: 2,
-    },
-    settingDescriptionTablet: {
-      fontSize: 16, // CRM tablet size
-    },
-    settingInfo: {
-      flex: 1,
-      marginRight: 16,
-    },
-    settingRow: {
-      alignItems: 'center',
-      borderBottomColor: customColors.surfaceDisabled,
-      borderBottomWidth: 1,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      paddingVertical: 14,
-    },
-    settingTitle: {
-      color: theme.colors.onSurface,
-      fontSize: 14, // Mobile default
-      fontWeight: '600',
-    },
-    settingTitleTablet: {
-      fontSize: 18, // CRM tablet size
-    },
-    title: {
-      color: theme.colors.onSurface,
-      fontSize: 20,
-      fontWeight: '700',
-      marginBottom: 16,
-      paddingHorizontal: 20,
-    },
-    uploadArea: {
-      alignItems: 'center',
-      borderColor: theme.colors.outline,
-      borderRadius: 8,
-      borderStyle: 'dashed',
-      borderWidth: 1,
-      justifyContent: 'center',
-      marginBottom: 16,
-      paddingVertical: 24,
-    },
-    uploadHint: {
-      color: customColors.onSurfaceDisabled,
-      fontSize: 11,
-      marginTop: 4,
-    },
-    uploadLink: {
-      color: theme.colors.primary,
-    },
-    uploadText: {
-      color: theme.colors.onSurfaceVariant,
-      fontSize: 13,
-      marginTop: 8,
-    },
-    valueText: {
-      color: theme.colors.onSurfaceVariant,
-      fontSize: 14,
-      minWidth: 50,
-      textAlign: 'right',
     },
   });
