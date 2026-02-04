@@ -14,6 +14,7 @@ import {
   Alert,
   useWindowDimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useKioskStore } from '@/store/useKioskStore';
@@ -28,6 +29,7 @@ import type { KioskSettings } from '@/types/attendance';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import type { MD3Theme } from 'react-native-paper';
 import { lightCustomColors, darkCustomColors } from '@/theme';
+import { getResponsiveDimensions } from '@/theme/dimensions';
 
 // Define styles type for better typing than 'any'
 type ComponentStyles = ReturnType<typeof createStyles>;
@@ -151,9 +153,12 @@ export default function KioskSettingsModal() {
   const customColors = theme.dark ? darkCustomColors : lightCustomColors;
   const BRAND_BLUE = theme.colors.primary;
 
+  const dims = getResponsiveDimensions(isTablet);
+
+  const insets = useSafeAreaInsets();
   const styles = useMemo(
-    () => createStyles(theme, isTablet, BRAND_BLUE, customColors),
-    [theme, isTablet, BRAND_BLUE, customColors]
+    () => createStyles(theme, isTablet, BRAND_BLUE, customColors, dims, insets.top),
+    [theme, isTablet, BRAND_BLUE, customColors, dims, insets.top]
   );
 
   const { setTheme } = useThemeStore();
@@ -297,7 +302,9 @@ export default function KioskSettingsModal() {
                   {isSaving ? (
                     <ActivityIndicator size={16} color={BRAND_BLUE} />
                   ) : (
-                    <Text style={styles.headerButtonSaveText}>Save Settings</Text>
+                    <Text style={styles.headerButtonSaveText}>
+                      {isTablet ? 'Save Settings' : 'Save'}
+                    </Text>
                   )}
                 </TouchableOpacity>
               </View>
@@ -536,171 +543,11 @@ const createStyles = (
   theme: MD3Theme,
   isTablet: boolean,
   brandBlue: string,
-  customColors: typeof lightCustomColors
+  customColors: typeof lightCustomColors,
+  dims: ReturnType<typeof getResponsiveDimensions>,
+  topInset: number
 ) =>
   StyleSheet.create({
-    overlay: {
-      alignItems: 'center',
-      backgroundColor: 'rgba(0,0,0,0.4)',
-      flex: 1,
-      justifyContent: 'center',
-    },
-    spacer: {
-      height: 40,
-    },
-    smallRow: {
-      alignItems: 'center',
-      flexDirection: 'row',
-    },
-    modalContainer: {
-      backgroundColor: theme.dark ? theme.colors.background : customColors.backgroundAlt, // Figma Dark Background
-      width: '100%', // Full screen
-      height: '100%', // Full screen
-      borderRadius: 0, // No radius for full screen
-      overflow: 'hidden',
-    },
-    header: {
-      alignItems: 'center',
-      backgroundColor: theme.dark ? theme.colors.surface : brandBlue, // Match background in dark mode
-      flexDirection: 'row',
-      // height: 80, // Dynamic height
-      justifyContent: 'space-between',
-      paddingHorizontal: isTablet ? 64 : 32,
-      paddingTop: isTablet ? 60 : 40, // Match Homepage header
-      paddingBottom: 24,
-      borderBottomLeftRadius: 24, // Rounded bottom corners
-      borderBottomRightRadius: 24,
-    },
-    headerTitle: {
-      color: theme.dark ? theme.colors.primary : '#FFFFFF',
-      fontSize: isTablet ? 34 : 24, // Match Homepage Title Size
-      fontWeight: 'bold',
-    },
-    headerButtons: {
-      flexDirection: 'row',
-      gap: 12,
-    },
-    headerButtonCancel: {
-      backgroundColor: theme.dark ? 'transparent' : '#FFFFFF',
-      borderColor: theme.colors.primary,
-      borderRadius: 6,
-      borderWidth: theme.dark ? 1 : 0,
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-    },
-    headerButtonCancelText: {
-      color: theme.colors.onSurface,
-      fontSize: 14,
-      fontWeight: '600',
-    },
-    headerButtonSave: {
-      backgroundColor: theme.dark ? 'transparent' : '#FFFFFF',
-      borderColor: theme.colors.primary,
-      borderRadius: 6,
-      borderWidth: theme.dark ? 1 : 0,
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-    },
-    headerButtonSaveText: {
-      color: theme.dark ? theme.colors.primary : brandBlue,
-      fontSize: 14,
-      fontWeight: '600',
-    },
-    content: {
-      flex: 1,
-    },
-    contentContainer: {
-      paddingHorizontal: isTablet ? 64 : 32,
-      paddingTop: 24,
-      paddingBottom: 120,
-      width: '100%',
-      maxWidth: 1000, // Center alignment constraint
-      alignSelf: 'center',
-    },
-    topDescription: {
-      fontSize: 14,
-      color: theme.colors.onSurfaceVariant, // Dynamic descriptive text
-      marginBottom: 16,
-    },
-
-    // Shadow Card for Sections
-    sectionCard: {
-      backgroundColor: theme.colors.surface, // Transparent in Figma, just lines or subtle bg
-      // Actually Figma shows "Attendance Rules" in a box with border
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: theme.colors.outline,
-      marginBottom: 16, // Reduced height/spacing
-      padding: 24,
-      // Shadow properties
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 0, // No elevation in dark mode
-    },
-    sectionHeader: {
-      marginBottom: 12,
-    },
-    sectionTitle: {
-      fontSize: 16,
-      fontWeight: '700',
-      color: theme.colors.onSurface, // Dynamic title
-      marginBottom: 4,
-    },
-    sectionSubtitle: {
-      color: theme.colors.onSurfaceVariant,
-      fontSize: 13,
-      fontWeight: '400',
-    },
-    sectionContent: {
-      // Content wrapper inside the card
-    },
-
-    // Boxed Item Style (SettingItem / CheckboxItem)
-    itemBox: {
-      backgroundColor: theme.colors.surface, // Use Surface color
-      borderRadius: 12, // Increased radius for larger box
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: 16, // Reduced padding (was 20)
-      marginBottom: 12, // Reduced from 16 to save space
-    },
-    leftContent: {
-      alignItems: 'center',
-      flex: 1,
-      flexDirection: 'row',
-    },
-    iconBox: {
-      alignItems: 'center',
-      borderRadius: 10, // Adjusted radius
-      height: 48, // Larger icon box (was 40)
-      justifyContent: 'center',
-      marginRight: 16, // More spacing (was 12)
-      width: 48, // Larger icon box (was 40)
-    },
-    textContent: {
-      flex: 1,
-      justifyContent: 'center',
-    },
-    settingTitle: {
-      color: theme.colors.onSurface,
-      fontSize: 15,
-      fontWeight: '500',
-      marginBottom: 2,
-    },
-    settingDescription: {
-      color: theme.colors.onSurfaceVariant,
-      fontSize: 12,
-      lineHeight: 16,
-    },
-    rightContent: {
-      marginLeft: 12,
-    },
-
-    // Checkbox Specifics
     checkboxContainer: {
       marginRight: 12,
     },
@@ -718,25 +565,124 @@ const createStyles = (
       backgroundColor: brandBlue,
       borderColor: brandBlue,
     },
-    smallSwitch: {
-      transform: [{ scale: 0.8 }],
+    content: {
+      flex: 1,
     },
-
-    // Logout Section (Boxed + Shadow)
-    logoutContainer: {
-      backgroundColor: theme.colors.surface, // Dark: Tinted Surface, Light: White
+    contentContainer: {
+      alignSelf: 'center',
+      maxWidth: 1000,
+      paddingBottom: 120,
+      paddingHorizontal: isTablet ? 64 : 16,
+      paddingTop: isTablet ? 24 : 16,
+      width: '100%',
+    },
+    header: {
+      alignItems: 'center',
+      backgroundColor: theme.dark ? theme.colors.surface : brandBlue, // Match background in dark mode
+      flexDirection: 'row',
+      // height: 80, // Dynamic height
+      justifyContent: 'space-between',
+      paddingHorizontal: isTablet ? 64 : 16, // Heavily reduced from 32->16 for mobile
+      paddingTop: isTablet ? 60 : Math.max(topInset + 16, 24), // Dynamic safe area
+      paddingBottom: isTablet ? 24 : 12, // Reduced
+      borderBottomLeftRadius: 24, // Rounded bottom corners
+      borderBottomRightRadius: 24,
+    },
+    headerButtonCancel: {
+      backgroundColor: theme.dark ? 'transparent' : '#FFFFFF',
+      borderColor: theme.colors.primary,
+      borderRadius: isTablet ? 8 : 8,
+      borderWidth: theme.dark ? 1 : 0,
+      paddingHorizontal: isTablet ? 16 : 12, // Reduced padding for mobile
+      height: isTablet ? undefined : 40, // Fixed height on mobile
+      justifyContent: 'center',
+      paddingVertical: isTablet ? 8 : 0, // Vertical center if fixed height
+    },
+    headerButtonCancelText: {
+      color: theme.colors.onSurface,
+      fontSize: isTablet ? 14 : 14, // Keep 14px accessible
+      fontWeight: '600',
+    },
+    headerButtonSave: {
+      backgroundColor: theme.dark ? 'transparent' : '#FFFFFF',
+      borderColor: theme.colors.primary,
+      borderRadius: isTablet ? 8 : 8,
+      borderWidth: theme.dark ? 1 : 0,
+      height: isTablet ? undefined : 40,
+      justifyContent: 'center',
+      paddingHorizontal: isTablet ? 16 : 12,
+      paddingVertical: isTablet ? 8 : 0,
+    },
+    headerButtonSaveText: {
+      color: theme.dark ? theme.colors.primary : brandBlue,
+      fontSize: isTablet ? 14 : 14,
+      fontWeight: '600',
+    },
+    headerButtons: {
+      flexDirection: 'row',
+      gap: isTablet ? 12 : 8, // Reduced gap on mobile
+    },
+    headerTitle: {
+      color: theme.dark ? theme.colors.primary : '#FFFFFF',
+      fontSize: dims.headerFontSize, // Responsive font size
+      fontWeight: 'bold',
+    },
+    iconBox: {
+      alignItems: 'center',
+      borderRadius: 10,
+      height: isTablet ? 48 : 36,
+      justifyContent: 'center',
+      marginRight: isTablet ? 16 : 12,
+      width: isTablet ? 48 : 36,
+    },
+    itemBox: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.outlineVariant,
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: theme.colors.outline,
-      padding: 24,
       flexDirection: 'row',
+      marginBottom: isTablet ? 12 : 8,
+      padding: isTablet ? 16 : 10,
+    },
+    leftContent: {
       alignItems: 'center',
+      flex: 1,
+      flexDirection: 'row',
+    },
+    logoutButton: {
+      alignItems: 'center',
+      backgroundColor: 'transparent',
+      borderColor: customColors.destructive,
+      borderRadius: 8,
+      borderWidth: 1,
+      flexDirection: 'row',
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+    },
+    logoutButtonText: {
+      color: customColors.destructive,
+      fontWeight: '600',
+      marginLeft: 6,
+    },
+    logoutContainer: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.outline,
+      borderRadius: 12,
+      borderWidth: 1,
+      elevation: 4,
+      flexDirection: 'row',
       justifyContent: 'space-between',
+      padding: 24,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
-      elevation: 4,
+    },
+    logoutDesc: {
+      color: customColors.destructive,
+      fontSize: 12,
     },
     logoutTextContainer: {
       flex: 1,
@@ -747,28 +693,82 @@ const createStyles = (
       fontWeight: '700',
       marginBottom: 2,
     },
-    logoutDesc: {
-      color: customColors.destructive,
-      fontSize: 12,
+    modalContainer: {
+      backgroundColor: theme.dark ? theme.colors.background : customColors.backgroundAlt, // Figma Dark Background
+      width: '100%', // Full screen
+      height: '100%', // Full screen
+      borderRadius: 0, // No radius for full screen
+      overflow: 'hidden',
     },
-    // Updated to Outline Style
-    logoutButton: {
-      flexDirection: 'row',
+    overlay: {
       alignItems: 'center',
-      backgroundColor: 'transparent', // Transparent BG
-      borderWidth: 1, // Border
-      borderColor: customColors.destructive, // Red Border
-      paddingHorizontal: 16,
-      paddingVertical: 10,
-      borderRadius: 8,
-    },
-    logoutButtonText: {
-      color: customColors.destructive,
-      fontWeight: '600',
-      marginLeft: 6,
+      backgroundColor: 'rgba(0,0,0,0.4)',
+      flex: 1,
+      justifyContent: 'center',
     },
     overlayWrapper: {
       ...StyleSheet.absoluteFillObject,
       zIndex: 99999,
+    },
+    rightContent: {
+      marginLeft: 12,
+    },
+    sectionCard: {
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.outline,
+      borderRadius: 12,
+      borderWidth: 1,
+      elevation: 0,
+      marginBottom: 16,
+      padding: isTablet ? 24 : 12,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+    },
+    sectionContent: {},
+    sectionHeader: {
+      marginBottom: 12,
+    },
+    sectionSubtitle: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 13,
+      fontWeight: '400',
+    },
+    sectionTitle: {
+      color: theme.colors.onSurface,
+      fontSize: dims.titleFontSize,
+      fontWeight: '700',
+      marginBottom: 4,
+    },
+    settingDescription: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: dims.smallFontSize,
+      lineHeight: 16,
+    },
+    settingTitle: {
+      color: theme.colors.onSurface,
+      fontSize: dims.bodyFontSize,
+      fontWeight: '500',
+      marginBottom: 2,
+    },
+    smallRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+    },
+    smallSwitch: {
+      transform: [{ scale: 0.8 }],
+    },
+    spacer: {
+      height: 40,
+    },
+    textContent: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    topDescription: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: dims.smallFontSize,
+      marginBottom: 16,
     },
   });
