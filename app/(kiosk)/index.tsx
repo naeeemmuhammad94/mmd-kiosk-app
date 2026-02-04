@@ -190,6 +190,14 @@ export default function KioskHomeScreen() {
       .filter(program => program.contacts.length > 0);
   }, [attendanceData, debouncedSearch]);
 
+  // Auto-expand programs when searching
+  useEffect(() => {
+    if (debouncedSearch.trim()) {
+      const allProgramIds = filteredPrograms.map(p => p.id);
+      setExpandedPrograms(allProgramIds);
+    }
+  }, [debouncedSearch, filteredPrograms]);
+
   const handleSettingsPress = useCallback(() => {
     openPinModal('settings');
   }, [openPinModal]);
@@ -297,7 +305,8 @@ export default function KioskHomeScreen() {
       </LinearGradient>
 
       {/* Searched Results Label */}
-      {isSearching && (
+      {/* Searched Results Label (Grid View) */}
+      {isSearching && !isProgramView && (
         <View
           style={[
             styles.searchResultsLabelContainer,
@@ -307,6 +316,18 @@ export default function KioskHomeScreen() {
           <View style={[styles.searchResultsLabel, styles.rowCenter]}>
             <Text style={styles.searchResultsText}>Search Results</Text>
           </View>
+        </View>
+      )}
+
+      {/* Searched Results Label (Program View) - Simple Text */}
+      {isSearching && isProgramView && (
+        <View
+          style={[
+            styles.programSearchLabelContainer,
+            isTablet ? styles.paddingTablet : styles.paddingMobile,
+          ]}
+        >
+          <Text style={styles.programSearchLabelText}>Search Results</Text>
         </View>
       )}
 
@@ -349,7 +370,7 @@ export default function KioskHomeScreen() {
                   { paddingHorizontal: isTablet ? 48 : 16, paddingTop: 32 },
                 ]}
                 renderItem={({ item: program }) => {
-                  const isExpanded = expandedPrograms.includes(program.id) || isSearching; // Auto-expand on search
+                  const isExpanded = expandedPrograms.includes(program.id);
                   return (
                     <View
                       style={[styles.accordionItem, isExpanded && styles.accordionItemExpanded]}
@@ -411,12 +432,14 @@ export default function KioskHomeScreen() {
                 key={numColumns} // Force re-render on column change
                 contentContainerStyle={[
                   styles.gridContent,
-                  styles.gridPadding,
+                  !isSearching && styles.gridPadding, // Only add extra bottom padding when NOT searching
                   {
                     paddingHorizontal: isSearching
                       ? dims.gridPadding
                       : containerPadding + listPadding,
                     paddingTop: dims.gridPadding,
+                    // If searching, add a small bottom padding to match top
+                    paddingBottom: isSearching ? dims.gridPadding : undefined,
                   },
                 ]}
                 columnWrapperStyle={[
@@ -629,6 +652,15 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       fontSize: 13,
       fontWeight: '700',
     },
+    programSearchLabelContainer: {
+      paddingTop: 24, // Spacing above
+      paddingBottom: 8, // Spacing below
+    },
+    programSearchLabelText: {
+      color: theme.colors.onSurface,
+      fontSize: 18,
+      fontWeight: '700',
+    },
     rowCenter: {
       alignItems: 'center',
       flexDirection: 'row',
@@ -662,31 +694,57 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
 
     searchResultsCard: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: theme.dark ? '#0C111D' : theme.colors.surface, // Dark #0C111D
+      borderColor: 'transparent',
+      borderWidth: 0,
+      borderTopWidth: 0, // Merge with label
+      borderTopLeftRadius: 0, // Ensure flat top
+      borderTopRightRadius: 0,
+      marginTop: 0, // Ensure no gap
       borderBottomLeftRadius: 8,
       borderBottomRightRadius: 8,
-      flex: 1,
-      minHeight: 200,
+      // flex: 1 removed to allow shrinking to content
+      flexShrink: 1, // Ensure it doesn't overflow container
+      // minHeight: 200 removed
+      // Shadow
+      shadowColor: customColors.shadow,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: theme.dark ? 0.5 : 0.1,
+      shadowRadius: 8,
+      elevation: 4,
     },
     searchResultsContainer: {
-      backgroundColor: customColors.surfaceDisabled, // Fallback for light blue bg
+      backgroundColor: 'transparent', // Transparent to show background
       flex: 1,
       paddingHorizontal: 16, // Fix: Match grid padding
     },
     searchResultsLabel: {
-      backgroundColor: theme.colors.primary, // Blue header to match theme
+      backgroundColor: theme.dark ? '#161B26' : theme.colors.primary, // Dark mode matches accordion header
+      borderColor: 'transparent',
+      borderWidth: 0,
+      borderBottomWidth: 0, // Merge with card
+      borderBottomLeftRadius: 0, // Ensure flat bottom
+      borderBottomRightRadius: 0,
+      marginBottom: 0, // Ensure no gap
       borderTopLeftRadius: 8,
       borderTopRightRadius: 8,
       paddingHorizontal: 16,
       paddingVertical: 10,
+      zIndex: 1, // Ensure matches card
+      // Shadow
+      shadowColor: customColors.shadow,
+      shadowOffset: { width: 0, height: -2 }, // Slight shadow up
+      shadowOpacity: theme.dark ? 0.5 : 0.1,
+      shadowRadius: 4,
+      elevation: 4,
     },
     searchResultsLabelContainer: {
-      backgroundColor: customColors.surfaceDisabled,
+      backgroundColor: 'transparent', // Remove background color to blend with screen
       paddingHorizontal: 16,
-      paddingTop: 8, // Fix: Match grid padding
+      paddingTop: 8,
     },
     searchResultsText: {
-      color: theme.colors.surface,
+      color: '#FFFFFF', // White text always
       fontSize: 14,
       fontWeight: '600',
     },
@@ -699,49 +757,40 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       marginBottom: 16, // Increased spacing between items
     },
     accordionItemExpanded: {
-      borderColor: theme.colors.outline,
+      borderColor: theme.dark ? '#717171' : theme.colors.outline, // Dark border #717171
       borderRadius: 8,
       borderWidth: 1,
-      marginBottom: 16, // Match closed spacing
+      marginBottom: 16,
     },
     accordionHeader: {
       alignItems: 'center',
-      backgroundColor: '#F8F9FA', // Lighter grey per request
-      borderColor: theme.colors.outline,
-      borderRadius: 8, // Rounded corners always
+      backgroundColor: theme.dark ? '#161B26' : '#F8F9FA', // Dark #161B26
+      borderColor: theme.dark ? '#717171' : theme.colors.outline, // Dark #717171
+      borderRadius: 8,
       borderWidth: 1,
       flexDirection: 'row',
       justifyContent: 'space-between',
-      paddingHorizontal: 24, // Increased horizontal padding too for better look
-      paddingVertical: 24, // Increased height (taller)
+      paddingHorizontal: 24,
+      paddingVertical: 24,
     },
     accordionHeaderExpanded: {
-      backgroundColor: '#F8F9FA',
-      borderBottomColor: theme.colors.outline,
-      borderBottomWidth: 1,
-      // Keep radius on top, and add bottom radius if requested, but usually expanded implies connection.
-      // User asked for "bottom border radius".
-      // If I add it, it detaches from content.
-      // But maybe they want the header to be a standalone pill and content below it?
-      // "according header should have bottom border radius"
-      // I will set it to 8.
+      backgroundColor: theme.dark ? '#161B26' : '#F8F9FA',
+      // borderBottomColor removed as per request
+      borderBottomWidth: 0, // Removed border bottom
       borderBottomLeftRadius: 8,
       borderBottomRightRadius: 8,
       borderTopLeftRadius: 8,
       borderTopRightRadius: 8,
-      borderWidth: 0, // Reset border since itemExpanded has it?
-      // Wait, itemExpanded has border.
-      // If header has radius, it might look clipped.
-      // Let's trust the user wants it rounded.
+      borderWidth: 0,
     },
     accordionTitle: {
-      color: '#000000', // Black text per request
+      color: theme.dark ? '#FFFFFF' : '#000000', // White in dark mode
       fontSize: 15,
-      fontWeight: '600', // Slightly bolder
+      fontWeight: '600',
     },
     accordionContent: {
-      backgroundColor: theme.colors.surface,
-      borderBottomLeftRadius: 6, // Match parent minus width
+      backgroundColor: theme.dark ? '#0C111D' : theme.colors.surface, // Dark #0C111D
+      borderBottomLeftRadius: 6,
       borderBottomRightRadius: 6,
       padding: 16,
     },

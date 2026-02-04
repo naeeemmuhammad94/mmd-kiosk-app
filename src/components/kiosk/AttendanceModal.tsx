@@ -111,7 +111,7 @@ export default function AttendanceModal() {
           <View style={[styles.modalContainer, isTablet ? styles.modalTablet : styles.modalMobile]}>
             {/* Blue Header */}
             <LinearGradient
-              colors={[theme.colors.primary, theme.colors.primary]} // Solid Blue as per design
+              colors={[customColors.modalHeaderBackground, customColors.modalHeaderBackground]} // Solid Blue/Dark header based on theme
               style={[
                 styles.header,
                 isTablet && styles.headerTablet,
