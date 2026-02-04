@@ -27,6 +27,7 @@ import KioskPinModal from './KioskPinModal';
 import type { KioskSettings } from '@/types/attendance';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import type { MD3Theme } from 'react-native-paper';
+import { lightCustomColors, darkCustomColors } from '@/theme';
 
 // Define styles type for better typing than 'any'
 type ComponentStyles = ReturnType<typeof createStyles>;
@@ -46,6 +47,7 @@ const SettingItem = memo(function SettingItem({
   title: string;
   description?: string;
   icon: keyof typeof Ionicons.glyphMap;
+
   iconColor?: string;
   iconSymbolColor?: string;
   rightContent: React.ReactNode;
@@ -145,10 +147,14 @@ export default function KioskSettingsModal() {
   const { width: screenWidth } = useWindowDimensions();
   const isTablet = screenWidth >= 768;
 
-  const { theme } = useAppTheme(); // Removed unused customColors
-  const BRAND_BLUE = '#3772FF'; // Match Kiosk Home Header
+  const { theme } = useAppTheme();
+  const customColors = theme.dark ? darkCustomColors : lightCustomColors;
+  const BRAND_BLUE = theme.colors.primary;
 
-  const styles = useMemo(() => createStyles(theme, isTablet, BRAND_BLUE), [theme, isTablet]);
+  const styles = useMemo(
+    () => createStyles(theme, isTablet, BRAND_BLUE, customColors),
+    [theme, isTablet, BRAND_BLUE, customColors]
+  );
 
   const { setTheme } = useThemeStore();
 
@@ -316,14 +322,14 @@ export default function KioskSettingsModal() {
                   title="Show Student Photos"
                   description="Displays profile photos on student tiles during check-in."
                   icon="person"
-                  iconColor="#4285F4" // Blue background as per previous? verify
+                  iconColor={theme.colors.primary}
                   // Actually earlier user said "make display behaviour toggles small".
                   // And "use lock icon from create pin model" (which is grey box, blue icon).
                   // But previously I had blue box white icon for Display Behavior.
                   // Let's stick to Blue Box White Icon for Display Behavior as that seems unchanged in feedback,
                   // UNLESS `uploaded_media_0` shows otherwise.
                   // `uploaded_media_0` (Display Behavior) shows Blue Box with White Person Icon. Correct.
-                  iconSymbolColor="#FFFFFF"
+                  iconSymbolColor={theme.colors.onPrimary}
                   rightContent={
                     <Switch
                       value={localSettings.showStudentImages ?? true}
@@ -341,8 +347,8 @@ export default function KioskSettingsModal() {
                   title="Enable Dark Mode"
                   description="Makes the kiosk darker for low-light lobbies and reduces screen glare."
                   icon="moon"
-                  iconColor="#4285F4"
-                  iconSymbolColor="#FFFFFF"
+                  iconColor={theme.colors.primary}
+                  iconSymbolColor={theme.colors.onPrimary}
                   rightContent={
                     <Switch
                       value={theme.dark} // Reflect effective theme (works for auto)
@@ -360,8 +366,8 @@ export default function KioskSettingsModal() {
                   title="Idle Screen Saver"
                   description="Dims the kiosk after inactivity to reduce screen burn-in."
                   icon="moon-outline"
-                  iconColor="#4285F4"
-                  iconSymbolColor="#FFFFFF"
+                  iconColor={theme.colors.primary}
+                  iconSymbolColor={theme.colors.onPrimary}
                   rightContent={
                     <Switch
                       value={localSettings.powerSavingMode ?? false}
@@ -379,8 +385,8 @@ export default function KioskSettingsModal() {
                   title="Sort Order"
                   description="Student will display by Rank if enabled and alphabetical if off."
                   icon="swap-vertical"
-                  iconColor="#4285F4"
-                  iconSymbolColor="#FFFFFF"
+                  iconColor={theme.colors.primary}
+                  iconSymbolColor={theme.colors.onPrimary}
                   rightContent={
                     <Switch
                       value={localSettings.sortByRank ?? false}
@@ -432,8 +438,8 @@ export default function KioskSettingsModal() {
                   title="Re-Check-In Time"
                   description="Set how long before the same student can check in again."
                   icon="time-outline"
-                  iconColor="#4285F4"
-                  iconSymbolColor="#FFFFFF"
+                  iconColor={theme.colors.primary}
+                  iconSymbolColor={theme.colors.onPrimary}
                   rightContent={
                     <View style={styles.smallRow}>
                       <Text style={{ marginRight: 8, color: theme.colors.onSurfaceVariant }}>
@@ -487,7 +493,7 @@ export default function KioskSettingsModal() {
                   </Text>
                 </View>
                 <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                  <Ionicons name="log-out-outline" size={18} color="#D93025" />
+                  <Ionicons name="log-out-outline" size={18} color={customColors.destructive} />
                   <Text style={styles.logoutButtonText}>Logout</Text>
                 </TouchableOpacity>
               </View>
@@ -526,7 +532,12 @@ export default function KioskSettingsModal() {
   );
 }
 
-const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
+const createStyles = (
+  theme: MD3Theme,
+  isTablet: boolean,
+  brandBlue: string,
+  customColors: typeof lightCustomColors
+) =>
   StyleSheet.create({
     overlay: {
       alignItems: 'center',
@@ -542,7 +553,7 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
       flexDirection: 'row',
     },
     modalContainer: {
-      backgroundColor: theme.dark ? '#0C111D' : '#F5F7FA', // Figma Dark Background
+      backgroundColor: theme.dark ? theme.colors.background : customColors.backgroundAlt, // Figma Dark Background
       width: '100%', // Full screen
       height: '100%', // Full screen
       borderRadius: 0, // No radius for full screen
@@ -614,13 +625,13 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
 
     // Shadow Card for Sections
     sectionCard: {
-      backgroundColor: theme.dark ? '#161B26' : '#FFFFFF', // Transparent in Figma, just lines or subtle bg
+      backgroundColor: theme.colors.surface, // Transparent in Figma, just lines or subtle bg
       // Actually Figma shows "Attendance Rules" in a box with border
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: theme.dark ? '#717171' : '#E0E0E0',
+      borderColor: theme.colors.outline,
       marginBottom: 16, // Reduced height/spacing
-      padding: 12, // Reduced padding
+      padding: 24,
       // Shadow properties
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
@@ -648,10 +659,10 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
 
     // Boxed Item Style (SettingItem / CheckboxItem)
     itemBox: {
-      backgroundColor: theme.dark ? '#161B26' : '#FFFFFF', // Use Surface color
+      backgroundColor: theme.colors.surface, // Use Surface color
       borderRadius: 12, // Increased radius for larger box
       borderWidth: 1,
-      borderColor: theme.dark ? '#334155' : '#E0E0E0',
+      borderColor: theme.colors.outlineVariant,
       flexDirection: 'row',
       alignItems: 'center',
       padding: 16, // Reduced padding (was 20)
@@ -713,11 +724,11 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
 
     // Logout Section (Boxed + Shadow)
     logoutContainer: {
-      backgroundColor: theme.dark ? '#161B26' : '#FFFFFF', // Dark: Tinted Surface, Light: White
+      backgroundColor: theme.colors.surface, // Dark: Tinted Surface, Light: White
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: theme.dark ? '#717171' : '#E0E0E0',
-      padding: 16,
+      borderColor: theme.colors.outline,
+      padding: 24,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
@@ -731,13 +742,13 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
       flex: 1,
     },
     logoutTitle: {
-      color: '#D93025',
+      color: customColors.destructive,
       fontSize: 15,
       fontWeight: '700',
       marginBottom: 2,
     },
     logoutDesc: {
-      color: '#D93025',
+      color: customColors.destructive,
       fontSize: 12,
     },
     // Updated to Outline Style
@@ -746,13 +757,13 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
       alignItems: 'center',
       backgroundColor: 'transparent', // Transparent BG
       borderWidth: 1, // Border
-      borderColor: '#D93025', // Red Border
+      borderColor: customColors.destructive, // Red Border
       paddingHorizontal: 16,
       paddingVertical: 10,
       borderRadius: 8,
     },
     logoutButtonText: {
-      color: '#D93025',
+      color: customColors.destructive,
       fontWeight: '600',
       marginLeft: 6,
     },

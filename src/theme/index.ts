@@ -170,6 +170,9 @@ export const lightCustomColors = {
   inputBorder: '#979797', // Request: #979797
   modalBackground: '#FFFFFF',
   modalHeaderBackground: '#4A7DFF', // Light mode blue
+  backgroundAlt: '#F8F9FA',
+  destructive: '#D93025',
+  iconBackground: '#F1F3F4',
 };
 
 export const darkCustomColors = {
@@ -197,6 +200,9 @@ export const darkCustomColors = {
   inputBorder: '#979797', // Request: #979797
   modalBackground: '#0C111D', // Request: #0C111D
   modalHeaderBackground: '#161B26', // Request: #161B26
+  backgroundAlt: '#161B26',
+  destructive: '#EF4444', // Lighter red for dark mode consistency, or keep #D93025 if strictly brand
+  iconBackground: '#374151', // Darker grey for icons
 };
 
 // Backwards compatibility default - ideally usage should be migrated to hook
