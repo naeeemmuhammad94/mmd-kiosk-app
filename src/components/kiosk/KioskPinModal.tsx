@@ -132,7 +132,7 @@ export default function KioskPinModal() {
             <TouchableWithoutFeedback onPress={e => e.stopPropagation()}>
               <View style={styles.modalContainer}>
                 <View style={styles.iconContainer}>
-                  <Ionicons name="lock-closed" size={32} color="#4285F4" />
+                  <Ionicons name="lock-closed" size={32} color={theme.colors.primary} />
                 </View>
                 <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
                   <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
@@ -268,7 +268,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     pinInputError: { borderColor: theme.colors.error },
     subtitle: { color: theme.colors.onSurfaceVariant, marginBottom: 24 },
     title: {
-      color: '#4285F4', // Blueish in both modes per request
+      color: theme.colors.primary, // Blueish in both modes per request
       fontWeight: '700',
       marginBottom: 8,
     },

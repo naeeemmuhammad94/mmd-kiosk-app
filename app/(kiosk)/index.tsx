@@ -228,7 +228,11 @@ export default function KioskHomeScreen() {
       {/* Blue Header */}
       {/* Dark Header with Radius */}
       <LinearGradient
-        colors={theme.dark ? ['#161B26', '#161B26'] : ['#3772FF', '#3772FF']}
+        colors={
+          theme.dark
+            ? [customColors.backgroundAlt, customColors.backgroundAlt]
+            : [theme.colors.primary, theme.colors.primary]
+        }
         style={styles.header}
       >
         <SafeAreaView
@@ -253,8 +257,8 @@ export default function KioskHomeScreen() {
                   width: 24,
                   height: 24,
                   marginRight: 8,
-                  tintColor: theme.dark ? '#FFFFFF' : '#4285F4',
-                }} // Figma Blue in Light Mode
+                  tintColor: theme.dark ? theme.colors.onSurface : theme.colors.primary,
+                }} // Figma Blue in Light Mode, White in Dark
                 resizeMode="contain"
               />
               <Text style={styles.brandText}>KIOSK</Text>
@@ -264,11 +268,7 @@ export default function KioskHomeScreen() {
           {/* Center: Search Bar */}
           <View style={styles.searchWrapper}>
             <View style={styles.searchContainer}>
-              <Ionicons
-                name="search-outline"
-                size={20}
-                color={theme.dark ? customColors.textLight : theme.colors.onSurfaceVariant}
-              />
+              <Ionicons name="search-outline" size={20} color={theme.colors.onSurfaceVariant} />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Search........."
@@ -288,7 +288,7 @@ export default function KioskHomeScreen() {
               <Ionicons
                 name="grid-outline"
                 size={22}
-                color={theme.dark ? '#FFFFFF' : theme.colors.primary}
+                color={theme.dark ? theme.colors.onPrimary : theme.colors.primary}
               />
             </TouchableOpacity>
 
@@ -297,7 +297,7 @@ export default function KioskHomeScreen() {
               <Ionicons
                 name="settings-outline"
                 size={22}
-                color={theme.dark ? '#FFFFFF' : theme.colors.primary}
+                color={theme.dark ? theme.colors.onPrimary : theme.colors.primary}
               />
             </TouchableOpacity>
           </View>
@@ -576,7 +576,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     brandPill: {
       alignItems: 'center',
-      backgroundColor: theme.dark ? theme.colors.surface : '#FFFFFF', // Pure White in Light Mode
+      backgroundColor: theme.colors.surface, // Pure White in Light Mode
       borderRadius: 12,
       flexDirection: 'row',
       height: 48,
@@ -590,7 +590,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       elevation: 5,
     },
     brandText: {
-      color: theme.dark ? '#FFFFFF' : '#4285F4', // Figma Blue in Light Mode
+      color: theme.dark ? theme.colors.onSurface : theme.colors.primary, // White in Dark, Blue in Light
       fontSize: 16,
       fontWeight: '700',
       letterSpacing: 0.5,
@@ -620,7 +620,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       backgroundColor: theme.colors.surface,
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: theme.dark ? '#334155' : 'transparent',
+      borderColor: theme.colors.outline,
       height: 48,
       justifyContent: 'center',
       width: 48,
@@ -675,7 +675,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       backgroundColor: theme.colors.surface,
       borderRadius: 100,
       borderWidth: 1,
-      borderColor: theme.dark ? '#334155' : 'transparent',
+      borderColor: theme.colors.outline,
       flexDirection: 'row',
       gap: 8,
       height: 48,
@@ -694,7 +694,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
 
     searchResultsCard: {
-      backgroundColor: theme.dark ? '#0C111D' : theme.colors.surface, // Dark #0C111D
+      backgroundColor: theme.dark ? theme.colors.background : theme.colors.surface, // Dark #0C111D
       borderColor: 'transparent',
       borderWidth: 0,
       borderTopWidth: 0, // Merge with label
@@ -719,7 +719,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       paddingHorizontal: 16, // Fix: Match grid padding
     },
     searchResultsLabel: {
-      backgroundColor: theme.dark ? '#161B26' : theme.colors.primary, // Dark mode matches accordion header
+      backgroundColor: theme.dark ? theme.colors.surface : theme.colors.primary, // Dark mode matches accordion header
       borderColor: 'transparent',
       borderWidth: 0,
       borderBottomWidth: 0, // Merge with card
@@ -757,15 +757,15 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       marginBottom: 16, // Increased spacing between items
     },
     accordionItemExpanded: {
-      borderColor: theme.dark ? '#717171' : theme.colors.outline, // Dark border #717171
+      borderColor: theme.colors.outline, // Dark border #717171
       borderRadius: 8,
       borderWidth: 1,
       marginBottom: 16,
     },
     accordionHeader: {
       alignItems: 'center',
-      backgroundColor: theme.dark ? '#161B26' : '#F8F9FA', // Dark #161B26
-      borderColor: theme.dark ? '#717171' : theme.colors.outline, // Dark #717171
+      backgroundColor: customColors.backgroundAlt, // Dark #161B26
+      borderColor: theme.colors.outline, // Dark #717171
       borderRadius: 8,
       borderWidth: 1,
       flexDirection: 'row',
@@ -774,7 +774,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       paddingVertical: 24,
     },
     accordionHeaderExpanded: {
-      backgroundColor: theme.dark ? '#161B26' : '#F8F9FA',
+      backgroundColor: customColors.backgroundAlt,
       // borderBottomColor removed as per request
       borderBottomWidth: 0, // Removed border bottom
       borderBottomLeftRadius: 8,
@@ -784,12 +784,12 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       borderWidth: 0,
     },
     accordionTitle: {
-      color: theme.dark ? '#FFFFFF' : '#000000', // White in dark mode
+      color: theme.colors.onSurface, // White in dark mode
       fontSize: 15,
       fontWeight: '600',
     },
     accordionContent: {
-      backgroundColor: theme.dark ? '#0C111D' : theme.colors.surface, // Dark #0C111D
+      backgroundColor: theme.dark ? theme.colors.background : theme.colors.surface, // Dark #0C111D
       borderBottomLeftRadius: 6,
       borderBottomRightRadius: 6,
       padding: 16,

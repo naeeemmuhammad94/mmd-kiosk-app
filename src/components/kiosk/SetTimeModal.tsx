@@ -272,7 +272,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       marginBottom: 24,
     },
     title: {
-      color: '#4285F4', // Blueish in all modes
+      color: theme.colors.primary, // Blueish in all modes
       fontSize: 22,
       fontWeight: '700',
       marginBottom: 8,

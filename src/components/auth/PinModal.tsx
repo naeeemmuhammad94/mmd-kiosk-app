@@ -202,7 +202,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       textAlign: 'center',
     },
     title: {
-      color: '#4285F4', // Blueish in all modes
+      color: theme.colors.primary, // Blueish in all modes
       fontWeight: '700',
       marginBottom: 8,
       textAlign: 'center',

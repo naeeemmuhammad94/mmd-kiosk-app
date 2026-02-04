@@ -271,7 +271,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     pinInputError: { borderColor: theme.colors.error },
     subtitle: { color: theme.colors.onSurfaceVariant, marginBottom: 24 },
     title: {
-      color: '#4285F4', // Blueish in both modes per request
+      color: theme.colors.primary, // Blueish in both modes per request
       fontWeight: '700',
       marginBottom: 8,
     },
