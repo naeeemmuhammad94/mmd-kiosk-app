@@ -52,7 +52,10 @@ export default function KioskHomeScreen() {
   const dims = getResponsiveDimensions(isTablet);
 
   const { theme, customColors } = useAppTheme();
-  const styles = useMemo(() => createStyles(theme, customColors), [theme, customColors]);
+  const styles = useMemo(
+    () => createStyles(theme, customColors, isTablet),
+    [theme, customColors, isTablet]
+  );
 
   // Calculate dynamic card width to fill screen available width
   // This ensures no right-side gap and proper 3-column layout
@@ -66,6 +69,17 @@ export default function KioskHomeScreen() {
   // This ensures 5 columns fit perfectly without wrapping
   const availableWidth = screenWidth - totalHorizontalPadding - 4;
   const cardWidth = Math.floor((availableWidth - totalGap) / numColumns);
+
+  // Accordion calculation (more padding on mobile)
+  // Accordion Padding:
+  // - Outer FlatList: isTablet ? 48 : 8 (was 16)
+  // - Inner Content: isTablet ? 16 : 8 (was 16)
+  // Total Horizontal Padding = (isTablet ? 48*2 : 8*2) + (isTablet ? 32 : 16)
+  const accordionOuterPadding = isTablet ? 96 : 16; // 48*2 vs 8*2
+  const accordionInnerPadding = isTablet ? 32 : 16; // 16*2 vs 8*2
+  const accordionTotalPadding = accordionOuterPadding + accordionInnerPadding;
+  const accordionAvailableWidth = screenWidth - accordionTotalPadding - 4;
+  const accordionCardWidth = Math.floor((accordionAvailableWidth - totalGap) / numColumns);
 
   const {
     setAttendanceData,
@@ -254,8 +268,8 @@ export default function KioskHomeScreen() {
               <Image
                 source={require('../../assets/logo.png')}
                 style={{
-                  width: 24,
-                  height: 24,
+                  width: isTablet ? 24 : 20, // Smaller logo on mobile
+                  height: isTablet ? 24 : 20,
                   marginRight: 8,
                   tintColor: theme.dark ? theme.colors.onSurface : theme.colors.primary,
                 }} // Figma Blue in Light Mode, White in Dark
@@ -367,7 +381,7 @@ export default function KioskHomeScreen() {
                 keyExtractor={item => item.id}
                 contentContainerStyle={[
                   styles.listContent,
-                  { paddingHorizontal: isTablet ? 48 : 16, paddingTop: 32 },
+                  { paddingHorizontal: isTablet ? 48 : 8, paddingTop: 32 },
                 ]}
                 renderItem={({ item: program }) => {
                   const isExpanded = expandedPrograms.includes(program.id);
@@ -397,12 +411,12 @@ export default function KioskHomeScreen() {
                         <View style={styles.accordionContent}>
                           <View style={[styles.studentGrid, { gap: dims.gridGap }]}>
                             {program.contacts.map(student => (
-                              <View key={student._id} style={{ width: cardWidth }}>
+                              <View key={student._id} style={{ width: accordionCardWidth }}>
                                 <MemoizedStudentCard
                                   student={student}
                                   showImage={settings?.showStudentImages ?? true}
                                   onPress={() => handleStudentPress(student)}
-                                  width={cardWidth}
+                                  width={accordionCardWidth}
                                 />
                               </View>
                             ))}
@@ -528,7 +542,7 @@ const getProgramBasedContacts = (
   return contactsData;
 };
 
-const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
+const createStyles = (theme: MD3Theme, customColors: CustomColors, isTablet: boolean) =>
   StyleSheet.create({
     centeredLoaderContainer: {
       alignItems: 'center',
@@ -573,14 +587,15 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
 
     brandContainer: {
       // Flex to 0 to take minimum space
+      marginRight: isTablet ? 16 : 8,
     },
     brandPill: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface, // Pure White in Light Mode
-      borderRadius: 12,
+      borderRadius: isTablet ? 12 : 8, // Smaller on mobile
       flexDirection: 'row',
-      height: 48,
-      paddingHorizontal: 16,
+      height: isTablet ? 48 : 40, // 40px on mobile
+      paddingHorizontal: isTablet ? 16 : 10,
       borderWidth: 1,
       borderColor: theme.dark ? '#3B82F6' : 'transparent', // Blueish border/glow in Dark
       shadowColor: '#3B82F6', // Blue glow
@@ -591,25 +606,25 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     brandText: {
       color: theme.dark ? theme.colors.onSurface : theme.colors.primary, // White in Dark, Blue in Light
-      fontSize: 16,
+      fontSize: isTablet ? 16 : 14,
       fontWeight: '700',
       letterSpacing: 0.5,
     },
     header: {
       borderBottomLeftRadius: 24,
       borderBottomRightRadius: 24,
-      paddingBottom: 24, // More space at bottom
+      paddingBottom: isTablet ? 24 : 12, // More space at bottom
     },
     headerActions: {
       alignItems: 'center',
       flexDirection: 'row',
-      gap: 12, // Increased gap
+      gap: isTablet ? 12 : 8, // Reduced gap
     },
     headerContent: {
       alignItems: 'center',
       flexDirection: 'row',
       justifyContent: 'space-between',
-      paddingTop: 12,
+      paddingTop: isTablet ? 12 : 12,
       // paddingHorizontal handled via inline style for alignment
     },
     headerContentTablet: {
@@ -618,12 +633,12 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     iconButton: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderRadius: 12,
+      borderRadius: isTablet ? 12 : 8,
       borderWidth: 1,
       borderColor: theme.colors.outline,
-      height: 48,
+      height: isTablet ? 48 : 40, // 40px on mobile
       justifyContent: 'center',
-      width: 48,
+      width: isTablet ? 48 : 40, // 40px on mobile
       shadowColor: '#3B82F6',
       shadowOffset: { width: 0, height: 4 }, // Push shadow down
       shadowOpacity: theme.dark ? 0.4 : 0.3,
@@ -668,18 +683,21 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     searchWrapper: {
       flex: 1,
       maxWidth: 600,
-      paddingHorizontal: 24,
+      paddingHorizontal: isTablet ? 24 : 8, // Reduced gap on mobile
     },
     searchContainer: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderRadius: 100,
+      borderRadius: isTablet ? 100 : 8, // Smaller radius on mobile usually, but keeping pill if preferred? Request said 8-10px.
+      // Correction: User requested "Border Radius: Adjust to 8px or 10px".
+      // But search input was pill (100).
+      // Let's use 8px for mobile as per request.
       borderWidth: 1,
       borderColor: theme.colors.outline,
       flexDirection: 'row',
       gap: 8,
-      height: 48,
-      paddingHorizontal: 16,
+      height: isTablet ? 48 : 40, // 40px on mobile
+      paddingHorizontal: isTablet ? 16 : 10,
       width: '100%',
       shadowColor: '#3B82F6',
       shadowOffset: { width: 0, height: 4 }, // Push shadow down
@@ -792,8 +810,9 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       backgroundColor: theme.dark ? theme.colors.background : theme.colors.surface, // Dark #0C111D
       borderBottomLeftRadius: 6,
       borderBottomRightRadius: 6,
-      padding: 16,
+      padding: isTablet ? 16 : 8, // Reduced inner padding for mobile
     },
+
     studentGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
