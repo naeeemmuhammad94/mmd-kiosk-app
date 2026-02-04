@@ -550,7 +550,7 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
     },
     header: {
       alignItems: 'center',
-      backgroundColor: theme.dark ? '#0C111D' : brandBlue, // Match background in dark mode
+      backgroundColor: theme.dark ? theme.colors.surface : brandBlue, // Match background in dark mode
       flexDirection: 'row',
       // height: 80, // Dynamic height
       justifyContent: 'space-between',
@@ -559,11 +559,9 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
       paddingBottom: 24,
       borderBottomLeftRadius: 24, // Rounded bottom corners
       borderBottomRightRadius: 24,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.dark ? '#334155' : 'transparent',
     },
     headerTitle: {
-      color: '#FFFFFF',
+      color: theme.dark ? theme.colors.primary : '#FFFFFF',
       fontSize: isTablet ? 34 : 24, // Match Homepage Title Size
       fontWeight: 'bold',
     },
@@ -572,8 +570,10 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
       gap: 12,
     },
     headerButtonCancel: {
-      backgroundColor: theme.dark ? '#2C2C2C' : '#FFFFFF',
+      backgroundColor: theme.dark ? 'transparent' : '#FFFFFF',
+      borderColor: theme.colors.primary,
       borderRadius: 6,
+      borderWidth: theme.dark ? 1 : 0,
       paddingHorizontal: 16,
       paddingVertical: 8,
     },
@@ -583,13 +583,15 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
       fontWeight: '600',
     },
     headerButtonSave: {
-      backgroundColor: theme.dark ? '#2C2C2C' : '#FFFFFF',
+      backgroundColor: theme.dark ? 'transparent' : '#FFFFFF',
+      borderColor: theme.colors.primary,
       borderRadius: 6,
+      borderWidth: theme.dark ? 1 : 0,
       paddingHorizontal: 16,
       paddingVertical: 8,
     },
     headerButtonSaveText: {
-      color: theme.dark ? '#4285F4' : brandBlue,
+      color: theme.dark ? theme.colors.primary : brandBlue,
       fontSize: 14,
       fontWeight: '600',
     },
@@ -612,11 +614,11 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
 
     // Shadow Card for Sections
     sectionCard: {
-      backgroundColor: theme.dark ? 'transparent' : '#FFFFFF', // Transparent in Figma, just lines or subtle bg
+      backgroundColor: theme.dark ? '#161B26' : '#FFFFFF', // Transparent in Figma, just lines or subtle bg
       // Actually Figma shows "Attendance Rules" in a box with border
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: theme.dark ? '#334155' : '#E0E0E0',
+      borderColor: theme.dark ? '#717171' : '#E0E0E0',
       marginBottom: 16, // Reduced height/spacing
       padding: 12, // Reduced padding
       // Shadow properties
@@ -646,7 +648,7 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
 
     // Boxed Item Style (SettingItem / CheckboxItem)
     itemBox: {
-      backgroundColor: theme.dark ? '#1E293B' : '#FFFFFF', // Use Surface color
+      backgroundColor: theme.dark ? '#161B26' : '#FFFFFF', // Use Surface color
       borderRadius: 12, // Increased radius for larger box
       borderWidth: 1,
       borderColor: theme.dark ? '#334155' : '#E0E0E0',
@@ -711,10 +713,10 @@ const createStyles = (theme: MD3Theme, isTablet: boolean, brandBlue: string) =>
 
     // Logout Section (Boxed + Shadow)
     logoutContainer: {
-      backgroundColor: theme.dark ? '#1E1E1E' : '#FFFFFF', // Dark: Tinted Surface, Light: White
+      backgroundColor: theme.dark ? '#161B26' : '#FFFFFF', // Dark: Tinted Surface, Light: White
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: theme.dark ? '#333' : '#E0E0E0',
+      borderColor: theme.dark ? '#717171' : '#E0E0E0',
       padding: 16,
       flexDirection: 'row',
       alignItems: 'center',
