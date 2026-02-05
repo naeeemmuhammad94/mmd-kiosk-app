@@ -13,6 +13,7 @@ import {
   TextInput,
   TouchableOpacity,
   useWindowDimensions,
+  RefreshControl,
 } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
@@ -56,7 +57,11 @@ export default function ProgramsScreen() {
   const [expandedPrograms, setExpandedPrograms] = useState<string[]>([]);
 
   // Fetch attendance data if not in store
-  const { data: fetchedData, isLoading } = useQuery({
+  const {
+    data: fetchedData,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['getAttendance'],
     queryFn: () => {
       const today = new Date().toISOString().split('T')[0];
@@ -65,6 +70,14 @@ export default function ProgramsScreen() {
     select: response => getProgramBasedData(response.data?.allAttendance || []),
     enabled: isAuthenticated && attendanceData.length === 0,
   });
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
+  };
 
   // Fetch settings
   const { data: settingsData } = useQuery({
@@ -192,7 +205,10 @@ export default function ProgramsScreen() {
       {/* Loading State */}
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <ActivityIndicator
+            size="large"
+            color={theme.dark ? theme.colors.onPrimary : theme.colors.primary}
+          />
         </View>
       ) : (
         /* Programs Accordion List */
@@ -200,6 +216,13 @@ export default function ProgramsScreen() {
           data={filteredPrograms}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={theme.dark ? theme.colors.onPrimary : theme.colors.primary}
+            />
+          }
           renderItem={({ item: program }) => {
             const isExpanded = expandedPrograms.includes(program.id);
 
