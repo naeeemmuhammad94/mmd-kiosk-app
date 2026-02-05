@@ -194,7 +194,7 @@ export default function ProgramsScreen() {
           <Ionicons name="search-outline" size={18} color={customColors.onSurfaceDisabled} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search..."
+            placeholder="Search"
             placeholderTextColor={customColors.onSurfaceDisabled}
             value={searchQuery}
             onChangeText={setSearchQuery}

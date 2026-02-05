@@ -341,7 +341,8 @@ export default function KioskSettingsModal() {
                     <Switch
                       value={localSettings.showStudentImages ?? true}
                       onValueChange={() => toggleSetting('showStudentImages')}
-                      trackColor={{ false: theme.colors.outline, true: BRAND_BLUE }}
+                      trackColor={{ false: theme.colors.outlineVariant, true: BRAND_BLUE }} // Use outlineVariant for better visibility
+                      ios_backgroundColor={theme.colors.outlineVariant}
                       thumbColor="#FFF"
                       style={styles.smallSwitch}
                     />
@@ -360,7 +361,8 @@ export default function KioskSettingsModal() {
                     <Switch
                       value={theme.dark} // Reflect effective theme (works for auto)
                       onValueChange={handleToggleDarkMode}
-                      trackColor={{ false: theme.colors.outline, true: BRAND_BLUE }}
+                      trackColor={{ false: theme.colors.outlineVariant, true: BRAND_BLUE }}
+                      ios_backgroundColor={theme.colors.outlineVariant}
                       thumbColor="#FFF"
                       style={styles.smallSwitch}
                     />
@@ -379,26 +381,8 @@ export default function KioskSettingsModal() {
                     <Switch
                       value={localSettings.powerSavingMode ?? false}
                       onValueChange={() => toggleSetting('powerSavingMode')}
-                      trackColor={{ false: theme.colors.outline, true: BRAND_BLUE }}
-                      thumbColor="#FFF"
-                      style={styles.smallSwitch}
-                    />
-                  }
-                  theme={theme}
-                  styles={styles}
-                />
-
-                <SettingItem
-                  title="Sort Order"
-                  description="Student will display by Rank if enabled and alphabetical if off."
-                  icon="swap-vertical"
-                  iconColor={theme.colors.primary}
-                  iconSymbolColor={theme.colors.onPrimary}
-                  rightContent={
-                    <Switch
-                      value={localSettings.sortByRank ?? false}
-                      onValueChange={() => toggleSetting('sortByRank')}
-                      trackColor={{ false: theme.colors.outline, true: BRAND_BLUE }}
+                      trackColor={{ false: theme.colors.outlineVariant, true: BRAND_BLUE }}
+                      ios_backgroundColor={theme.colors.outlineVariant}
                       thumbColor="#FFF"
                       style={styles.smallSwitch}
                     />

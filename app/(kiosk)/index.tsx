@@ -297,7 +297,7 @@ export default function KioskHomeScreen() {
               <Ionicons name="search-outline" size={20} color={theme.colors.onSurfaceVariant} />
               <TextInput
                 style={styles.searchInput}
-                placeholder="Search........."
+                placeholder="Search"
                 placeholderTextColor={customColors.textLight}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
