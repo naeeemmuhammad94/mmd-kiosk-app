@@ -150,13 +150,13 @@ export default function LoginScreen() {
                       { height: dims.inputHeight },
                       errors.userName && styles.inputError,
                     ]}
-                    placeholder="Enter your email"
+                    placeholder="Enter your username"
                     placeholderTextColor={theme.colors.onSurfaceVariant}
                     value={userName}
                     onChangeText={setUserName}
                     autoCapitalize="none"
                     autoCorrect={false}
-                    keyboardType="email-address"
+                    keyboardType="default"
                     returnKeyType="next"
                     onSubmitEditing={() => passwordRef.current?.focus()}
                     editable={!loginMutation.isPending}

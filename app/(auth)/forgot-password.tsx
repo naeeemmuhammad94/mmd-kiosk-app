@@ -162,7 +162,8 @@ export default function ForgotPasswordScreen() {
 
                     {/* Success Message */}
                     <Text style={styles.successDescription}>
-                      We&apos;ve sent a password reset link to{'\n'}your email address
+                      We&apos;ve sent a password reset link to{'\n'}your username&apos;s registered
+                      email
                     </Text>
 
                     {/* Back to Login Button */}
@@ -205,8 +206,8 @@ export default function ForgotPasswordScreen() {
 
                     {/* Description */}
                     <Text style={styles.description}>
-                      Enter your registered email address.{'\n'}We&apos;ll send you a password reset
-                      link.
+                      Enter your username.{'\n'}We&apos;ll send you a password reset link to your
+                      registered email.
                     </Text>
 
                     {/* Username/Email Input */}
@@ -223,7 +224,7 @@ export default function ForgotPasswordScreen() {
                               { height: dims.inputHeight },
                               errors.userName && styles.inputError,
                             ]}
-                            placeholder="Enter your email"
+                            placeholder="Enter your username"
                             placeholderTextColor={theme.colors.onSurfaceVariant}
                             value={value}
                             onChangeText={text => {
