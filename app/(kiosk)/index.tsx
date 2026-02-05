@@ -222,6 +222,14 @@ export default function KioskHomeScreen() {
     setIsRefreshing(false);
   }, [refetch]);
 
+  // KIOSK button: return to home AND refresh
+  const handleBrandPress = useCallback(async () => {
+    if (isProgramView) {
+      setIsProgramView(false);
+    }
+    await handleRefresh();
+  }, [isProgramView, handleRefresh]);
+
   // Optimized renderItem
   const renderItem = useCallback(
     ({ item }: { item: AttendanceContact }) => (
@@ -263,7 +271,11 @@ export default function KioskHomeScreen() {
         >
           {/* Left: Kiosk Brand Mark */}
           <View style={styles.brandContainer}>
-            <TouchableOpacity style={styles.brandPill} onPress={handleRefresh} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={styles.brandPill}
+              onPress={handleBrandPress}
+              activeOpacity={0.7}
+            >
               {/* Logo: PNG with TintColor */}
               <Image
                 source={require('../../assets/logo.png')}
@@ -368,7 +380,10 @@ export default function KioskHomeScreen() {
                     */}
           {isLoading && (
             <View style={styles.centeredLoaderContainer}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
+              <ActivityIndicator
+                size="large"
+                color={theme.dark ? theme.colors.onPrimary : theme.colors.primary}
+              />
             </View>
           )}
 
@@ -383,6 +398,13 @@ export default function KioskHomeScreen() {
                   styles.listContent,
                   { paddingHorizontal: isTablet ? 48 : 8, paddingTop: 32 },
                 ]}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={isRefreshing}
+                    onRefresh={handleRefresh}
+                    tintColor={theme.dark ? theme.colors.onPrimary : theme.colors.primary}
+                  />
+                }
                 renderItem={({ item: program }) => {
                   const isExpanded = expandedPrograms.includes(program.id);
                   return (
@@ -469,7 +491,7 @@ export default function KioskHomeScreen() {
                   <RefreshControl
                     refreshing={isRefreshing}
                     onRefresh={handleRefresh}
-                    tintColor={theme.colors.primary}
+                    tintColor={theme.dark ? theme.colors.onPrimary : theme.colors.primary}
                   />
                 }
                 renderItem={renderItem}
@@ -628,7 +650,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors, isTablet: boo
       // paddingHorizontal handled via inline style for alignment
     },
     headerContentTablet: {
-      paddingTop: 48,
+      paddingTop: 32,
     },
     iconButton: {
       alignItems: 'center',
@@ -688,10 +710,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors, isTablet: boo
     searchContainer: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderRadius: isTablet ? 100 : 8, // Smaller radius on mobile usually, but keeping pill if preferred? Request said 8-10px.
-      // Correction: User requested "Border Radius: Adjust to 8px or 10px".
-      // But search input was pill (100).
-      // Let's use 8px for mobile as per request.
+      borderRadius: isTablet ? 100 : 8, // Pill on tablet, rounded on mobile
       borderWidth: 1,
       borderColor: theme.colors.outline,
       flexDirection: 'row',

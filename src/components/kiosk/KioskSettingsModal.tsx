@@ -610,6 +610,7 @@ const createStyles = (
       borderWidth: theme.dark ? 1 : 0,
       height: isTablet ? undefined : 40,
       justifyContent: 'center',
+      minWidth: isTablet ? 120 : 60, // Prevent shrinking when loading
       paddingHorizontal: isTablet ? 16 : 12,
       paddingVertical: isTablet ? 8 : 0,
     },

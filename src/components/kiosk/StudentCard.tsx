@@ -262,9 +262,9 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     statusBadgeBottomRight: {
       // Background removed as per request (Figma shows standalone shield icon)
       borderRadius: 999,
-      bottom: -8, // Adjusted for larger size
+      bottom: -12, // Moved lower at 45° angle
       position: 'absolute',
-      right: -8, // Adjusted for larger size
+      right: -12, // Moved more to the right
       shadowColor: customColors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
