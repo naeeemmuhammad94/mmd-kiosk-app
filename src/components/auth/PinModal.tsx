@@ -138,17 +138,17 @@ export default function PinModal() {
 const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
   StyleSheet.create({
     buttonContainer: {
-      marginTop: 24, // Increase top margin for separation
-      width: '100%', // Full width container
+      marginTop: 24,
+      width: '100%',
     },
     confirmButton: {
       alignItems: 'center',
       alignSelf: 'center',
       backgroundColor: theme.colors.primary,
       borderRadius: 12,
-      // height: 56, // Removed in favor of dynamic height
+
       justifyContent: 'center',
-      width: 240, // Constrained width per polish request
+      width: 240,
     },
     confirmButtonDisabled: {
       opacity: 0.6,
@@ -173,7 +173,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     modalContainer: {
       alignItems: 'center',
-      backgroundColor: customColors.modalBackground, // Dynamic Modal BG
+      backgroundColor: customColors.modalBackground,
       borderRadius: 16,
       elevation: 10,
       maxWidth: 448,
@@ -187,7 +187,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     overlay: {
       alignItems: 'center',
-      backgroundColor: customColors.backdropDark, // Dynamic Backdrop
+      backgroundColor: customColors.backdropDark,
       flex: 1,
       justifyContent: 'center',
     },
@@ -202,7 +202,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       textAlign: 'center',
     },
     title: {
-      color: theme.colors.primary, // Blueish in all modes
+      color: theme.colors.primary,
       fontWeight: '700',
       marginBottom: 8,
       textAlign: 'center',

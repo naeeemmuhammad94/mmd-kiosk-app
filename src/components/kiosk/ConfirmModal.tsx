@@ -18,12 +18,7 @@ export default function ConfirmModal() {
   const { theme, customColors } = useAppTheme();
   const styles = useMemo(() => createStyles(theme, customColors), [theme, customColors]);
 
-  const {
-    selectedStudent,
-    settings,
-    confirmType,
-    closeAllModals, // Updated: Logic to close EVERYTHING
-  } = useKioskStore();
+  const { selectedStudent, settings, confirmType, closeAllModals } = useKioskStore();
 
   // Auto-close after 3 seconds - TRIGGERS PARENT CLOSE TOO
   useEffect(() => {
@@ -65,7 +60,7 @@ export default function ConfirmModal() {
           style={[
             styles.statusIconWrapper,
             {
-              backgroundColor: 'transparent', // Removed background per request
+              backgroundColor: 'transparent',
             },
           ]}
         >
@@ -173,13 +168,13 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     backdrop: {
       ...StyleSheet.absoluteFillObject,
-      backgroundColor: customColors.backdropDark, // Darker overlay per Figma
+      backgroundColor: customColors.backdropDark,
       zIndex: 1,
     },
     cardContainer: {
       alignItems: 'center',
-      backgroundColor: customColors.modalBackground, // Dynamic Modal BG
-      borderRadius: 24, // Rounded corners
+      backgroundColor: customColors.modalBackground,
+      borderRadius: 24,
       elevation: 8,
       maxWidth: 400, // Compact max width
       paddingHorizontal: 24,
@@ -189,8 +184,8 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.15,
       shadowRadius: 12,
-      width: '90%', // Responsive width
-      zIndex: 10, // Ensure card is above backdrop
+      width: '90%',
+      zIndex: 10,
     },
     closeButton: {
       padding: 4,
@@ -238,8 +233,6 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       zIndex: 9999,
     },
     profileImage: {
-      // borderColor removed - handled by gradient
-      // borderRadius handled by container
       height: 80,
       width: 80,
     },
@@ -253,7 +246,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     statusIconWrapper: {
       alignItems: 'center',
-      borderRadius: 60, // Circle
+      borderRadius: 60,
       height: 120,
       justifyContent: 'center',
       marginBottom: 20,
@@ -272,7 +265,6 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       textAlign: 'center',
     },
     timeBadge: {
-      // Dynamic background in component, this is base
       alignItems: 'center',
       borderRadius: 8,
       paddingHorizontal: 32,
@@ -281,13 +273,11 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     timeBadgeLabel: {
       fontSize: 12,
-      // Dynamic color in component
       marginBottom: 2,
     },
     timeBadgeValue: {
       fontSize: 16,
       fontWeight: '700',
-      // Dynamic color in component
     },
     title: {
       color: theme.colors.onSurface,

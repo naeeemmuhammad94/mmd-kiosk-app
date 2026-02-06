@@ -310,7 +310,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     card: {
       alignItems: 'center',
       alignSelf: 'center',
-      backgroundColor: customColors.modalBackground, // Dynamic Modal BG
+      backgroundColor: customColors.modalBackground,
       borderRadius: 24,
       elevation: 8,
       // width and maxWidth set dynamically via inline style
@@ -351,8 +351,8 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       marginTop: 4,
     },
     input: {
-      backgroundColor: customColors.inputBackground, // Dynamic Input BG
-      borderColor: customColors.inputBorder, // Dynamic Input Border
+      backgroundColor: customColors.inputBackground,
+      borderColor: customColors.inputBorder,
       borderRadius: 8,
       borderWidth: 1,
       color: theme.colors.onSurface,

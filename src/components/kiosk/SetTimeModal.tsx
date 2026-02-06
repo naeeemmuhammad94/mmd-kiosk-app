@@ -50,7 +50,6 @@ export default function SetTimeModal({
 
   useEffect(() => {
     if (visible) {
-      // Use setTimeout to avoid ESLint set-state-in-effect warning
       setTimeout(() => setTime(String(currentTime)), 0);
     }
   }, [currentTime, visible]);
@@ -188,7 +187,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     iconContainer: {
       alignItems: 'center',
-      backgroundColor: customColors.surfaceDisabled, // Fallback
+      backgroundColor: customColors.surfaceDisabled,
       borderRadius: 8,
       height: 56,
       justifyContent: 'center',
@@ -222,18 +221,18 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     inputWrapper: {
       alignItems: 'center',
-      backgroundColor: customColors.inputBackground, // Dynamic Input BG
-      borderColor: customColors.inputBorder, // Dynamic Border
+      backgroundColor: customColors.inputBackground,
+      borderColor: customColors.inputBorder,
       borderRadius: 8,
       borderWidth: 1,
       flexDirection: 'row',
       overflow: 'hidden',
     },
     modalContainer: {
-      backgroundColor: customColors.modalBackground, // Dynamic Modal BG
+      backgroundColor: customColors.modalBackground,
       borderRadius: 16,
       elevation: 5,
-      maxWidth: 448, // Fix: Match KioskPinModal
+      maxWidth: 448,
       minHeight: 200,
       padding: 24,
       position: 'relative',
@@ -246,8 +245,8 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     overlay: {
       ...StyleSheet.absoluteFillObject,
-      alignItems: 'center', // Fix: Sorted before backgroundColor
-      backgroundColor: customColors.backdropDark, // Fix: Enable dark overlay
+      alignItems: 'center',
+      backgroundColor: customColors.backdropDark,
       elevation: 5,
       height: '100%',
       justifyContent: 'center',
@@ -272,7 +271,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       marginBottom: 24,
     },
     title: {
-      color: theme.colors.primary, // Blueish in all modes
+      color: theme.colors.primary,
       fontSize: 22,
       fontWeight: '700',
       marginBottom: 8,

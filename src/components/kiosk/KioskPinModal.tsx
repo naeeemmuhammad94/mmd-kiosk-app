@@ -207,7 +207,6 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       borderWidth: 1,
       flex: 1,
       justifyContent: 'center',
-      // paddingVertical removed for dynamic height
     },
     cancelButtonText: { color: theme.colors.onSurfaceVariant, fontWeight: '500' },
     closeButton: { position: 'absolute', right: 16, top: 16 },
@@ -217,7 +216,6 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       borderRadius: 8,
       flex: 1,
       justifyContent: 'center',
-      // paddingVertical removed for dynamic height
     },
     confirmButtonText: { color: theme.colors.onPrimary, fontWeight: '600' },
     errorText: { color: theme.colors.error, marginBottom: 16, textAlign: 'center' },
@@ -234,8 +232,8 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       flex: 1,
     },
     modalContainer: {
-      backgroundColor: customColors.modalBackground, // Dynamic Modal BG
-      borderRadius: 24, // More rounded
+      backgroundColor: customColors.modalBackground,
+      borderRadius: 24,
       maxWidth: 448,
       padding: 32,
       position: 'relative',
@@ -243,7 +241,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     overlay: {
       alignItems: 'center',
-      backgroundColor: customColors.backdropDark, // Dynamic Backdrop
+      backgroundColor: customColors.backdropDark,
       flex: 1,
       justifyContent: 'center',
     },
@@ -254,8 +252,8 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       marginBottom: 16,
     },
     pinInput: {
-      backgroundColor: customColors.inputBackground, // Dynamic Input BG
-      borderColor: customColors.inputBorder, // Dynamic Input Border
+      backgroundColor: customColors.inputBackground,
+      borderColor: customColors.inputBorder,
       borderRadius: 12,
       borderWidth: 1,
       color: theme.colors.onSurface,
@@ -268,7 +266,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     pinInputError: { borderColor: theme.colors.error },
     subtitle: { color: theme.colors.onSurfaceVariant, marginBottom: 24 },
     title: {
-      color: theme.colors.primary, // Blueish in both modes per request
+      color: theme.colors.primary,
       fontWeight: '700',
       marginBottom: 8,
     },

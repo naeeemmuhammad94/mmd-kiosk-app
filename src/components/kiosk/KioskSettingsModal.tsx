@@ -330,18 +330,12 @@ export default function KioskSettingsModal() {
                   description="Displays profile photos on student tiles during check-in."
                   icon="person"
                   iconColor={theme.colors.primary}
-                  // Actually earlier user said "make display behaviour toggles small".
-                  // And "use lock icon from create pin model" (which is grey box, blue icon).
-                  // But previously I had blue box white icon for Display Behavior.
-                  // Let's stick to Blue Box White Icon for Display Behavior as that seems unchanged in feedback,
-                  // UNLESS `uploaded_media_0` shows otherwise.
-                  // `uploaded_media_0` (Display Behavior) shows Blue Box with White Person Icon. Correct.
                   iconSymbolColor={theme.colors.onPrimary}
                   rightContent={
                     <Switch
                       value={localSettings.showStudentImages ?? true}
                       onValueChange={() => toggleSetting('showStudentImages')}
-                      trackColor={{ false: theme.colors.outlineVariant, true: BRAND_BLUE }} // Use outlineVariant for better visibility
+                      trackColor={{ false: theme.colors.outlineVariant, true: BRAND_BLUE }}
                       ios_backgroundColor={theme.colors.outlineVariant}
                       thumbColor="#FFF"
                       style={styles.smallSwitch}
@@ -359,7 +353,7 @@ export default function KioskSettingsModal() {
                   iconSymbolColor={theme.colors.onPrimary}
                   rightContent={
                     <Switch
-                      value={theme.dark} // Reflect effective theme (works for auto)
+                      value={theme.dark}
                       onValueChange={handleToggleDarkMode}
                       trackColor={{ false: theme.colors.outlineVariant, true: BRAND_BLUE }}
                       ios_backgroundColor={theme.colors.outlineVariant}
@@ -459,7 +453,6 @@ export default function KioskSettingsModal() {
                   title="Change Kiosk PIN"
                   description="Update the PIN used to access kiosk settings"
                   icon="lock-closed-outline"
-                  // Lock icon matched to Figma: Blue Outline, Transparent Box
                   iconColor="transparent"
                   iconSymbolColor={theme.colors.primary}
                   rightContent={
@@ -475,7 +468,6 @@ export default function KioskSettingsModal() {
                 />
               </SettingSection>
 
-              {/* Logout Footer - Wrapper has shadow now via styles.logoutContainer */}
               <View style={styles.logoutContainer}>
                 <View style={styles.logoutTextContainer}>
                   <Text style={styles.logoutTitle}>Logout of Kiosk</Text>
@@ -562,39 +554,38 @@ const createStyles = (
     },
     header: {
       alignItems: 'center',
-      backgroundColor: theme.dark ? theme.colors.surface : brandBlue, // Match background in dark mode
-      flexDirection: 'row',
-      // height: 80, // Dynamic height
-      justifyContent: 'space-between',
-      paddingHorizontal: isTablet ? 64 : 16, // Heavily reduced from 32->16 for mobile
-      paddingTop: isTablet ? 60 : Math.max(topInset + 16, 24), // Dynamic safe area
-      paddingBottom: isTablet ? 24 : 12, // Reduced
-      borderBottomLeftRadius: 24, // Rounded bottom corners
+      backgroundColor: theme.dark ? theme.colors.surface : brandBlue,
+      borderBottomLeftRadius: 24,
       borderBottomRightRadius: 24,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingBottom: isTablet ? 24 : 12,
+      paddingHorizontal: isTablet ? 64 : 16,
+      paddingTop: isTablet ? 60 : Math.max(topInset + 16, 24),
     },
     headerButtonCancel: {
       backgroundColor: theme.dark ? 'transparent' : '#FFFFFF',
       borderColor: theme.colors.primary,
-      borderRadius: isTablet ? 8 : 8,
+      borderRadius: 8,
       borderWidth: theme.dark ? 1 : 0,
-      paddingHorizontal: isTablet ? 16 : 12, // Reduced padding for mobile
-      height: isTablet ? undefined : 40, // Fixed height on mobile
+      height: isTablet ? undefined : 40,
       justifyContent: 'center',
-      paddingVertical: isTablet ? 8 : 0, // Vertical center if fixed height
+      paddingHorizontal: isTablet ? 16 : 12,
+      paddingVertical: isTablet ? 8 : 0,
     },
     headerButtonCancelText: {
       color: theme.colors.onSurface,
-      fontSize: isTablet ? 14 : 14, // Keep 14px accessible
+      fontSize: 14,
       fontWeight: '600',
     },
     headerButtonSave: {
       backgroundColor: theme.dark ? 'transparent' : '#FFFFFF',
       borderColor: theme.colors.primary,
-      borderRadius: isTablet ? 8 : 8,
+      borderRadius: 8,
       borderWidth: theme.dark ? 1 : 0,
       height: isTablet ? undefined : 40,
       justifyContent: 'center',
-      minWidth: isTablet ? 120 : 60, // Prevent shrinking when loading
+      minWidth: isTablet ? 120 : 60,
       paddingHorizontal: isTablet ? 16 : 12,
       paddingVertical: isTablet ? 8 : 0,
     },
@@ -605,11 +596,11 @@ const createStyles = (
     },
     headerButtons: {
       flexDirection: 'row',
-      gap: isTablet ? 12 : 8, // Reduced gap on mobile
+      gap: isTablet ? 12 : 8,
     },
     headerTitle: {
       color: theme.dark ? theme.colors.primary : '#FFFFFF',
-      fontSize: dims.headerFontSize, // Responsive font size
+      fontSize: dims.headerFontSize,
       fontWeight: 'bold',
     },
     iconBox: {
@@ -679,11 +670,11 @@ const createStyles = (
       marginBottom: 2,
     },
     modalContainer: {
-      backgroundColor: theme.dark ? theme.colors.background : customColors.backgroundAlt, // Figma Dark Background
-      width: '100%', // Full screen
-      height: '100%', // Full screen
-      borderRadius: 0, // No radius for full screen
+      backgroundColor: theme.dark ? theme.colors.background : customColors.backgroundAlt,
+      borderRadius: 0,
+      height: '100%',
       overflow: 'hidden',
+      width: '100%',
     },
     overlay: {
       alignItems: 'center',

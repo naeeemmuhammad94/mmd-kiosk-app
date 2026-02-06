@@ -11,10 +11,10 @@ export const MOBILE_BREAKPOINT = 768;
  */
 export const getResponsiveDimensions = (isTablet: boolean) => ({
   // Inputs & Buttons
-  inputHeight: isTablet ? 52 : 40, // 40px on mobile
-  buttonHeight: isTablet ? 52 : 40, // 40px on mobile
+  inputHeight: isTablet ? 52 : 40,
+  buttonHeight: isTablet ? 52 : 40,
   buttonPaddingV: isTablet ? 14 : 10,
-  inputRadius: isTablet ? 12 : 8, // Smaller radius on mobile
+  inputRadius: isTablet ? 12 : 8,
 
   // Typography
   headerFontSize: isTablet ? 24 : 22,

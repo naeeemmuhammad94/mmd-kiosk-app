@@ -136,7 +136,7 @@ export default function RootLayout() {
         // Log them out so they hit the Login screen where errors are handled gracefully.
         const authState = useAuthStore.getState();
         if (authState.isAuthenticated) {
-          console.log('Initialization failed while authenticated. Resetting session.');
+          // Initialization failed while authenticated - reset session
           await authState.logout();
         }
       } finally {

@@ -280,11 +280,11 @@ export default function KioskHomeScreen() {
               <Image
                 source={require('../../assets/logo.png')}
                 style={{
-                  width: isTablet ? 24 : 20, // Smaller logo on mobile
+                  width: isTablet ? 24 : 20,
                   height: isTablet ? 24 : 20,
                   marginRight: 8,
                   tintColor: theme.dark ? theme.colors.onSurface : theme.colors.primary,
-                }} // Figma Blue in Light Mode, White in Dark
+                }}
                 resizeMode="contain"
               />
               <Text style={styles.brandText}>KIOSK</Text>
@@ -608,26 +608,25 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors, isTablet: boo
     },
 
     brandContainer: {
-      // Flex to 0 to take minimum space
       marginRight: isTablet ? 16 : 8,
     },
     brandPill: {
       alignItems: 'center',
-      backgroundColor: theme.colors.surface, // Pure White in Light Mode
-      borderRadius: isTablet ? 12 : 8, // Smaller on mobile
-      flexDirection: 'row',
-      height: isTablet ? 48 : 40, // 40px on mobile
-      paddingHorizontal: isTablet ? 16 : 10,
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.dark ? '#3B82F6' : 'transparent',
+      borderRadius: isTablet ? 12 : 8,
       borderWidth: 1,
-      borderColor: theme.dark ? '#3B82F6' : 'transparent', // Blueish border/glow in Dark
-      shadowColor: '#3B82F6', // Blue glow
-      shadowOffset: { width: 0, height: 4 }, // Push shadow down
+      elevation: 5,
+      flexDirection: 'row',
+      height: isTablet ? 48 : 40,
+      paddingHorizontal: isTablet ? 16 : 10,
+      shadowColor: '#3B82F6',
+      shadowOffset: { width: 0, height: 4 },
       shadowOpacity: theme.dark ? 0.6 : 0.3,
       shadowRadius: 8,
-      elevation: 5,
     },
     brandText: {
-      color: theme.dark ? theme.colors.onSurface : theme.colors.primary, // White in Dark, Blue in Light
+      color: theme.dark ? theme.colors.onSurface : theme.colors.primary,
       fontSize: isTablet ? 16 : 14,
       fontWeight: '700',
       letterSpacing: 0.5,
@@ -635,19 +634,18 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors, isTablet: boo
     header: {
       borderBottomLeftRadius: 24,
       borderBottomRightRadius: 24,
-      paddingBottom: isTablet ? 24 : 12, // More space at bottom
+      paddingBottom: isTablet ? 24 : 12,
     },
     headerActions: {
       alignItems: 'center',
       flexDirection: 'row',
-      gap: isTablet ? 12 : 8, // Reduced gap
+      gap: isTablet ? 12 : 8,
     },
     headerContent: {
       alignItems: 'center',
       flexDirection: 'row',
       justifyContent: 'space-between',
       paddingTop: isTablet ? 12 : 12,
-      // paddingHorizontal handled via inline style for alignment
     },
     headerContentTablet: {
       paddingTop: 32,
@@ -655,17 +653,17 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors, isTablet: boo
     iconButton: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.outline,
       borderRadius: isTablet ? 12 : 8,
       borderWidth: 1,
-      borderColor: theme.colors.outline,
-      height: isTablet ? 48 : 40, // 40px on mobile
+      elevation: 4,
+      height: isTablet ? 48 : 40,
       justifyContent: 'center',
-      width: isTablet ? 48 : 40, // 40px on mobile
       shadowColor: '#3B82F6',
-      shadowOffset: { width: 0, height: 4 }, // Push shadow down
+      shadowOffset: { width: 0, height: 4 },
       shadowOpacity: theme.dark ? 0.4 : 0.3,
       shadowRadius: 8,
-      elevation: 4,
+      width: isTablet ? 48 : 40,
     },
     paddingMobile: {
       paddingHorizontal: 16,
@@ -705,83 +703,79 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors, isTablet: boo
     searchWrapper: {
       flex: 1,
       maxWidth: 600,
-      paddingHorizontal: isTablet ? 24 : 8, // Reduced gap on mobile
+      paddingHorizontal: isTablet ? 24 : 8,
     },
     searchContainer: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderRadius: isTablet ? 100 : 8, // Pill on tablet, rounded on mobile
-      borderWidth: 1,
       borderColor: theme.colors.outline,
+      borderRadius: isTablet ? 100 : 8,
+      borderWidth: 1,
+      elevation: 4,
       flexDirection: 'row',
       gap: 8,
-      height: isTablet ? 48 : 40, // 40px on mobile
+      height: isTablet ? 48 : 40,
       paddingHorizontal: isTablet ? 16 : 10,
-      width: '100%',
       shadowColor: '#3B82F6',
-      shadowOffset: { width: 0, height: 4 }, // Push shadow down
+      shadowOffset: { width: 0, height: 4 },
       shadowOpacity: theme.dark ? 0.4 : 0.3,
       shadowRadius: 8,
-      elevation: 4,
+      width: '100%',
     },
     searchInput: {
-      color: theme.colors.onSurface, // Text stays dark (on white bg)
+      color: theme.colors.onSurface,
       flex: 1,
       fontSize: 14,
     },
 
     searchResultsCard: {
-      backgroundColor: theme.dark ? theme.colors.background : theme.colors.surface, // Dark #0C111D
-      borderColor: 'transparent',
-      borderWidth: 0,
-      borderTopWidth: 0, // Merge with label
-      borderTopLeftRadius: 0, // Ensure flat top
-      borderTopRightRadius: 0,
-      marginTop: 0, // Ensure no gap
+      backgroundColor: theme.dark ? theme.colors.background : theme.colors.surface,
       borderBottomLeftRadius: 8,
       borderBottomRightRadius: 8,
-      // flex: 1 removed to allow shrinking to content
-      flexShrink: 1, // Ensure it doesn't overflow container
-      // minHeight: 200 removed
-      // Shadow
+      borderColor: 'transparent',
+      borderTopLeftRadius: 0,
+      borderTopRightRadius: 0,
+      borderTopWidth: 0,
+      borderWidth: 0,
+      elevation: 4,
+      flexShrink: 1,
+      marginTop: 0,
       shadowColor: customColors.shadow,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: theme.dark ? 0.5 : 0.1,
       shadowRadius: 8,
-      elevation: 4,
     },
     searchResultsContainer: {
-      backgroundColor: 'transparent', // Transparent to show background
+      backgroundColor: 'transparent',
       flex: 1,
-      paddingHorizontal: 16, // Fix: Match grid padding
+      paddingHorizontal: 16,
     },
     searchResultsLabel: {
-      backgroundColor: theme.dark ? theme.colors.surface : theme.colors.primary, // Dark mode matches accordion header
-      borderColor: 'transparent',
-      borderWidth: 0,
-      borderBottomWidth: 0, // Merge with card
-      borderBottomLeftRadius: 0, // Ensure flat bottom
+      backgroundColor: theme.dark ? theme.colors.surface : theme.colors.primary,
+      borderBottomLeftRadius: 0,
       borderBottomRightRadius: 0,
-      marginBottom: 0, // Ensure no gap
+      borderBottomWidth: 0,
+      borderColor: 'transparent',
       borderTopLeftRadius: 8,
       borderTopRightRadius: 8,
+      borderWidth: 0,
+      elevation: 4,
+      marginBottom: 0,
       paddingHorizontal: 16,
       paddingVertical: 10,
-      zIndex: 1, // Ensure matches card
-      // Shadow
       shadowColor: customColors.shadow,
-      shadowOffset: { width: 0, height: -2 }, // Slight shadow up
+      shadowOffset: { width: 0, height: -2 },
       shadowOpacity: theme.dark ? 0.5 : 0.1,
       shadowRadius: 4,
-      elevation: 4,
+      zIndex: 1,
     },
     searchResultsLabelContainer: {
-      backgroundColor: 'transparent', // Remove background color to blend with screen
+      backgroundColor: 'transparent',
       paddingHorizontal: 16,
       paddingTop: 8,
     },
     searchResultsText: {
-      color: '#FFFFFF', // White text always
+      color: '#FFFFFF',
       fontSize: 14,
       fontWeight: '600',
     },
@@ -791,18 +785,18 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors, isTablet: boo
       paddingBottom: 100,
     },
     accordionItem: {
-      marginBottom: 16, // Increased spacing between items
+      marginBottom: 16,
     },
     accordionItemExpanded: {
-      borderColor: theme.colors.outline, // Dark border #717171
+      borderColor: theme.colors.outline,
       borderRadius: 8,
       borderWidth: 1,
       marginBottom: 16,
     },
     accordionHeader: {
       alignItems: 'center',
-      backgroundColor: customColors.backgroundAlt, // Dark #161B26
-      borderColor: theme.colors.outline, // Dark #717171
+      backgroundColor: customColors.backgroundAlt,
+      borderColor: theme.colors.outline,
       borderRadius: 8,
       borderWidth: 1,
       flexDirection: 'row',
@@ -812,29 +806,27 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors, isTablet: boo
     },
     accordionHeaderExpanded: {
       backgroundColor: customColors.backgroundAlt,
-      // borderBottomColor removed as per request
-      borderBottomWidth: 0, // Removed border bottom
       borderBottomLeftRadius: 8,
       borderBottomRightRadius: 8,
+      borderBottomWidth: 0,
       borderTopLeftRadius: 8,
       borderTopRightRadius: 8,
       borderWidth: 0,
     },
     accordionTitle: {
-      color: theme.colors.onSurface, // White in dark mode
+      color: theme.colors.onSurface,
       fontSize: 15,
       fontWeight: '600',
     },
     accordionContent: {
-      backgroundColor: theme.dark ? theme.colors.background : theme.colors.surface, // Dark #0C111D
+      backgroundColor: theme.dark ? theme.colors.background : theme.colors.surface,
       borderBottomLeftRadius: 6,
       borderBottomRightRadius: 6,
-      padding: isTablet ? 16 : 8, // Reduced inner padding for mobile
+      padding: isTablet ? 16 : 8,
     },
 
     studentGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      // gap handled inline
     },
   });

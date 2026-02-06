@@ -61,7 +61,6 @@ export default function ChangePinModal({
       } else {
         pinValuesRef.current = ['', '', '', ''];
       }
-      // Use setTimeout to avoid ESLint set-state-in-effect warning
       setTimeout(() => forceUpdate(n => n + 1), 0);
     }
   }, [currentPin, visible]);
@@ -134,11 +133,7 @@ export default function ChangePinModal({
                     ref={ref => {
                       inputRefs.current[index] = ref;
                     }}
-                    style={[
-                      styles.pinInput,
-                      error && styles.pinInputError,
-                      // Optional: Adjust PIN font size if needed, e.g. { fontSize: isTablet ? 24 : 20 }
-                    ]}
+                    style={[styles.pinInput, error && styles.pinInputError]}
                     defaultValue={currentPin?.[index] || ''}
                     onChangeText={value => handlePinChange(value, index)}
                     onKeyPress={e => handleKeyPress(e, index)}
@@ -201,7 +196,6 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       borderWidth: 1,
       flex: 1,
       justifyContent: 'center',
-      // paddingVertical removed
     },
     cancelButtonText: { color: theme.colors.onSurfaceVariant, fontWeight: '500' },
     closeButton: { position: 'absolute', right: 16, top: 16, zIndex: 100000 },
@@ -211,7 +205,6 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       borderRadius: 8,
       flex: 1,
       justifyContent: 'center',
-      // paddingVertical removed
     },
     confirmButtonFull: { flex: 1 },
     confirmButtonText: { color: theme.colors.onPrimary, fontWeight: '600' },
@@ -227,10 +220,10 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       width: 56,
     },
     modalContainer: {
-      backgroundColor: customColors.modalBackground, // Dynamic Modal BG
+      backgroundColor: customColors.modalBackground,
       borderRadius: 16,
       elevation: 5,
-      maxWidth: 448, // Match KioskPinModal
+      maxWidth: 448,
       padding: 24,
       position: 'relative',
       shadowColor: customColors.shadow,
@@ -238,12 +231,12 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       shadowOpacity: 0.25,
       shadowRadius: 3.84,
       width: '90%',
-      zIndex: 99999, // Fix: Force to top
+      zIndex: 99999,
     },
     overlay: {
       ...StyleSheet.absoluteFillObject,
       alignItems: 'center',
-      backgroundColor: customColors.backdropDark, // Match KioskPinModal dim
+      backgroundColor: customColors.backdropDark,
       elevation: 5,
       height: '100%',
       justifyContent: 'center',
@@ -257,7 +250,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       marginBottom: 16,
     },
     pinInput: {
-      backgroundColor: customColors.inputBackground, // Dynamic Input BG
+      backgroundColor: customColors.inputBackground,
       borderColor: customColors.inputBorder,
       borderRadius: 12,
       borderWidth: 2,
@@ -271,7 +264,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     pinInputError: { borderColor: theme.colors.error },
     subtitle: { color: theme.colors.onSurfaceVariant, marginBottom: 24 },
     title: {
-      color: theme.colors.primary, // Blueish in both modes per request
+      color: theme.colors.primary,
       fontWeight: '700',
       marginBottom: 8,
     },

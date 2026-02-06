@@ -43,14 +43,6 @@ axiosInstance.interceptors.request.use(
       console.error('Error reading token from secure store:', error);
     }
 
-    // Log API request for debugging
-    if (__DEV__) {
-      console.log(`🌐 API Request: ${config.method?.toUpperCase()} ${config.url}`);
-      if (config.data) {
-        console.log('📦 Request Data:', JSON.stringify(config.data, null, 2));
-      }
-    }
-
     return config;
   },
   (error: AxiosError) => {
@@ -63,23 +55,9 @@ axiosInstance.interceptors.request.use(
  */
 axiosInstance.interceptors.response.use(
   response => {
-    // Log successful response
-    if (__DEV__) {
-      console.log(
-        `✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`
-      );
-    }
     return response;
   },
   async (error: AxiosError) => {
-    // Log error response
-    if (__DEV__) {
-      console.log(
-        `❌ API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${error.response?.status || 'Network Error'}`
-      );
-      console.log('Error Message:', error.message);
-    }
-
     // On 401 Unauthorized, clear auth state and let app routing handle redirect to login
     if (error.response?.status === 401) {
       try {
