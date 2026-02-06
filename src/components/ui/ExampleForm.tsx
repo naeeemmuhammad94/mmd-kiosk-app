@@ -24,8 +24,7 @@ export const ExampleForm: React.FC = () => {
     },
   });
 
-  const onSubmit = async (data: LoginFormData) => {
-    console.log('Form data:', data);
+  const onSubmit = async (_data: LoginFormData) => {
     // Handle form submission
   };
 

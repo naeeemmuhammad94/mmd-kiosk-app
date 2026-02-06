@@ -383,7 +383,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       alignItems: 'center',
       flexDirection: 'row',
       justifyContent: 'space-between',
-      paddingBottom: 12, // More balanced padding
+      paddingBottom: 12,
       paddingHorizontal: 16,
       paddingTop: 8,
     },
@@ -407,7 +407,6 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       height: 40,
       justifyContent: 'center',
       width: 40,
-      // Visual touch target
     },
     listContent: {
       paddingBottom: 24,

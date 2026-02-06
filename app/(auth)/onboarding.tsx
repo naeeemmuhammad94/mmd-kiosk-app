@@ -140,8 +140,7 @@ export default function OnboardingScreen() {
 
       if (isExpoGo) {
         // Expo Go SDK 53+ does not support expo-notifications for Android
-        // We simulate a successful grant for development flow
-        console.log('Skipping notification request in Expo Go');
+        // Simulate a successful grant for development flow
         await setNotificationPermission(true);
       } else {
         // Production/Development Build: Use native module

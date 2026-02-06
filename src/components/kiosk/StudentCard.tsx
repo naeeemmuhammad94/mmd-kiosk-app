@@ -180,10 +180,10 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       textAlign: 'center',
     },
     attendanceGreen: {
-      color: theme.colors.onSurfaceVariant, // Grey text
+      color: theme.colors.onSurfaceVariant,
     },
     attendanceRed: {
-      color: theme.colors.onSurfaceVariant, // Grey text
+      color: theme.colors.onSurfaceVariant,
     },
     avatar: {
       borderRadius: 20,
@@ -194,18 +194,18 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       fontWeight: '600',
     },
     cardContainer: {
-      padding: 6, // Outer padding for shadow/spacing
+      padding: 6,
     },
     contentContainer: {
       alignItems: 'center',
-      backgroundColor: theme.colors.surface, // Dark surface color
+      backgroundColor: theme.colors.surface,
       borderRadius: 16,
-      elevation: 5, // Match Figma shadow
+      elevation: 5,
       padding: 12,
       paddingBottom: 16,
       shadowColor: customColors.shadow,
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15, // Soft shadow
+      shadowOpacity: 0.15,
       shadowRadius: 12,
       width: '100%',
     },
@@ -215,21 +215,21 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     gradientBorder: {
       alignItems: 'center',
-      borderRadius: 24, // Matching Figma rounded corners
+      borderRadius: 24,
       justifyContent: 'center',
       padding: 3,
     },
     imageContainer: {
       alignItems: 'center',
       backgroundColor: customColors.surfaceDisabled,
-      borderRadius: 20, // Matching inner radius
+      borderRadius: 20,
       justifyContent: 'center',
       overflow: 'hidden',
     },
     imageWrapper: {
       marginBottom: 12,
       position: 'relative',
-      zIndex: 1, // Ensure badges sit on top
+      zIndex: 1,
     },
     name: {
       color: theme.colors.onSurface,
@@ -247,24 +247,23 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       borderRadius: 20,
     },
     progressBarContainer: {
-      backgroundColor: theme.colors.outline, // Light grey background
+      backgroundColor: theme.colors.outline,
       borderRadius: 4,
-      height: 4, // Thinner
+      height: 4,
       marginTop: 8,
       overflow: 'hidden',
-      width: '90%', // Wider
+      width: '90%',
     },
     progressBarFill: {
-      backgroundColor: theme.colors.primary, // Blue
+      backgroundColor: theme.colors.primary,
       borderRadius: 4,
       height: '100%',
     },
     statusBadgeBottomRight: {
-      // Background removed as per request (Figma shows standalone shield icon)
       borderRadius: 999,
-      bottom: -12, // Moved lower at 45° angle
+      bottom: -12,
       position: 'absolute',
-      right: -12, // Moved more to the right
+      right: -12,
       shadowColor: customColors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,

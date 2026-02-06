@@ -78,7 +78,6 @@ export async function logoutUser(): Promise<void> {
     await axiosInstance.get(ApiEndpoints.Logout);
   } catch (error) {
     // Silently fail - we'll clear local storage anyway
-    // console.error('Logout API call failed:', error);
   }
 }
 

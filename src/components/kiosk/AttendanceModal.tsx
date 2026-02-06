@@ -59,9 +59,6 @@ export default function AttendanceModal() {
       return attendanceService.markKioskAttendance(selectedStudent._id, payload);
     },
     onSuccess: (_, present) => {
-      if (__DEV__) {
-        console.log('=== CHECK IN/OUT SUCCESS ===');
-      }
       queryClient.invalidateQueries({ queryKey: ['getAttendance'] });
 
       // Set confirmation type and show overlay (embedded ConfirmModal)
@@ -69,10 +66,8 @@ export default function AttendanceModal() {
       toggleConfirmModal();
       // Note: AttendanceModal remains mounted and visible underneath
     },
-    onError: error => {
-      if (__DEV__) {
-        console.log('=== CHECK IN/OUT ERROR ===', error);
-      }
+    onError: () => {
+      // Error handled silently - user sees the modal state unchanged
     },
   });
 
@@ -123,7 +118,7 @@ export default function AttendanceModal() {
                 style={[
                   styles.closeButton,
                   {
-                    backgroundColor: theme.dark ? customColors.whiteOpacity : theme.colors.surface, // White in light mode
+                    backgroundColor: theme.dark ? customColors.whiteOpacity : theme.colors.surface,
                   },
                 ]}
                 onPress={handleClose}
@@ -131,7 +126,7 @@ export default function AttendanceModal() {
                 <Ionicons
                   name="close"
                   size={20}
-                  color={theme.dark ? theme.colors.onPrimary : theme.colors.primary} // Blue in light mode
+                  color={theme.dark ? theme.colors.onPrimary : theme.colors.primary}
                 />
               </TouchableOpacity>
             </LinearGradient>
@@ -262,7 +257,7 @@ function InfoRow({ icon, label, value, valueColor, isRank, theme, styles }: Info
           <Ionicons
             name={icon as keyof typeof Ionicons.glyphMap}
             size={20}
-            color={theme.colors.primary} // Blue icons
+            color={theme.colors.primary}
           />
         </View>
         <View>
@@ -304,7 +299,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
 
     closeButton: {
       alignItems: 'center',
-      backgroundColor: customColors.whiteOpacity, // Semi-transparent circle
+      backgroundColor: customColors.whiteOpacity,
       borderRadius: 14,
       height: 28,
       justifyContent: 'center',
@@ -323,20 +318,20 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     gradientBorder: {
       alignItems: 'center',
-      borderRadius: 24, // Matches StudentCard
+      borderRadius: 24,
       justifyContent: 'center',
       marginBottom: 8,
       padding: 3,
     },
 
     header: {
-      alignItems: 'flex-end', // Align text to bottom
+      alignItems: 'flex-end',
       flexDirection: 'row',
       justifyContent: 'center',
-      minHeight: 100, // Ensure minimum height
-      paddingBottom: 20, // Reduce bottom space
+      minHeight: 100,
+      paddingBottom: 20,
       paddingHorizontal: 16,
-      paddingTop: 20, // Default Mobile
+      paddingTop: 20,
       position: 'relative',
     },
     headerTablet: {
@@ -346,12 +341,12 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       color: theme.colors.onPrimary,
       fontSize: 18,
       fontWeight: '600',
-      marginBottom: 4, // Fine tune alignment
+      marginBottom: 4,
     },
 
     iconContainer: {
       alignItems: 'center',
-      backgroundColor: customColors.surfaceDisabled, // Light blue bg
+      backgroundColor: customColors.surfaceDisabled,
       borderRadius: 18,
       height: 36,
       justifyContent: 'center',
@@ -361,7 +356,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     imageContainer: {
       alignItems: 'center',
       backgroundColor: customColors.surfaceDisabled,
-      borderRadius: 20, // Inner radius
+      borderRadius: 20,
       justifyContent: 'center',
       overflow: 'hidden',
     },
@@ -394,7 +389,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
       fontWeight: '600',
     },
     modalContainer: {
-      backgroundColor: customColors.modalBackground, // Dynamic Modal BG
+      backgroundColor: customColors.modalBackground,
       borderRadius: 12,
       overflow: 'hidden',
       position: 'relative',
@@ -409,7 +404,7 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     },
     overlay: {
       alignItems: 'center',
-      backgroundColor: customColors.backdropDark, // Darker overlay for better contrast
+      backgroundColor: customColors.backdropDark,
       flex: 1,
       justifyContent: 'center',
     },

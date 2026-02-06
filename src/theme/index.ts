@@ -113,16 +113,16 @@ export const lightTheme: MD3Theme = {
   ...MD3LightTheme,
   colors: {
     ...MD3LightTheme.colors,
-    primary: '#4A7DFF', // App Primary Blue
-    secondary: '#5EA0E8', // Light Blue
+    primary: '#4A7DFF',
+    secondary: '#5EA0E8',
     tertiary: '#018786',
     error: '#EF4444',
     background: '#FFFFFF',
     surface: '#FFFFFF',
     onPrimary: '#FFFFFF',
-    onSurface: '#1F2937', // Text Gray 800
-    onSurfaceVariant: '#6B7280', // Text Gray 500
-    outline: '#E5E7EB', // Border Gray 200
+    onSurface: '#1F2937',
+    onSurfaceVariant: '#6B7280',
+    outline: '#E5E7EB',
   },
   fonts: configureFonts({ config: fontConfig }),
 };
@@ -131,16 +131,16 @@ export const darkTheme: MD3Theme = {
   ...MD3DarkTheme,
   colors: {
     ...MD3DarkTheme.colors,
-    primary: '#4A7DFF', // Matching Figma Blue (was #608DFF)
+    primary: '#4A7DFF',
     secondary: '#5EA0E8',
     tertiary: '#03DAC6',
     error: '#EF4444',
-    background: '#0C111D', // Figma Background
-    surface: '#161B26', // Figma Surface (Card/Modal bg)
+    background: '#0C111D',
+    surface: '#161B26',
     onPrimary: '#FFFFFF',
-    onSurface: '#FFFFFF', // Text White
-    onSurfaceVariant: '#9CA3AF', // Text Gray 400
-    outline: '#374151', // Border Gray 700
+    onSurface: '#FFFFFF',
+    onSurfaceVariant: '#9CA3AF',
+    outline: '#374151',
   },
   fonts: configureFonts({ config: fontConfig }),
 };
@@ -166,10 +166,10 @@ export const lightCustomColors = {
   warn: '#EAB308',
   whiteOpacity: 'rgba(255, 255, 255, 0.2)',
   backdropStrong: 'rgba(71, 85, 105, 0.8)',
-  inputBackground: '#FFFFFF', // Request: #FFFFFF
-  inputBorder: '#979797', // Request: #979797
+  inputBackground: '#FFFFFF',
+  inputBorder: '#979797',
   modalBackground: '#FFFFFF',
-  modalHeaderBackground: '#4A7DFF', // Light mode blue
+  modalHeaderBackground: '#4A7DFF',
   backgroundAlt: '#F8F9FA',
   destructive: '#D93025',
   iconBackground: '#F1F3F4',
@@ -180,7 +180,7 @@ export const darkCustomColors = {
   backdrop: 'rgba(0, 0, 0, 0.7)',
   backdropDark: 'rgba(0, 0, 0, 0.85)',
   backdropLight: 'rgba(30, 30, 30, 0.95)',
-  surfaceDisabled: '#161B26', // Match card surface
+  surfaceDisabled: '#161B26',
   onSurfaceDisabled: '#6B7280',
   outlineVariant: '#4B5563',
   white: '#FFFFFF',
@@ -195,14 +195,14 @@ export const darkCustomColors = {
   onErrorContainer: '#FCA5A5',
   warn: '#FACC15',
   whiteOpacity: 'rgba(255, 255, 255, 0.1)',
-  backdropStrong: 'rgba(12, 17, 29, 0.95)', // Match background tone #0C111D
-  inputBackground: '#161B26', // Request: #161B26
-  inputBorder: '#979797', // Request: #979797
-  modalBackground: '#0C111D', // Request: #0C111D
-  modalHeaderBackground: '#161B26', // Request: #161B26
+  backdropStrong: 'rgba(12, 17, 29, 0.95)',
+  inputBackground: '#161B26',
+  inputBorder: '#979797',
+  modalBackground: '#0C111D',
+  modalHeaderBackground: '#161B26',
   backgroundAlt: '#161B26',
-  destructive: '#EF4444', // Lighter red for dark mode consistency, or keep #D93025 if strictly brand
-  iconBackground: '#374151', // Darker grey for icons
+  destructive: '#EF4444',
+  iconBackground: '#374151',
 };
 
 // Backwards compatibility default - ideally usage should be migrated to hook

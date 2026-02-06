@@ -88,8 +88,7 @@ export const usePinStore = create<PinStore>((set, _get) => ({
     } catch (error: any) {
       // Check if it's an expected 400 error (Wrong PIN)
       if (error.response && error.response.status === 400) {
-        // Log as info/debug, not error, to avoid LogBox popup
-        console.log('[PinStore] Incorrect PIN attempt');
+        // Expected 400 error for wrong PIN - handled gracefully
 
         set({
           isPinLoading: false,

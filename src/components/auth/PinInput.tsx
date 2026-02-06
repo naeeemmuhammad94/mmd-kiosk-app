@@ -138,22 +138,21 @@ const createStyles = (theme: MD3Theme, customColors: CustomColors) =>
     container: {
       alignItems: 'center',
       flexDirection: 'row',
-      gap: 12, // Reduced from 20 to match KioskPinModal
+      gap: 12,
       justifyContent: 'space-between',
       width: '100%',
     },
     input: {
-      backgroundColor: customColors.inputBackground, // Dynamic Input BG
-      borderColor: customColors.inputBorder, // Dynamic Input Border
-      borderRadius: 12, // Square-ish corners per Figma
+      backgroundColor: customColors.inputBackground,
+      borderColor: customColors.inputBorder,
+      borderRadius: 12,
       borderWidth: 1.5,
       color: theme.colors.onSurface,
-      flex: 1, // Allow input to shrink/grow
+      flex: 1,
       fontSize: 26,
       fontWeight: '600',
-      height: 64, // Square shape
+      height: 64,
       textAlign: 'center',
-      // width removed in favor of flex
     },
     inputDisabled: {
       backgroundColor: theme.colors.surfaceDisabled,
