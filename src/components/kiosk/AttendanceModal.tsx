@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
   useWindowDimensions,
+  Alert,
 } from 'react-native';
 import { Text, Avatar, ActivityIndicator } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -66,8 +67,9 @@ export default function AttendanceModal() {
       toggleConfirmModal();
       // Note: AttendanceModal remains mounted and visible underneath
     },
-    onError: () => {
-      // Error handled silently - user sees the modal state unchanged
+    onError: error => {
+      console.error('❌ Check-in/out failed:', error);
+      Alert.alert('Error', `Failed to update attendance: ${error.message || 'Unknown error'}`);
     },
   });
 
