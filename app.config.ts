@@ -28,23 +28,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   web: {},
   scheme: 'mmd-kiosk-app',
-  plugins: [
-    'expo-router',
-    [
-      'expo-secure-store',
-      {
-        faceIDPermission: 'Allow $(PRODUCT_NAME) to access your Face ID biometric data.',
-      },
-    ],
-    [
-      'expo-image-picker',
-      {
-        photosPermission: 'Allow $(PRODUCT_NAME) to access your photos',
-        cameraPermission: 'Allow $(PRODUCT_NAME) to access your camera',
-        microphonePermission: 'Allow $(PRODUCT_NAME) to access your microphone',
-      },
-    ],
-  ],
+  plugins: ['expo-router', 'expo-secure-store'],
   extra: {
     router: {},
     eas: {
