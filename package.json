@@ -23,7 +23,13 @@
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "type-check": "tsc --noEmit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "build:ios": "./scripts/build_ios.sh",
+    "build:android": "./scripts/build_android.sh",
+    "submit:ios": "./scripts/submit_ios.sh",
+    "submit:android": "./scripts/submit_android.sh",
+    "build:ios:staging": "./scripts/build_ios_staging.sh",
+    "build:android:staging": "./scripts/build_android_staging.sh"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

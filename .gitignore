@@ -65,3 +65,7 @@ coverage/
 *.log
 *.pem
 scripts/
+
+# Android Builds
+*.aab
+*.apk
