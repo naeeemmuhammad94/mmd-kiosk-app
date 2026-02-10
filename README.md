@@ -136,69 +136,109 @@ npm test
 
 Tests are located in `src/__tests__/` directory.
 
-## 📱 Building for Production
+## 📱 Building & Deploying
 
-We use **EAS Build** (Expo Application Services) for production-ready binaries.
-
-### iOS Deployment (TestFlight)
-
-1. **Build for Staging (Preview)**:
-
-   ```bash
-   npx eas-cli build --platform ios --profile preview --auto-submit
-   ```
-
-   _Uses bundle identifier: `com.mmd.kioskapp.staging`_
-
-2. **Build for Production**:
-
-   ```bash
-   npx eas-cli build --platform ios --profile production --auto-submit
-   ```
-
-   _Uses bundle identifier: `com.mmd.kioskapp`_
-
-3. **Manual Submission** (if auto-submit is skipped):
-
-   ```bash
-   npx eas-cli submit --platform ios --latest
-   ```
-
-4. **Local Build & Upload (Skip Queue)**:
-
-   If you want to skip the Expo cloud queue and build on your own machine:
-
-   **Step 1: Run Local Build (Create .ipa)**
-
-   ```bash
-   # Loads env vars and runs local build
-   export $(grep -v '^#' .env | xargs) && npx eas-cli build --platform ios --profile preview --local
-   ```
-
-   **Step 2: Submit to TestFlight**
-
-   ```bash
-   # Uploads the generated .ipa file
-   npx eas-cli submit --platform ios --profile preview --path ./build-*.ipa
-   ```
-
-### Android Deployment
-
-1. **Build APK (For Testing)**:
-
-   ```bash
-   npx eas-cli build --platform android --profile preview
-   ```
-
-2. **Build AAB (For Play Store)**:
-   ```bash
-   npx eas-cli build --platform android --profile production
-   ```
+We use **EAS Build** with local builds and App Store Connect API Key authentication for reliable, non-interactive builds.
 
 ### Prerequisites
 
-- Ensure you are logged into EAS: `npx eas-cli login`
-- For iOS, the App Store Connect API Key and Team IDs are pre-configured in `eas.json` for non-interactive builds.
+- Node.js installed (version in `.nvmrc`)
+- EAS CLI: `npm install -g eas-cli`
+- Logged into EAS: `npx eas-cli login`
+- For iOS: Xcode installed, Apple credentials configured in `.env`
+- For Android: Android SDK installed
+
+### Quick Reference
+
+| Command                         | What it does                        |
+| ------------------------------- | ----------------------------------- |
+| `npm run build:ios`             | Build iOS production `.ipa`         |
+| `npm run build:android`         | Build Android production `.aab`     |
+| `npm run submit:ios`            | Submit `.ipa` to App Store Connect  |
+| `npm run submit:android`        | Submit `.aab` to Google Play        |
+| `npm run build:ios:staging`     | Build + auto-submit iOS staging     |
+| `npm run build:android:staging` | Build + auto-submit Android staging |
+
+---
+
+### iOS Production Deployment
+
+**Step 1: Build locally**
+
+```bash
+npm run build:ios
+```
+
+This creates a `.ipa` file in the project root using App Store Connect API Key (no interactive login required).
+
+**Step 2: Submit to App Store Connect**
+
+```bash
+npm run submit:ios
+```
+
+This uploads the `.ipa` to TestFlight. You can also specify a specific file:
+
+```bash
+./scripts/submit_ios.sh ./my-specific-build.ipa
+```
+
+---
+
+### Android Production Deployment
+
+**Step 1: Build locally**
+
+```bash
+npm run build:android
+```
+
+This creates an `.aab` file in the project root.
+
+**Step 2: Submit to Google Play**
+
+```bash
+npm run submit:android
+```
+
+This uploads the `.aab` to Google Play Console.
+
+---
+
+### Staging Deployment (Auto-Submit)
+
+For quick staging releases with automatic submission:
+
+**iOS Staging:**
+
+```bash
+npm run build:ios:staging
+```
+
+Builds with `APP_VARIANT=preview` and staging API URL, then auto-submits to TestFlight.
+
+**Android Staging:**
+
+```bash
+npm run build:android:staging
+```
+
+Builds with `APP_VARIANT=preview` and staging API URL, then auto-submits to Google Play Internal Track.
+
+---
+
+### Apple Credentials Setup
+
+The following environment variables must be set in `.env` for iOS builds:
+
+```bash
+ASC_KEY_ID=your_key_id
+ASC_ISSUER_ID=your_issuer_id
+ASC_API_KEY_PATH=./scripts/AuthKey_XXXXX.p8
+APPLE_TEAM_ID=your_team_id
+```
+
+The API key file (`.p8`) should be placed in the `scripts/` directory.
 
 ## 🤝 Contributing
 

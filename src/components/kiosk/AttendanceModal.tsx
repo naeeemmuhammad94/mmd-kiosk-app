@@ -36,6 +36,7 @@ export default function AttendanceModal() {
     toggleConfirmModal,
     setConfirmType,
     isConfirmModalOpen,
+    setSearchQuery,
   } = useKioskStore();
 
   // Mark attendance API call
@@ -65,6 +66,7 @@ export default function AttendanceModal() {
       // Set confirmation type and show overlay (embedded ConfirmModal)
       setConfirmType(present ? 'checkIn' : 'checkOut');
       toggleConfirmModal();
+      setSearchQuery('');
       // Note: AttendanceModal remains mounted and visible underneath
     },
     onError: error => {

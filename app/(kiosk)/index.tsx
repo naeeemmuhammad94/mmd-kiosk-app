@@ -91,9 +91,10 @@ export default function KioskHomeScreen() {
     toggleAttendanceModal,
     openPinModal,
     settings,
+    searchQuery,
+    setSearchQuery,
   } = useKioskStore();
 
-  const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isProgramView, setIsProgramView] = useState(false);
